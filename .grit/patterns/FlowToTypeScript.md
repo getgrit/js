@@ -57,12 +57,12 @@ export default checkAnimalBreed;
 ```
 
 ```js
+//@flow
 import type { Foo, Sam } from '../types';
 import type { Dog } from './animals';
 export type DogBreed = {
   name: string,
 }
-
 const animal = 'dog';
 
 function checkDog(dog: Dog): string {
@@ -96,5 +96,4 @@ const checkBoolean = async (): boolean => {
 };
 
 export default checkAnimalBreed;
-
 ```
