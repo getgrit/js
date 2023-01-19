@@ -1,8 +1,6 @@
 name: grit pattern check
 on:
-  schedule:
-    - cron: "0 */1 * * *"
-  workflow_dispatch:
+  push: {}
 jobs:
   grit-check:
     runs-on: ubuntu-latest
