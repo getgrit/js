@@ -12,7 +12,7 @@ jobs:
       - name: install launcher
         run: npm install -g @getgrit/launcher
       - name: install agents
-        run: grit install
+        run: grit install --update
       - name: version
         run: grit version
       - name: test patterns
