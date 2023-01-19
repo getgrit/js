@@ -1,0 +1,19 @@
+name: grit pattern check
+on:
+  schedule:
+    - cron: "0 */1 * * *"
+  workflow_dispatch:
+jobs:
+  grit-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - name: install launcher
+        run: npm install -g @getgrit/launcher
+      - name: install agents
+        run: grit install
+      - name: test patterns
+        run: grit patterns test
