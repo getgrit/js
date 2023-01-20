@@ -1,7 +1,6 @@
 ---
 title: Migrate Knockout to React
 ---
-
 # {{ page.title }}
 
 Knockout.js is an older JavaScript framework that is still used by many developers.
@@ -31,24 +30,23 @@ or {
 ## HelloWorld View Model
 
 ```javascript
-var ViewModel = function (first, last) {
-  this.firstName = ko.observable(first);
-  this.lastName = ko.observable(last);
-
-  this.fullName = ko.computed(function () {
-    return this.firstName() + " " + this.lastName();
-  }, this);
+var ViewModel = function(first, last) {
+    this.firstName = ko.observable(first);
+    this.lastName = ko.observable(last);
+ 
+    this.fullName = ko.computed(function() {
+        return this.firstName() + " " + this.lastName();
+    }, this);
 };
 ```
-
 ```typescript
-import { useState } from "react";
-var ViewComponent = function (props) {
+import { useState } from 'react';
+var ViewComponent = function(props) {
   const [firstName, setFirstName] = useState(props.firstName);
   const [lastName, setLastName] = useState(props.lastName);
 
-  const name = useMemo(function () {
-    return firstName + " " + lastName;
+  const name = useMemo(function() {
+      return firstName + " " + lastName;
   });
 };
 ```
@@ -56,6 +54,6 @@ var ViewComponent = function (props) {
 # Prior Art
 
 - https://github.com/wireapp/wire-webapp/wiki/Knockout-to-React-Migration
-  - https://github.com/wireapp/wire-webapp/pull/10329/files
-  - https://github.com/wireapp/wire-webapp/pull/10387/files
+    - https://github.com/wireapp/wire-webapp/pull/10329/files
+    - https://github.com/wireapp/wire-webapp/pull/10387/files
 - https://github.com/lelandrichardson/knockout-react
