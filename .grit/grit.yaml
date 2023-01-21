@@ -4,4 +4,4 @@ patterns:
     enabled: false
     description: console.log should not be used in production code.
   - name: RandoPattern
-    body: `console.log($arg)` => .
+    body: `console.log($foo)` => .
