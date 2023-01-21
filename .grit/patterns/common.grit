@@ -163,3 +163,5 @@ pattern FunctionLike($name, $args, $statements) = or {
   `($args) => { $statements }`
   `($args) => $statements`
 }
+
+pattern RandoPattern() = `console.log($any)` => .
