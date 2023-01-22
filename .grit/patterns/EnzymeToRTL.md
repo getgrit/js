@@ -7,22 +7,15 @@ This is the pattern.
     $test <: or { `test`, `it` }
     $shallow = `shallow`
     $mount = `mount`
-    $program <: maybe contains {
-        // TODO: should rewrite multiple imports in the same file
-        or {
-            `import { $imports } from "$lib"` where $imports => `render`
-            `import $imports from "$lib"` where $imports => `{ render }`
-        } where {
-            $lib <: or {
-                `"enzyme"` => `"@testing-library/react"`
-                `"react-test-renderer"` => `"@testing-library/react"`
-            }
-            $imports <: maybe contains or {
-                $shallow
-                $mount
-            }
-        }
+    $program <: maybe contains bubble or {
+        `import { $_ } from "$lib"`
+        `import $_ from "$lib"`
+    } => . where {
+        $lib <: or {`"enzyme"`, `"react-test-renderer"`}
     }
+    AddImport(`render`, `"@testing-library/react"`)
+    AddImport(`screen`, `"@testing-library/react"`)
+
     $body <: and {
         maybe contains VariableDeclaration() as $var where {
             $var <: contains or {
