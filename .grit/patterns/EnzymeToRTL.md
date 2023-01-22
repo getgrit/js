@@ -4,18 +4,24 @@ This is the pattern.
 
 ```grit
 `$test($name, $body)` where {
+    $test <: or { `test`, `it` }
     $shallow = `shallow`
     $mount = `mount`
-    $program <: and {
-        maybe contains `import { $imports } from "$lib"` where {
-            $lib <: `"enzyme"` => `"@testing-library/react"`
+    $program <: maybe contains {
+        // TODO: should rewrite multiple imports in the same file
+        or {
+            `import { $imports } from "$lib"` where $imports => `render`
+            `import $imports from "$lib"` where $imports => `{ render }`
+        } where {
+            $lib <: or {
+                `"enzyme"` => `"@testing-library/react"`
+                `"react-test-renderer"` => `"@testing-library/react"`
+            }
             $imports <: maybe contains or {
                 $shallow
                 $mount
             }
-            $imports => `render`
         }
-        maybe contains `import $renderer from "react-test-renderer"` => `import { render } from "@testing-library/react"`
     }
     $body <: and {
         maybe contains VariableDeclaration() as $var where {
@@ -115,6 +121,22 @@ test("has correct welcome text", () => {
   render(<Welcome firstName="John" lastName="Doe" />);
   expect(screen.getByRole("heading")).toHaveTextContent("Welcome, John Doe");
   expect(screen.getByRole("heading")).toHaveTextContent("Welcome, John Doe");
+});
+```
+
+## Find by test
+
+```js
+import {shallow} from 'enzyme';
+import StatusBar from '../StatusBar';
+
+describe('<StatusBar />', () => {
+    it('should only display High Score when greater than 0', () => {
+        const statusBar = shallow(
+           <StatusBar mode='standby' highScore={20} wordCount={2}/>);
+        expect(statusBar.find('#highScore').prop('hidden')).toBe(false);
+        expect(statusBar.find('#highScore').text()).toContain('20');
+    });
 });
 ```
 
