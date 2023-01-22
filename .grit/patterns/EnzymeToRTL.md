@@ -135,7 +135,22 @@ describe('<StatusBar />', () => {
         const statusBar = shallow(
            <StatusBar mode='standby' highScore={20} wordCount={2}/>);
         expect(statusBar.find('#highScore').prop('hidden')).toBe(false);
+        expect(statusBar.find('#highScore').prop('hidden')).toBe(true);
         expect(statusBar.find('#highScore').text()).toContain('20');
+    });
+});
+```
+
+```js
+import { render, screen } from '@testing-library/react';
+import StatusBar from '../StatusBar';
+
+describe('<StatusBar />', () => {
+    it('should only display High Score when greater than 0', () => {
+      render(<StatusBar mode='standby' highScore={20} wordCount={2}/>);
+      expect(screen.getByTestId('highScore')).toBeVisible();
+      expect(screen.getByTestId('highScore')).not.toBeVisible();
+      expect(screen.getByTestId('highScore')).toHaveTextContent('20');
     });
 });
 ```
