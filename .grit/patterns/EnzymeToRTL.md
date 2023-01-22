@@ -4,12 +4,14 @@ This is the pattern.
 
 ```grit
 `$test($name, $body)` where {
+    $shallow = `shallow`
+    $mount = `mount`
     $program <: and {
         maybe contains `import { $imports } from "$lib"` where {
             $lib <: `"enzyme"` => `"@testing-library/react"`
             $imports <: maybe contains or {
-                `shallow`
-                `mount` as $mount
+                $shallow
+                $mount
             }
             $imports => `render`
         }
@@ -18,7 +20,7 @@ This is the pattern.
     $body <: and {
         maybe contains VariableDeclaration() as $var where {
             $var <: contains or {
-                `$wrapper = shallow($comp)` where {
+                `$wrapper = $shallow($comp)` where {
                     $var => `render($comp)`
                 }
                 `wrapper = mount($comp)` => `{ unmount } = render($comp)` where {
