@@ -6,31 +6,42 @@ This is the pattern.
 Program(body=and {
     maybe contains `import { $imports } from "$lib"` where {
         $lib <: `"enzyme"` => `"@testing-library/react"`
-        $imports <: contains {
-            `shallow` as $shallow => `render`
+        $imports <: maybe contains or {
+            `shallow`
+            `mount` as $mount
         }
+        $imports => `render`
     }
     maybe contains `import $renderer from "react-test-renderer"` => `import { render } from "@testing-library/react"`
-    contains bubble($shallow, $renderer) `$test($name, $body)` where {
+    contains bubble($renderer) `$test($name, $body)` where {
         $body <: and {
             maybe contains VariableDeclaration() as $var where {
-                $var <: contains `$wrapper = $shallow($comp)`
-                $var => `render($comp)`
+                $var <: contains or {
+                    `$wrapper = shallow($comp)` where {
+                        $var => `render($comp)`
+                    }
+                    `wrapper = mount($comp)` => `{ unmount } = render($comp)` where {
+                        $body <: maybe contains `$wrapper.unmount` => `unmount`
+                        $body <: maybe contains `process.nextTick(() => { $tickyBody })` => $tickyBody
+                        $body <: maybe contains `done()` => .
+                    }
+                    `$renderer.create($comp).toJSON()` => `render($comp)`
+                }
             }
             maybe contains bubble($wrapper) {
                 `expect($expect).$compare` where {
-                    $expect <: contains `$wrapper.find($selector).$get()` as $finder => `screen.getByRole($role)` where {
-                        $selector <: or {`"h1"`, `"h2"`, `"h3"`, `"h4"`, `"h5"`, `"h6"`}
-                        $role = `"heading"`
-                        $get <: `text`
-                        $compare => `toHaveTextContent`
+                    $expect <: or {
+                        contains `$wrapper.find($selector).$get()` as $finder => `screen.getByRole($role)` where {
+                            $selector <: or {`"h1"`, `"h2"`, `"h3"`, `"h4"`, `"h5"`, `"h6"`}
+                            $role = `"heading"`
+                            $get <: `text`
+                            $compare => `toHaveTextContent`
+                        }
+                        semantic `$renderer.create($comp).toJSON()` where {
+                            $expect => `$expect.container`
+                        }
                     }
                 }
-            }
-            maybe contains `$renderer.create($comp).toJSON()` => `render($comp)`
-            maybe contains `expect($expectation)` where {
-                $expectation <: semantic `$renderer.create($comp).toJSON()`
-                $expectation => `$expectation.container`
             }
         }
     }
@@ -72,9 +83,9 @@ describe("<MyComponent />", () => {
   };
 
   it("matches snapshot", () => {
-    const { container } = render(<MyComponent {...props} />);
+    const rendered = render(<MyComponent {...props} />);
 
-    expect(container).toMatchSnapshot();
+    expect(rendered.container).toMatchSnapshot();
   });
 });
 ```
