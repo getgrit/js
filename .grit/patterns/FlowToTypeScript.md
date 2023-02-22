@@ -3,7 +3,10 @@
 Converts Flow type annotations to TypeScript type annotations on a best-effort basis.
 
 ```grit
+language js
+
 Program(and {
+  contains CommentLine(value = "@flow")
   maybe [
     maybe bubble or  {
       ImportDeclaration(leadingComments = [CommentBlock($c), ...]),
@@ -11,7 +14,7 @@ Program(and {
     } as $node => raw("/*" + $c + "*/\n" + unparse($node))
     some bubble or { ImportDeclaration(), ExportDeclaration() } as $node => raw(unparse($node))
   ]
-  contains bubble TypeAnnotation() as $node => raw(unparse($node))
+  maybe contains bubble TypeAnnotation() as $node => raw(unparse($node))
 })
 ```
 
