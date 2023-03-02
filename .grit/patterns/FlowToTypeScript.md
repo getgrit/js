@@ -130,10 +130,11 @@ export function login(foo: string) /* : MyType*/ {
 After:
 
 ```ts
-//@flow
-
 import { MyType } from "somelib";
-
+//@flow
+/**
+* @returns {import('somelib').MyType<any, any, any, any>}
+*/
 export function login(foo: string): MyType {
   console.log("do something");
 }

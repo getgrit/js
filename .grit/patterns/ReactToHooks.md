@@ -770,20 +770,16 @@ interface Person {
 const ObservedComponent = (inputProps: any) => {
   const props = {
     king: "viking",
-    ...inputProps,
+    ...inputProps
   };
 
   const [me, setMe] = useState<Person>({
     name: "John",
   });
 
-  return (
-    <>
-      <p>
-        This is {me.name}, {props.king}
-      </p>
-    </>
-  );
+  return <>
+    <p>This is {me.name}, {props.king}</p>
+  </>;
 };
 ```
 

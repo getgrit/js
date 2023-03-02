@@ -28,7 +28,7 @@ Data.prototype.__iterator__ = function () {
 ```
 
 ```
-Data._iterator_ = function() {
+Data._iterator_ = function () {
   return new DataIterator(this);
 };
 ```
