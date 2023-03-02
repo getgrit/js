@@ -132,9 +132,9 @@ After:
 ```ts
 //@flow
 
-import { MyType } from 'somelib';
+import { MyType } from "somelib";
 
-export function login(foo: string) MyType {
+export function login(foo: string): MyType {
   console.log("do something");
 }
 ```
