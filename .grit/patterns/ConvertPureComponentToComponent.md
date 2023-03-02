@@ -65,7 +65,7 @@ class Foo extends Component {
   shouldComponentUpdate() {}
 
   render() {
-    return <Hello />
+    return <Hello />;
   }
 }
 ```
