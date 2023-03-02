@@ -560,17 +560,13 @@ class SampleComponent extends Component {
 ```
 
 ```js
-import { Component, useRef } from "react";
+import { Component, useRef } from 'react';
 
-import { observer } from "mobx-react";
+import { observer } from 'mobx-react';
 
 const SampleComponent = observer(() => {
   const viewState = useRef(new ViewState());
-  return (
-    <p>
-      This component has a <span onClick={viewState.click}>ViewState</span>
-    </p>
-  );
+  return <p>This component has a <span onClick={viewState.click}>ViewState</span></p>;
 });
 ```
 

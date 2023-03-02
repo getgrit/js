@@ -62,28 +62,38 @@ export default checkAnimalBreed;
 
 ```js
 //@flow
-import type { Foo, Sam } from "../types";
-import type { Dog } from "./animals";
+import type { Foo, Sam } from '../types';
+import type { Dog } from './animals';
 export type DogBreed = {
   name: string,
-};
+}
 const animal = "dog";
 
 function checkDog(dog: Dog): string {
   return dog.name;
 }
 
-function multiLine({ foo, bar }: { foo: string, bar: string }) {
+function multiLine(
+  { 
+    foo, 
+    bar 
+  }: { 
+    foo: string, 
+    bar: string 
+    }
+) {
   console.log(foo);
 }
 
-const checkAnimalBreed = async ({
-  breed,
-  dog,
-}: {
-  breed: DogBreed,
-  dog: Dog,
-}): boolean => {
+const checkAnimalBreed = async (
+  {
+    breed,
+    dog,
+  }: {
+    breed: DogBreed,
+    dog: Dog,
+  }
+): boolean => {
   return dog.breed === breed.name;
 };
 

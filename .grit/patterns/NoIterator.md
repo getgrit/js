@@ -34,6 +34,7 @@ Data._iterator_ = function () {
 ```
 
 ## `prototype["__iterator__"]` property => `_iterator_`
+## `prototype["__iterator__"]` property => `_iterator_`
 
 ```javascript
 Data.prototype["__iterator__"] = function () {
