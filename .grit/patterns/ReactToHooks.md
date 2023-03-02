@@ -438,9 +438,9 @@ class SampleComponent extends React.Component {
 ```
 
 ```js
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState } from 'react';
 
-const SampleComponent = (props) => {
+const SampleComponent = props => {
   const [clicks, setClicks] = useState(props.initialCount);
 
   const onClickHandler = useCallback(() => {
@@ -451,13 +451,11 @@ const SampleComponent = (props) => {
     return clicks % 2 === 0;
   }, [clicks]);
 
-  return (
-    <>
+  return <>
       <p>Clicks: {clicks}</p>
       <p>Is even: {isEven}</p>
       <a onClick={onClickHandler}>click</a>
-    </>
-  );
+  </>;
 };
 ```
 
