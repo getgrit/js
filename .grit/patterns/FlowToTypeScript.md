@@ -74,12 +74,12 @@ function checkDog(dog: Dog): string {
 }
 
 function multiLine(
-  { 
-    foo, 
-    bar 
-  }: { 
-    foo: string, 
-    bar: string 
+  {
+    foo,
+    bar
+  }: {
+    foo: string,
+    bar: string
     }
 ) {
   console.log(foo);
@@ -88,11 +88,11 @@ function multiLine(
 const checkAnimalBreed = async (
   {
     breed,
-    dog,
+    dog
   }: {
-    breed: DogBreed,
-    dog: Dog,
-  }
+      breed: DogBreed,
+      dog: Dog,
+    }
 ): boolean => {
   return dog.breed === breed.name;
 };
