@@ -594,11 +594,9 @@ interface Props {
 }
 
 const SampleComponent = (props: Props) => {
-  return (
-    <>
-      <p>Hello {props.name}</p>
-    </>
-  );
+  return <>
+    <p>Hello {props.name}</p>
+  </>;
 };
 ```
 
