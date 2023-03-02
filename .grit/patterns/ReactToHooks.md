@@ -347,10 +347,10 @@ class App extends Component {
 ```
 
 ```js
-import { Component, useEffect, useCallback, useState } from "react";
+import { Component, useEffect, useCallback, useState } from 'react';
 
 const App = () => {
-  const [name, setName] = useState("");
+  const [name, setName] = useState('');
   const [another, setAnother] = useState(3);
   const [isOpen, setIsOpen] = useState();
 
@@ -370,7 +370,7 @@ const App = () => {
     alert(name);
   }, []);
 
-  const handleNameInputHandler = useCallback((e) => {
+  const handleNameInputHandler = useCallback(e => {
     setName(e.target.value);
     setAnother("cooler");
   }, []);
@@ -388,8 +388,12 @@ const App = () => {
         value={name}
         placeholder="Your Name"
       />
-      <button onClick={alertNameHandler}>Alert</button>
-      <button onClick={asyncAlertHandler}>Alert</button>
+      <button onClick={alertNameHandler}>
+        Alert
+      </button>
+      <button onClick={asyncAlertHandler}>
+        Alert
+      </button>
     </div>
   );
 };
@@ -397,11 +401,11 @@ const App = () => {
 App.foo = 1;
 App.fooBar = 21;
 
-App.bar = (input) => {
+App.bar = input => {
   console.log(input);
 };
 
-App.another = (input) => {
+App.another = input => {
   console.error(input);
 };
 ```
