@@ -15,7 +15,7 @@ To see how it works, follow the tutorial.
 */
 or {
   `function ($args) { $body }` => `($args) => { $body }` where {
-    body <: not contains {
+    $body <: not contains {
       or { `this`, `arguments` }
     } until `function $_($_) { $_ }`
   }
