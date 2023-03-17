@@ -37,6 +37,10 @@ function somethingElse(num: any) {
 function getKey(userId: string) {
   return `some-key-${userId}`;
 }
+
+function somethingElse(num: number) {
+    console.log(1 + num)
+}
 ```
 
 ## Class Definitions
