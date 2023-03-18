@@ -14,32 +14,35 @@ or {
 } where {
     $params <: contains bubble {
         or {
-            Identifier(name="$TSFixMe"),
-            TSAnyKeyword() as $any
-        } => guess(codePrefix="// add TypeScript type declarations", fallback="any", stop=["function"])
+            Identifier(name="$TSFixMe") => $type,
+            TSAnyKeyword() as $any => $type
+            Identifier(typeAnnotation=null => $type)
+        } where {
+            $type = guess(codePrefix="// fix TypeScript type declarations", fallback="any", stop=["function"])
+        }
     }
 }
 ```
 
 ## Simple Function Parameters
 
-```grit
+```js
 function getKey(userId: $TSFixMe) {
   return `some-key-${userId}`;
 }
 
 function somethingElse(num: any) {
-    console.log(1 + num)
+  console.log(1 + num);
 }
 ```
 
-```grit
+```js
 function getKey(userId: string) {
   return `some-key-${userId}`;
 }
 
 function somethingElse(num: number) {
-    console.log(1 + num)
+  console.log(1 + num);
 }
 ```
 
@@ -64,5 +67,19 @@ class Foo {
     this.bar = 1;
     this.message = foo;
   }
+}
+```
+
+## Function with no types
+
+```js
+function getKey(userId) {
+  return `some-key-${userId}`;
+}
+```
+
+```js
+function getKey(userId: string) {
+  return `some-key-${userId}`;
 }
 ```
