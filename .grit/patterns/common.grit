@@ -143,9 +143,7 @@ predicate InsertImports() = or {
     $froms <: exists $from, $allFrom, $fromName in $from where {
       $solvedPairs <: maybe { 
         exists $x in `$x, $from` where { 
-          and {
-            $allFrom = [... $allFrom, $x]
-          } 
+          $allFrom = [... $allFrom, $x]
         }
       }
       $from <: StringLiteral(value = $fromName)
