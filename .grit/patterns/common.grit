@@ -67,7 +67,7 @@ predicate AddImport($m, $fromArg) =
   }
 
 predicate AddNamespaceImport($m, $fromArg) =
-   $fromArg <: let $alias, $from in and {
+   $fromArg <: let($alias, $from) and {
     or {
       Identifier() as $alias
       $_ where $alias = Identifier(name = $m)
