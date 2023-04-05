@@ -72,7 +72,11 @@ pattern HandleOneBodyStatement() = or {
       $key <: Identifier()
       $capitalized = capitalize($key)
       $setter = Identifier(name = s"set${capitalized}")
-      $stateStatements = [...$stateStatements, `const [$key, $setter] = useState($val)`]
+      
+      if ($processedKeys <: not some $key) then {
+        $processedKeys = [... $processedKeys, $key]
+        $stateStatements = [...$stateStatements, `const [$key, $setter] = useState($val)`]
+      }
       ensureImportFrom(`useState`, `"react"`)
     }
   }
