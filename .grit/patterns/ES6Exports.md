@@ -69,14 +69,18 @@ export const addTeamToOrgSubscription = () => console.log("cool");
 
 ```js
 const king = "9";
+const myTwo = 2;
 
 module.exports = {
   king,
+  two: myTwo,
   queen: "8"
 };
 ```
 ```js
 export const king = "9";
+const myTwo = 2;
+export const two = myTwo;
 
 module.exports = {
   queen: "8"
