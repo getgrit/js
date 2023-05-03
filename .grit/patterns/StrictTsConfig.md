@@ -74,5 +74,54 @@ json_pair(key="compilerOptions", value=$val) where {
    },
   "exclude": ["**/*.spec.ts"],
   "include": ["**/*.ts"]
+ }
+
+```
+
+## Handles redundant options
+
+```json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "types": ["node"],
+    "foo": "bar",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "strictBindCallApply": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false,
+    "baz": "raz"
+  },
+  "exclude": ["**/*.spec.ts"],
+  "include": ["**/*.ts"]
 }
+```
+
+```json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "types": ["node"],
+    "foo": "bar",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "baz": "raz",
+    "strict": true,
+    "allowJs": true,
+    "checkJs": false
+   },
+  "exclude": ["**/*.spec.ts"],
+  "include": ["**/*.ts"]
+ }
+
 ```
