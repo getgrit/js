@@ -19,13 +19,7 @@ or {
                 or {
                     // special case of exporting a require() - see ES6Import pattern
                     $program <: contains or {
-                        // TODO difficult to handle matching a sublist of the module.exports
-                        // `const { $imports } = require($val)` => `export { $transformed } from "$val"` where {
-                        //     $imports <: some bubble($transformed, $name) {ObjectProperty(key=$subkey, value=$subval) where {
-                        //         $subval <: $name
-                        //         $transformed = [...$transformed, `$subkey as $subval`]
-                        //     } }
-                        // }
+                        // does not handle difficult trying to match a sublist of the module.exports
                         `const $name = require($val).default` => `export { default as $name } from "$val"`
                         `const $name = require($val).$foo` => `export { $foo as $name } from "$val"`
                         `const $name = require($val)` => `export { default as $name } from "$val"`
