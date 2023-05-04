@@ -74,22 +74,33 @@ pattern RewriteDefaultComponents() {
   }
 }
 
-pattern RewriteStyleExports() {
-  TaggedTemplateExpression(tag=$tag, quasi=$styles) as $taggedStyles where {
-    if (IsGlobalStyle($tag)) {
-      $cssFileName = replaceAll($filename, "tsx", "global.module.css")
-    } else {
-      $cssFileName = replaceAll($filename, "tsx", "module.css")
+pattern RewriteNamedStyleExports() {
+    `const $styleName = $body` where {
+        $body <: bubble($body, $styleName) TaggedTemplateExpression(tag=$tag, quasi=$styles) where {
+            $cssFileName = join(".", [$styleName, "module.css"])
+            ensureImportFrom($styleName, `$cssFileName`)
+            CreateCSSModule($styles, $cssFileName, $tag)
+            $body => raw(s"${styleName}Styles")
+        }
     }
-    $taggedStyles => .
-    CreateCSSModule($styles, $cssFileName, $tag)
-  }
+}
+
+pattern RewriteDefaultStyleExports() {
+    `export default $body` where {
+        $body <: bubble($body) TaggedTemplateExpression(tag=$tag, quasi=$styles) where {
+            $cssFileName = replaceAll($filename, "tsx", "module.css")
+            ensureImportFrom(`defaultStyles`, `$cssFileName`)
+            CreateCSSModule($styles, $cssFileName, $tag)
+            $body => `defaultStyles`
+        }
+    }
 }
 
 or {
   RewriteNamedComponents()
   RewriteDefaultComponents()
-  RewriteStyleExports()
+  RewriteNamedStyleExports()
+  RewriteDefaultStyleExports()
 }
 ```
 
