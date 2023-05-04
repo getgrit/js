@@ -20,9 +20,25 @@ pattern UpdateClassName() {
     ensureImportFrom(`cn`, `'classnames'`)
     $children <: contains bubble($classesRaw) `<style $_>{$styles}</style>` where {
       $styles <: contains bubble($classesRaw) TemplateElement(value=RawCooked(raw=$css)) where {
-        // $css <: r"\\.[a-zA-Z_\\-][a-zA-Z0-9_\\-]*"($styleClassNamesList)
-        $classSplit = split(" ", $classesRaw)
-        $classesRaw => `cn($classSplit)`
+        
+        // NOTE: This is a hack for now we need to find a better way to do this.
+        // Idea is to select all classnames from the style.
+        // Currently regular expression to r"***"($classNames) doesn't work.
+
+        // Replace everything but the classnames.
+        $classNames = replaceAll($css, r"(?:\\s*\\{[\\s\\S]*?\\})|(?:\\b(?!\\.)\\w+\\b(?!\\s*\\{))", "")
+        // Remove extra spaces and new lines.
+        $classNames = replaceAll($classNames, r"[\\s\\n]+", "")
+        // Trim and split classnames
+        $classNames = trim(replaceAll($classNames, ".", " "))
+        $classNames = split(" ", $classNames)
+        
+        $classList = []
+        $classNames <: some bubble($classList) $class where {
+            $classList = [... $classList, raw("styles."+$class) ]
+        }
+
+        $classesRaw => `cn($classList)`
       }
     }
   }
