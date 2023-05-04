@@ -4,7 +4,11 @@ title: Convert Styled JSX to CSS Modules
 
 # {{ page.title }}
 
-Extract all Styled JSX from a particular file and move it to CSS Module files, if there are multiple components in a given file, we create separate CSS Module file for each one. Styles defined as global are currently moved to the same CSS Module file with scope set to global.
+Extract all Styled JSX from a particular file and move it to CSS Module files.
+- If there are multiple components in a given file, we create separate CSS Module file for each one.
+- Styles defined as global are currently moved to the same CSS Module file with scope set to global.
+- We use variable/component names for exporeted styles to create CSS Module files, and current filename for default exports.
+- Currently given the limitation of processing the CSS code snippet, we don't touch styles that have conditions in them and that are evaluated on runtime. eg. `background-color: prop.active ? '#e7e7e7' : '#fff'`
 
 tags: #good
 
@@ -78,7 +82,7 @@ pattern RewriteNamedStyleExports() {
     `const $styleName = $body` where {
         $body <: bubble($body, $styleName) TaggedTemplateExpression(tag=$tag, quasi=$styles) where {
             $cssFileName = join(".", [$styleName, "module.css"])
-            ensureImportFrom($styleName, `$cssFileName`)
+            ensureImportFrom(Identifier(name=s"${styleName}Styles"), `$cssFileName`)
             CreateCSSModule($styles, $cssFileName, $tag)
             $body => raw(s"${styleName}Styles")
         }
