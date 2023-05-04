@@ -9,17 +9,18 @@ Extract all Styled JSX from a particular file and move it to CSS Module files.
 - Styles defined as global are currently moved to the same CSS Module file with scope set to global.
 - We use variable/component names for exporeted styles to create CSS Module files, and current filename for default exports.
 - Currently given the limitation of processing the CSS code snippet, we don't touch styles that have conditions in them and that are evaluated on runtime. eg. `background-color: prop.active ? '#e7e7e7' : '#fff'`
+- We use `import { default as {name} }` currently because we only have named imports in `ensureImportFrom`
 
 tags: #good
 
-```grit
+```rb
 language js
 
-pattern UpdateClassName() {
+pattern UpdateClassName($importModule) {
   JSXElement(children=$children, openingElement=JSXOpeningElement(attributes=[..., `className="$classesRaw"`, ...])) where {
     ensureImportFrom(`cn`, `'classnames'`)
-    $children <: contains bubble($classesRaw) `<style $_>{$styles}</style>` where {
-      $styles <: contains bubble($classesRaw) TemplateElement(value=RawCooked(raw=$css)) where {
+    $children <: contains bubble($classesRaw, $importModule) `<style $_>{$styles}</style>` where {
+      $styles <: contains bubble($classesRaw, $importModule) TemplateElement(value=RawCooked(raw=$css)) where {
         
         // NOTE: This is a hack for now we need to find a better way to do this.
         // Idea is to select all classnames from the style.
@@ -34,8 +35,8 @@ pattern UpdateClassName() {
         $classNames = split(" ", $classNames)
         
         $classList = []
-        $classNames <: some bubble($classList) $class where {
-            $classList = [... $classList, raw("styles."+$class) ]
+        $classNames <: some bubble($classList, $importModule) $class where {
+            $classList = [... $classList, raw(s"${importModule}.${class}") ]
         }
 
         $classesRaw => `cn($classList)`
@@ -71,26 +72,27 @@ predicate CreateCSSModule($styles, $cssFileName, $scope) {
   }
 } 
 
-pattern ExportStyles($cssFile) {
-  bubble($cssFile) `<style $scope>{$styles}</style>` as $jsxMatch where {
+pattern ExportStyles($cssFile, $importModule) {
+  bubble($cssFile, $importModule) `<style $scope>{$styles}</style>` as $jsxMatch where {
     $jsxMatch => .
     CreateCSSModule($styles, $cssFile, $scope)
-    ensureImportFrom(`styles`, `$cssFile`)
+    ensureImportFrom(Identifier(name=s"default as ${importModule}"), `$cssFile`)
   }
 }
 
 pattern RewriteNamedComponents() {
   bubble `const $compName = ($_) => $body` where {
     $file = join(".", [$compName, "module.css"])
-    $body <: contains bubble($file) ExportStyles($file)
-    $body <: maybe contains bubble UpdateClassName()
+    $importModule = toLowerCase($compName)
+    $body <: contains bubble($file, $compName, $importModule) ExportStyles($file, $importModule)
+    $body <: maybe contains bubble($importModule) UpdateClassName($importModule)
   }
 }
 
 pattern RewriteDefaultComponents() {
   bubble `export default () => $body` where {
     $file = replaceAll($filename, "tsx", "module.css")
-    $body <: contains bubble($file) ExportStyles($file)
+    $body <: contains bubble($file) ExportStyles($file, "styles")
   }
 }
 
@@ -98,7 +100,7 @@ pattern RewriteNamedStyleExports() {
     `const $styleName = $body` where {
         $body <: bubble($body, $styleName) TaggedTemplateExpression(tag=$tag, quasi=$styles) where {
             $cssFileName = join(".", [$styleName, "module.css"])
-            ensureImportFrom(Identifier(name=s"${styleName}Styles"), `$cssFileName`)
+            ensureImportFrom(Identifier(name=s"default as ${styleName}Styles"), `$cssFileName`)
             CreateCSSModule($styles, $cssFileName, $tag)
             $body => raw(s"${styleName}Styles")
         }
@@ -109,7 +111,7 @@ pattern RewriteDefaultStyleExports() {
     `export default $body` where {
         $body <: bubble($body) TaggedTemplateExpression(tag=$tag, quasi=$styles) where {
             $cssFileName = replaceAll($filename, "tsx", "module.css")
-            ensureImportFrom(`defaultStyles`, `$cssFileName`)
+            ensureImportFrom(Identifier(name=s"default as defaultStyles"), `$cssFileName`)
             CreateCSSModule($styles, $cssFileName, $tag)
             $body => `defaultStyles`
         }
@@ -124,3 +126,146 @@ or {
 }
 ```
 
+## Convert locally scoped styled JSX
+
+```javascript
+const Button = (props) => (
+  <button className="cta large">
+    {props.children}
+    <style jsx>{`
+      .cta {
+        padding: 20px;
+        background: #eee;
+        color: #999;
+      }
+      .large {
+        padding: 50px;
+      }
+    `}</style>
+  </button>
+);
+```
+
+```javascript
+import { default as cn } from 'classnames';
+import { default as button } from 'Button.module.css';
+
+const Button = (props) => (
+  (<button className={cn(button.cta, button.large)}>
+    {props.children}
+  </button>)
+);
+
+// Button.module.css
+.cta {
+  padding: 20px;
+  background: #eee;
+  color: #999;
+}
+.large {
+  padding: 50px;
+}
+```
+
+## Convert globally scoped styled JSX
+
+```javascript
+export default () => (
+  <div className="container">
+    <style jsx global>{`
+      body {
+        background: red;
+      }
+      .container {
+        background: red;
+      }
+    `}</style>
+  </div>
+);
+```
+
+```javascript
+import { default as styles } from 'global.module.css';
+
+export default () => (
+  (<div className="container">
+  </div>)
+);
+
+// global.module.css
+:global{
+  body {
+    background: red;
+  }
+  .container {
+    background: red;
+  }  
+}
+```
+
+## Convert exported styles
+
+```javascript
+export const button = css`
+  .button {
+    color: hotpink;
+  }
+`;
+```
+
+```javascript
+import { default as buttonStyles } from 'button.module.css';
+
+export const button = buttonStyles;
+```
+
+## Multiple styled jsx in a single file
+
+```javascript
+const CTAButton = (props) => (
+  <button className="button large">
+    {props.children}
+    <style jsx>{`
+      .button {
+        padding: 20px;
+        background: #eee;
+        color: #999;
+      }
+      .large {
+        padding: 50px;
+      }
+    `}</style>
+  </button>
+);
+
+const AppContainer = (props) => (
+  <div className="main">
+    {props.children}
+    <style jsx>{`
+      .main {
+        padding: 20px;
+        background: #eee;
+        color: #999;
+      }
+    `}</style>
+  </div>
+);
+```
+
+```javascript
+import { default as cn } from 'classnames';
+import { default as ctabutton } from 'CTAButton.module.css';
+import { default as appcontainer } from 'AppContainer.module.css';
+
+const CTAButton = (props) => (
+  (<button className={cn(ctabutton.button, ctabutton.large)}>
+    {props.children}
+  </button>)
+);
+
+const AppContainer = (props) => (
+  (<div className={cn(appcontainer.main)}>
+    {props.children}
+  </div>)
+);
+```
