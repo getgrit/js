@@ -16,16 +16,16 @@ or {
             $vals <: some let($key, $name, $val, $match, $prop) ObjectProperty(key=$key, value=$name) as $prop => . where {
                 $name <: Identifier()
                 $exportedVals = [... $exportedVals, $prop]
-                or {
+                $program <: contains or {
                     // special case of exporting a require() - see ES6Import pattern
-                    $program <: contains or {
+                    or {
                         // does not handle difficult trying to match a sublist of the module.exports
                         `const $name = require($val).default` => `export { default as $name } from "$val"`
                         `const $name = require($val).$foo` => `export { $foo as $name } from "$val"`
                         `const $name = require($val)` => `export { default as $name } from "$val"`
                     }
                     // normal case
-                    $program <: contains or {
+                    or {
                         `const $name = $val`
                         `let $name = $val`
                         `var $name = $val`
