@@ -18,7 +18,7 @@ language js
 
 pattern UpdateClassName($importModule) {
   JSXElement(children=$children, openingElement=JSXOpeningElement(attributes=[..., `className="$classesRaw"`, ...])) where {
-    ensureImportFrom(`cn`, `'classnames'`)
+    ensureImportFrom(Identifier(name=s"default as cn"), `'classnames'`)
     $children <: contains bubble($classesRaw, $importModule) `<style $_>{$styles}</style>` where {
       $styles <: contains bubble($classesRaw, $importModule) TemplateElement(value=RawCooked(raw=$css)) where {
         
