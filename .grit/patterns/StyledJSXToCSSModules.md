@@ -30,13 +30,14 @@ pattern UpdateClassName($importModule) {
         $classNames = replaceAll($css, r"(?:\\s*\\{[\\s\\S]*?\\})|(?:\\b(?!\\.)\\w+\\b(?!\\s*\\{))", "")
         // Remove extra spaces and new lines.
         $classNames = replaceAll($classNames, r"[\\s\\n]+", "")
-        // Trim and split classnames
-        $classNames = trim(replaceAll($classNames, ".", " "))
-        $classNames = split(" ", $classNames)
+        // split classnames
+        $classNames = split("\\.", $classNames)
         
         $classList = []
         $classNames <: some bubble($classList, $importModule) $class where {
+          if (! $class <: "") {
             $classList = [... $classList, raw(s"${importModule}.${class}") ]
+          }
         }
 
         $classesRaw => `cn($classList)`
