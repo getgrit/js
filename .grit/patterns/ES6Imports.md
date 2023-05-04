@@ -54,7 +54,7 @@ function doStuff() {
 }
 ```
 
-```js
+```ts
 import * as dotenv from 'dotenv';
 dotenv.config({ path: "../.env" });
 import * as dotenv from 'dotenv';
@@ -63,22 +63,4 @@ dotenv.config();
 function doStuff() {
     // hello world
 }
-```
-
-### Work with exports
-
-```ts
-export subscriptionValidations from "./subscriptionValidations";
-export checkActiveListing from "./checkActiveListing";
-export categoryValidations from "./categoryValidations";
-
-const starImport = require("star");
-```
-
-```ts
-export subscriptionValidations from "./subscriptionValidations";
-export checkActiveListing from "./checkActiveListing";
-export categoryValidations from "./categoryValidations";
-
-import starImport from "star";
 ```
