@@ -13,7 +13,7 @@ Extract all Styled JSX from a particular file and move it to CSS Module files.
 
 tags: #good
 
-```rb
+```grit
 language js
 
 pattern UpdateClassName($importModule) {
