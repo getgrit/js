@@ -22,15 +22,14 @@ pattern UpdateClassName($importModule) {
     $children <: contains bubble($classesRaw, $importModule) `<style $_>{$styles}</style>` where {
       $styles <: contains bubble($classesRaw, $importModule) TemplateElement(value=RawCooked(raw=$css)) where {
         
-        // NOTE: This is a hack for now we need to find a better way to do this.
+        // NOTE: This is a workaround for now.
         // Idea is to select all classnames from the style.
-        // Currently regular expression to r"***"($classNames) doesn't work.
 
         // Replace everything but the classnames.
         $classNames = replaceAll($css, r"(?:\\s*\\{[\\s\\S]*?\\})|(?:\\b(?!\\.)\\w+\\b(?!\\s*\\{))", "")
         // Remove extra spaces and new lines.
         $classNames = replaceAll($classNames, r"[\\s\\n]+", "")
-        // split classnames
+        // Split classnames
         $classNames = split("\\.", $classNames)
         
         $classList = []
