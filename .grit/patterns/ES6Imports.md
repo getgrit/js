@@ -9,6 +9,8 @@ Converts `require` statements to ES6-style `import`.
 tags: #js, #es6, #migration, #cjs, #commonjs
 
 ```grit
+language js
+
 or {
     `const { $imports } = require($source)` => `import { $transformed } from "$source"` where {
         $imports <: some bubble($transformed) {ObjectProperty(key=$key, value=$val) where {
@@ -20,6 +22,16 @@ or {
     `const $import = require($source)` => `import $import from "$source"` // this relies on healing for correctness
     // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
     `require("dotenv").config($config)` => [`import * as dotenv from 'dotenv'`, `dotenv.config($config)`]
+    // Deal with immediately invoked functions
+    // Ex. https://github.com/stripe/stripe-node#usage
+    `const $lib = require($name)($args)` => [
+        `import $caplib from "$name"`,
+        `const $lib = new $caplib($args)`
+    ] where {
+        $caplib = Identifier(name=capitalize($lib))
+        // Only Stripe works for this pattern as far as we know
+        $name <: or {`"stripe"`}
+    }
 }
 ```
 
@@ -50,17 +62,28 @@ require("dotenv").config({ path: "../.env" });
 require("dotenv").config();
 
 function doStuff() {
-    // hello world
+  // hello world
 }
 ```
 
 ```ts
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 dotenv.config({ path: "../.env" });
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 dotenv.config();
 
 function doStuff() {
-    // hello world
+  // hello world
 }
+```
+
+### Handle immediately invoked classes
+
+```js
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+```
+
+```ts
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 ```
