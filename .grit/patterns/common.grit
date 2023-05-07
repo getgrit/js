@@ -44,8 +44,8 @@ predicate moveImport($m, $from) = {
 }
 
 pattern MoveImport($name, $new_source) = ImportNameFrom($name, $old_source) where {
-    !$old_source <: $new_source
-    replaceImport($name, $new_source)
+  !$old_source <: $new_source
+  replaceImport($name, $new_source)
 }
 
 predicate IsUsed($name) = {
