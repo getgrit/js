@@ -42,22 +42,34 @@ predicate QuerySelector($value) {
     $value <: r"^([a-zA-Z0-9_-]*[#.])+[a-zA-Z0-9_.#-]*"
 }
 
+predicate SelectorRewrite($value, $locator, $compVar) {
+    if (QuerySelector($value)) {
+        $locator => `querySelector`
+    } else {
+        ensureImportFrom(`screen`, `"@testing-library/react"`)
+        $compVar => `screen`
+        $locator => `getByRole`
+    }
+}
+
 pattern RewriteSelector() {
     `$compVar.$locator($selector)` where {
         $locator <: `find`
         if ($selector <: StringLiteral(value=$value)) {
             // Regex to see if it's a query selector
+            SelectorRewrite($value, $locator, $compVar)
             $value <: s"input\\[name=${formField}\\]" where {
                 $selector => ["textbox", ObjectExpression(properties=[
                    ObjectProperty(key=Identifier(name="name"), value=raw($formField))
                 ])]
             }
-            if (QuerySelector($value)) {
-                $locator => `querySelector`
-            } else {
-                ensureImportFrom(`screen`, `"@testing-library/react"`)
-                $compVar => `screen`
-                $locator => `getByRole`
+        } else {
+            // If the variable used in the selector has a classname assigned rewrite it
+            $program <: contains VariableDeclaration() as $var where {
+                $var <: contains `$selector = $varSelector` where {
+                    $varSelector <: StringLiteral(value=$value)
+                    SelectorRewrite($value, $locator, $compVar)
+                }
             }
         }
     }
