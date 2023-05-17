@@ -16,15 +16,6 @@ pattern Mount() {
     }
 }
 
-pattern InputValue() {
-    // This only works if the prop is 'value' not for others.
-    `$inputFind.prop('value')` => `$inputFind.value`
-}
-
-pattern TextContent() {
-    `$textFind.text()` => `$textFind.textContent`
-}
-
 pattern SimulateInput() {
     `$inputFind.simulate($type, $value)` as $simulate where {
         ensureImportFrom(`fireEvent`, `"@testing-library/react"`)
@@ -33,6 +24,15 @@ pattern SimulateInput() {
             `const selector = $inputFind`,
             `fireEvent.$eventType(selector, { target: { value: $value } });`
         ]
+    }
+}
+
+pattern BaseRewrite() {
+    or {
+        `$_.update()` => .
+        `$_.act()` => .
+        `$textFind.text()` => `$textFind.textContent`
+        `$inputFind.prop('value')` => `$inputFind.value`
     }
 }
 
@@ -74,9 +74,8 @@ pattern RewriteSelector() {
 or {
     Mount()
     RewriteSelector()
-    InputValue()
     SimulateInput()
-    TextContent()
+    BaseRewrite()
 }
 ```
 
