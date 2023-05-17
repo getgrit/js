@@ -8,8 +8,6 @@ Migrate to react testing library.
 tags: 
 
 ```grit
-language js
-
 pattern Mount() {
     `$mount($comp)` as $mountComp where {
         $mount <: or { `mount`, `shallow` }
@@ -45,6 +43,10 @@ predicate QuerySelector($value) {
 predicate SelectorRewrite($value, $locator, $compVar) {
     if (QuerySelector($value)) {
         $locator => `querySelector`
+    } else if ($value <: s"input\\[name=${formField}\\]") {
+        $selector => ["textbox", ObjectExpression(properties=[
+            ObjectProperty(key=Identifier(name="name"), value=raw($formField))
+        ])]
     } else {
         ensureImportFrom(`screen`, `"@testing-library/react"`)
         $compVar => `screen`
@@ -56,13 +58,7 @@ pattern RewriteSelector() {
     `$compVar.$locator($selector)` where {
         $locator <: `find`
         if ($selector <: StringLiteral(value=$value)) {
-            // Regex to see if it's a query selector
             SelectorRewrite($value, $locator, $compVar)
-            $value <: s"input\\[name=${formField}\\]" where {
-                $selector => ["textbox", ObjectExpression(properties=[
-                   ObjectProperty(key=Identifier(name="name"), value=raw($formField))
-                ])]
-            }
         } else {
             // If the variable used in the selector has a classname assigned rewrite it
             $program <: contains VariableDeclaration() as $var where {
