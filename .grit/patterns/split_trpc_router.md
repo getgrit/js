@@ -13,11 +13,12 @@ pattern NamedThing($name) = or {
 }
 
 Program(body=$body) where {
-    // $prefix = "js/"
-    $filename <: r"(.+)trpcRouter.server.ts"($prefix)
+    $prefix = "js/"
+    // $filename <: r"(.+)trpcRouter.server.ts"($prefix)
     // Look through every statement in the body (in its own scope, bubble creates scopes)
     $body <: some bubble($imports, $refs, $middlewares, $prefix) or {
         ImportDeclaration() as $import where {
+            $import => .
             append($imports, $import)
         },
         `export const $_ = t.router({$routes})` as $router where {
@@ -32,13 +33,15 @@ Program(body=$body) where {
                 $routeName = $key + "Route"
                 $newFileName = $key+".route"
                 $f = [
-                    ...$imports,
                     // Insert the middleware
                     `import { proc } from "./middleware"`
                     ...$ourRefs,
                     `export const $routeName = $proc`
                 ]
-                $newFiles = [ File(name = $prefix + $newFileName + ".ts", program = Program($f)) ]
+                $newImports = []
+                $imports <: RemoveUnusedImports($f, $newImports)
+                $newFile = [...$newImports, $f]
+                $newFiles = [ File(name = $prefix + $newFileName + ".ts", program = Program($newFile)) ]
 
                 $relativeFilename = "./" + $newFileName
                 ensureImportFrom(Identifier(name=$routeName), `$relativeFilename`)
@@ -58,9 +61,14 @@ Program(body=$body) where {
         NamedThing($_) as $ref => . where { append($refs, $ref) }
     }
     // Put all the middleware in a new file
-    $newFiles = [...$newFiles, File(name=$prefix + "middleware.ts", program=Program([...$imports, ...$middlewares]))]
+    $middlewareImports = []
+    $imports <: RemoveUnusedImports($middlewares, $middlewareImports)
+    $newFiles = [...$newFiles, File(name=$prefix + "middleware.ts", program=Program([
+      ...$middlewareImports, ...$middlewares
+    ]))]
+
     ensureImportFrom(`t`, "./middleware")
-    removeUnusedImports()
+    // removeUnusedImports()
 }
 ```
 
