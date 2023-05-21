@@ -39,7 +39,7 @@ Program(body=$body) where {
                     `export const $routeName = $proc`
                 ]
                 $newImports = []
-                $imports <: RemoveUnusedImports($f, $newImports)
+                $imports <: FilterUnusedImports($f, $newImports)
                 $newFile = [...$newImports, $f]
                 $newFiles = [ File(name = $prefix + $newFileName + ".ts", program = Program($newFile)) ]
 
@@ -62,13 +62,12 @@ Program(body=$body) where {
     }
     // Put all the middleware in a new file
     $middlewareImports = []
-    $imports <: RemoveUnusedImports($middlewares, $middlewareImports)
+    $imports <: FilterUnusedImports($middlewares, $middlewareImports)
     $newFiles = [...$newFiles, File(name=$prefix + "middleware.ts", program=Program([
       ...$middlewareImports, ...$middlewares
     ]))]
 
     ensureImportFrom(`t`, "./middleware")
-    // removeUnusedImports()
 }
 ```
 
@@ -110,11 +109,6 @@ export type AppRouter = typeof appRouter;
 
 ```typescript
 // @file js/trpcRouter.server.ts
-import { initTRPC, TRPCError } from '@trpc/server';
-import * as Sentry from '@sentry/remix';
-import { Context } from './trpcContext.server';
-import { db } from '../db';
-
 import { helloRoute } from './hello.route';
 import { goodbyeRoute } from './goodbye.route';
 import { t } from './middleware';
@@ -126,11 +120,7 @@ export const appRouter = t.router({
 
 export type AppRouter = typeof appRouter;
 // @file js/goodbye.route.ts
-import { initTRPC, TRPCError } from '@trpc/server';
-import * as Sentry from '@sentry/remix';
-import { Context } from './trpcContext.server';
 import { db } from '../db';
-
 import { proc } from './middleware';
 
 export const goodbyeRoute = proc.input(z.object({ name: z.string() })).query(async ({ input }) => {
@@ -138,21 +128,15 @@ export const goodbyeRoute = proc.input(z.object({ name: z.string() })).query(asy
   return { text: `Goodbye ${input.name}` };
 });
 // @file js/hello.route.ts
-import { initTRPC, TRPCError } from '@trpc/server';
-import * as Sentry from '@sentry/remix';
-import { Context } from './trpcContext.server';
-import { db } from '../db';
-
 import { proc } from './middleware';
 
 export const helloRoute = proc.input(z.object({ name: z.string() })).query(async ({ input }) => {
   return { text: `Hello ${input.name}` };
 });
 // @file js/middleware.ts
-import { initTRPC, TRPCError } from '@trpc/server';
+import { initTRPC } from '@trpc/server';
 import * as Sentry from '@sentry/remix';
 import { Context } from './trpcContext.server';
-import { db } from '../db';
 
 export const t = initTRPC.context<Context>().create();
 
