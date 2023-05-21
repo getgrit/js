@@ -55,19 +55,19 @@ pattern FilterUnusedImports($content, $newImports) = some bubble($content, $newI
             ImportDefaultSpecifier(local=$name) as $import where {
                 $content <: contains $name until ImportLike()
                 append($used, $import)
-            }
+            },
             ImportSpecifier(local=$name) as $import where {
                 $content <: contains $name until ImportLike()
                 append($used, $import)
-            }
+            },
             ImportNamespaceSpecifier(local=$name) as $import where {
                 $content <: contains $name until ImportLike()
                 append($used, $import)
-            }
+            },
             Identifier(name=$name) as $import where {
                 $content <: contains $name until ImportLike()
                 append($used, $import)
-            }
+            },
         }
     }
     if (! $used <: [])  {
