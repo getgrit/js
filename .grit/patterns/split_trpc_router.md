@@ -13,8 +13,8 @@ pattern NamedThing($name) = or {
 }
 
 Program(body=$body) where {
-    $prefix = "js/"
-    // $filename <: r"(.+)trpcRouter.server.ts"($prefix)
+    // $prefix = "js/"
+    $filename <: r"(.+)trpcRouter.server.ts"($prefix)
     // Look through every statement in the body (in its own scope, bubble creates scopes)
     $body <: some bubble($imports, $refs, $middlewares, $prefix) or {
         ImportDeclaration() as $import where {
