@@ -28,5 +28,8 @@ jobs:
     - name: Install @getgrit/launcher
       run: npm install -g @getgrit/launcher
 
+    - name: Run doctor
+      run: npx grit doctor
+
     - name: Run grit patterns test
       run: npx grit patterns test
