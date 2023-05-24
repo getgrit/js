@@ -168,6 +168,8 @@ describe("Inputs Radio", () => {
 ```
 
 ```js
+import { mount } from "enzyme";
+
 import { render, screen } from '@testing-library/react';
 
 describe("Inputs Radio", () => {
@@ -176,7 +178,7 @@ describe("Inputs Radio", () => {
   const bar = component.querySelector(".form.tooltip");
   it("should select the correct input", () => {
     const checked = foo.filterWhere(
-      (input) => input.value === "woohoo!"
+      (input) => input.prop("value") === "woohoo!"
     );
     expect(checked.prop("checked")).toEqual(true);
   });
