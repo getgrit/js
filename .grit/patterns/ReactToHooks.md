@@ -463,11 +463,11 @@ const SampleComponent = props => {
     return clicks % 2 === 0;
   }, [clicks]);
 
-  return <>
-      <p>Clicks: {clicks}</p>
-      <p>Is even: {isEven}</p>
-      <a onClick={onClickHandler}>click</a>
-  </>;
+  return (<>
+    <p>Clicks: {clicks}</p>
+    <p>Is even: {isEven}</p>
+    <a onClick={onClickHandler}>click</a>
+  </>);
 };
 ```
 
@@ -529,10 +529,10 @@ const SampleComponent = props => {
     console.log("second click handler");
   }, [props]);
 
-  return <>
-      <p>Clicks: {clicks}</p>
-      <a onClick={onClickHandler}>click</a>
-  </>;
+  return (<>
+    <p>Clicks: {clicks}</p>
+    <a onClick={onClickHandler}>click</a>
+  </>);
 };
 ```
 
@@ -574,7 +574,7 @@ import { observer } from 'mobx-react';
 
 const SampleComponent = observer(() => {
   const viewState = useRef(new ViewState());
-  return <p>This component has a <span onClick={viewState.click}>ViewState</span></p>;
+  return (<p>This component has a<span onClick={viewState.click}>ViewState</span></p>);
 });
 ```
 
@@ -606,9 +606,9 @@ interface Props {
 }
 
 const SampleComponent = (props: Props) => {
-  return <>
+  return (<>
     <p>Hello {props.name}</p>
-  </>;
+  </>);
 };
 ```
 
@@ -777,9 +777,9 @@ const ObservedComponent = (inputProps: any) => {
     name: "John",
   });
 
-  return <>
+  return (<>
     <p>This is {me.name}, {props.king}</p>
-  </>;
+  </>);
 };
 ```
 

@@ -150,10 +150,10 @@ const Button = (props) => (
 import { default as button } from 'Button.module.css';
 import { default as cn } from 'classnames';
 const Button = (props) => (
-  (<button className={cn(button.cta, button.large)}>
+  <button className={cn(button.cta, button.large)}>
     {props.children}
 
-  </button>)
+  </button>
 );
 // @file Button.module.css
 
@@ -271,10 +271,10 @@ import { default as ctabutton } from 'CTAButton.module.css';
 import { default as cn } from 'classnames';
 import { default as appcontainer } from 'AppContainer.module.css';
 const CTAButton = (props) => (
-  (<button className={cn(ctabutton.button, ctabutton.large)}>
+  <button className={cn(ctabutton.button, ctabutton.large)}>
     {props.children}
 
-  </button>)
+  </button>
 );
 
 const AppContainer = (props) => (
