@@ -334,7 +334,7 @@ class App extends Component {
   }
   render() {
     return (
-      <div>
+      (<div>
         <h3>This is a Class Component</h3>
         <input
           type="text"
@@ -348,7 +348,7 @@ class App extends Component {
         <button onClick={this.asyncAlert}>
           Alert
         </button>
-      </div>
+      </div>)
     );
   }
 }
@@ -388,7 +388,7 @@ const App = () => {
   }, []);
 
   return (
-    <div>
+    (<div>
       <h3>This is a Class Component</h3>
       <input
         type="text"
@@ -402,7 +402,7 @@ const App = () => {
       <button onClick={asyncAlertHandler}>
         Alert
       </button>
-    </div>
+    </div>)
   );
 };
 
@@ -727,9 +727,9 @@ const ObservedComponent = () => {
   const [name, setName] = useState<string>(undefined);
   const [age, setAge] = useState(21);
 
-  return <>
+  return (<>
     <p>Hello {name}, you are {age}</p>
-  </>;
+  </>);
 };
 ```
 

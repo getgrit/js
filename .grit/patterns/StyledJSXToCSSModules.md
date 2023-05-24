@@ -189,9 +189,9 @@ export default () => (
 // @file test.js
 import { default as styles } from 'test.module.css';
 export default () => (
-  (<div className="container">
+  <div className="container">
 
-  </div>)
+  </div>
 );
 // @file test.module.css
 :global{
@@ -278,10 +278,10 @@ const CTAButton = (props) => (
 );
 
 const AppContainer = (props) => (
-  (<div className={cn(appcontainer.main)}>
+  <div className={cn(appcontainer.main)}>
     {props.children}
 
-  </div>)
+  </div>
 );
 // @file AppContainer.module.css
 
