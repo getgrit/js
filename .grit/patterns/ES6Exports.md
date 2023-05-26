@@ -122,5 +122,4 @@ module.exports = {
   sub1,
   sub2
 };
-
 ```

@@ -25,3 +25,9 @@ export default function SomeReact() {
   return <p>This is JSX.</p>;
 }
 ```
+
+```js
+export default function SomeReact() {
+  return <p>This is JSX.</p>;
+}
+```
