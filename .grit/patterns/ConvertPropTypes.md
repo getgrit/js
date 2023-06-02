@@ -43,10 +43,10 @@ pattern extract_prop_type($propTypesImport, $type) {
         `$propTypesImport.oneOfType([$elements])` where {
             $options = []
             $elements <: some bubble($options, $propTypesImport) { $x where {
-                $x <: extract_prop_type($propTypesImport, $actualType)
-                append($options, $actualType)
-            } }
-            $type = join(" | ", $options)
+                 $x <: extract_prop_type($propTypesImport, $actualType)
+                 append($options, $actualType)
+             } }
+             $type = TSUnionType(types = $options)
         },
 
         // objectOf
