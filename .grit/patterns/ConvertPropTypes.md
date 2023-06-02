@@ -185,7 +185,7 @@ export const Card = (props: CardProps) => {
     border,
     horizontalPadding,
     verticalPadding,
-    children,
+    children
   } = props;
 
   return <>Card</>;
@@ -212,7 +212,7 @@ export const Card = (props: CardProps) => {
     verticalPadding = 15,
     radius = 0,
     border = 0,
-    children,
+    children
   } = props;
 
   return <>Card</>;
