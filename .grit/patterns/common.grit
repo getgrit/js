@@ -163,10 +163,8 @@ predicate AddNamespaceImport($m, $fromArg) {
 }
 
 predicate ensureNamespaceImportFrom($what, $from) {
-  or {
-    isNamespaceImported($what, $_),
-    AddNamespaceImport($what, $from)
-    true
+  if (!isNamespaceImported($what, $_)) {
+    or { AddNamespaceImport($what, $from), true } // we don't have a maybe predicate
   }
 }
 
