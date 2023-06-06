@@ -69,9 +69,10 @@ pattern extract_prop_types($propTypesImport, $typeDefs) {
     }
 }
 
-pattern transform_prop_types($propTypesImport, $propsName) {
-    bubble($propsName, $propTypesImport) {
+pattern transform_prop_types($propsName) {
+    bubble($propsName) {
         `const $propTypesName = { $propTypes }` => `interface $propsName { $typeDefs }` where {
+            $propTypesImport = `PropTypes`
             $typeDefs = []
             $propTypes <: contains $propTypesImport
             $propTypes <: extract_prop_types($propTypesImport, $typeDefs)
@@ -116,23 +117,21 @@ pattern remove_misc() {
 
 Files(and {
   some {
-    or {
       // First we find the index.d.ts, with infer_defaults
       File(program=contains and {
           contains { infer_defaults($propDefaultsName, $propsName) },
           contains { remove_misc() }
-      }),
+      })
+  }
+  some {
       // Now look at the types file itself
       File(program=contains and {
           contains { transform_prop_types($propsName) },
           contains { grab_default_values($propDefaultsName, $defaults) },
           contains { remove_misc() }
       })
-    }
   }
-}) where {
-  $propTypesImport = `PropTypes`
-}
+})
 
 // Program(body=and {
 //     contains { infer_defaults($propDefaultsName, $propsName) },
