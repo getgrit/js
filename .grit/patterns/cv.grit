@@ -120,7 +120,7 @@ Files(and {
       // First we find the index.d.ts, with infer_defaults
       File(program=contains and {
           contains { infer_defaults($propDefaultsName, $propsName) },
-          contains { remove_misc() }
+          maybe contains { remove_misc() }
       })
   }
   some {
@@ -128,7 +128,7 @@ Files(and {
       File(program=contains and {
           contains { transform_prop_types($propsName) },
           contains { grab_default_values($propDefaultsName, $defaults) },
-          contains { remove_misc() }
+          maybe contains { remove_misc() }
       })
   }
 })
