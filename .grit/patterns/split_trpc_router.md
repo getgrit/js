@@ -10,10 +10,6 @@ tags: #trpc, #router, #split, #typescript
 engine marzano(0.1)
 language js
 
-pattern add_imports_and_refs($new_file_statements) {
-    foo()
-}
-
 pattern process_route($imports, $refs, $dir) {
     pair($key, $value) where {
         $route_name = `${key}Route`,
@@ -53,7 +49,7 @@ pattern filter_used_imports($local_imports, $content) {
 
 pattern named_thing($name) {
     or {
-        lexical_declaration(declarations = [variable_declarator($name, $value)]),
+        lexical_declaration(declarations = [variable_declarator($name)]),
         function_declaration($name)
     }
 }
