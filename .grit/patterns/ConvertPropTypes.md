@@ -90,15 +90,21 @@ pattern transform_prop_types($propsName) {
 }
 
 pattern grab_default_values($propDefaultsName, $defaults) {
-    `const $propDefaultsName = { $rawDefaults }` => . where {
-        $rawDefaults <: some bubble($defaults, $defaultKeys) `$key: $default` where {
-            append($defaults, `$key = $default`)
-        }
+    `export const $propDefaultsId = { $anythingRawDefaults }` => `FOUND_DEFAULTS($propDefaultsName, {$anythingRawDefaults})` where {
+        $propDefaultsId = Identifier(name=$propDefaultsName)
     }
+    // `const $propDefaultsName = { $rawDefaults }` => `defaults($propDefaultsName, {$rawDefaults})`
+    // `const $propDefaultsName = { $rawDefaults }` => . where {
+    //     $rawDefaults <: some bubble($defaults, $defaultKeys) `$key: $default` where {
+    //         append($defaults, `$key = $default`)
+    //     }
+    // }
 }
 
 pattern infer_defaults($propDefaultsName, $propsName) {
-    `type $propsName = InferDefaultProps<typeof $propTypesName, typeof $propDefaultsName>` => .
+    `type $propsName = InferDefaultProps<typeof $propTypesName, typeof $propDefaultType>` => `INFERRED(propsName=$propsName, propTypesName=$propTypesName, propDefaultsName=$propDefaultsName)` where {
+        $propDefaultType <: contains Identifier(name=$propDefaultsName)
+    }
 }
 
 pattern fix_component_props($defaults) {
@@ -124,31 +130,39 @@ pattern remove_misc() {
     }
 }
 
-// Files(and {
+Files(and {
+  some {
+      // First we find the index.d.ts, with infer_defaults
+      File(program=contains and {
+          contains { infer_defaults($propDefaultsName, $propsName) },
+          maybe contains { remove_misc() }
+      })
+  }
+  some {
+      // Now look at the types file itself
+      File(program=contains and {
+          contains { transform_prop_types($propsName) },
+          contains { grab_default_values($propDefaultsName, $defaults) },
+          maybe contains { remove_misc() }
+      })
+  }
 //   some {
-//       // First we find the index.d.ts, with infer_defaults
+//       // Finally, add defaults to the right place
 //       File(program=contains and {
-//           contains { infer_defaults($propDefaultsName, $propsName) },
+//           contains { fix_component_props($defaults)}
 //           maybe contains { remove_misc() }
 //       })
 //   }
-//   some {
-//       // Now look at the types file itself
-//       File(program=contains and {
-//           contains { transform_prop_types($propsName) },
-//           contains { grab_default_values($propDefaultsName, $defaults) },
-//           maybe contains { remove_misc() }
-//       })
-//   }
+})
+
+// Program(body=and {
+//     contains { infer_defaults($propDefaultsName, $propsName) },
+//     contains { transform_prop_types($propsName) },
+//     contains { grab_default_values($propDefaultsName, $defaults) },
+//     contains { fix_component_props($defaults)},
+//     contains { remove_misc() }
 // })
 
-Program(body=and {
-    contains { infer_defaults($propDefaultsName, $propsName) },
-    contains { transform_prop_types($propsName) },
-    contains { grab_default_values($propDefaultsName, $defaults) },
-    contains { fix_component_props($defaults)},
-    contains { remove_misc() }
-})
 
 ```
 
