@@ -90,19 +90,16 @@ pattern transform_prop_types($propsName) {
 }
 
 pattern grab_default_values($propDefaultsName, $defaults) {
-    `export const $propDefaultsId = { $anythingRawDefaults }` => `FOUND_DEFAULTS($propDefaultsName, {$anythingRawDefaults})` where {
+    `export const $propDefaultsId = { $rawDefaults }` => . where {
         $propDefaultsId = Identifier(name=$propDefaultsName)
+        $rawDefaults <: some bubble($defaults, $defaultKeys) `$key: $default` where {
+            append($defaults, `$key = $default`)
+        }
     }
-    // `const $propDefaultsName = { $rawDefaults }` => `defaults($propDefaultsName, {$rawDefaults})`
-    // `const $propDefaultsName = { $rawDefaults }` => . where {
-    //     $rawDefaults <: some bubble($defaults, $defaultKeys) `$key: $default` where {
-    //         append($defaults, `$key = $default`)
-    //     }
-    // }
 }
 
 pattern infer_defaults($propDefaultsName, $propsName) {
-    `type $propsName = InferDefaultProps<typeof $propTypesName, typeof $propDefaultType>` => `INFERRED(propsName=$propsName, propTypesName=$propTypesName, propDefaultsName=$propDefaultsName)` where {
+    `type $propsName = InferDefaultProps<typeof $propTypesName, typeof $propDefaultType>` => . where {
         $propDefaultType <: contains Identifier(name=$propDefaultsName)
     }
 }
@@ -110,7 +107,7 @@ pattern infer_defaults($propDefaultsName, $propsName) {
 pattern fix_component_props($defaults) {
     bubble($defaults) `$og = props` where {
         $og <: ObjectPattern(properties=$ogProps) => ObjectPattern(properties=$newProps)
-        $newProps = $defaults
+        $newProps = distinct($defaults) // otherwise can mysteriously get duplicates
         // Restore any props not set by defaults
         $ogProps <: some bubble($newProps, $defaults) ObjectProperty(key=$key) where {
             $key <: Identifier(name=$name)
@@ -146,15 +143,16 @@ Files(and {
           maybe contains { remove_misc() }
       })
   }
-//   some {
-//       // Finally, add defaults to the right place
-//       File(program=contains and {
-//           contains { fix_component_props($defaults)}
-//           maybe contains { remove_misc() }
-//       })
-//   }
+  some {
+      // Finally, add defaults to the right place
+      File(program=contains and {
+          contains { fix_component_props($defaults)}
+          maybe contains { remove_misc() }
+      })
+  }
 })
 
+// single-file version
 // Program(body=and {
 //     contains { infer_defaults($propDefaultsName, $propsName) },
 //     contains { transform_prop_types($propsName) },
@@ -162,7 +160,6 @@ Files(and {
 //     contains { fix_component_props($defaults)},
 //     contains { remove_misc() }
 // })
-
 
 ```
 
