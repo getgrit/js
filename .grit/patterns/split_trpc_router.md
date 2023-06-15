@@ -10,7 +10,7 @@ tags: #trpc, #router, #split, #typescript
 engine marzano(0.1)
 language js
 
-pattern process_route($imports, $refs, $dir) {
+pattern process_route($imports, $refs, $dir, $main_file_imports) {
     pair($key, $value) where {
         $route_name = `${key}Route`,
         $value => `${route_name},`, // todo: drop comma after fixing bug
@@ -27,6 +27,7 @@ pattern process_route($imports, $refs, $dir) {
 
         $separator = `;\n`,
         $body = join(list = $new_file_statements, $separator),
+        $main_file_imports += `import { $route_name } from './${key}.route.ts'`,
         $new_files += file(name = $file_name, $body)
     }
 }
@@ -56,7 +57,7 @@ pattern named_thing($name) {
     }
 }
 
-pattern process_one_statement($imports, $middlewares, $refs, $dir) {
+pattern process_one_statement($imports, $middlewares, $refs, $dir, $main_file_imports) {
     or {
         import_statement() as $import where {
             $import => .,
@@ -66,11 +67,13 @@ pattern process_one_statement($imports, $middlewares, $refs, $dir) {
             and {
                 $value <: `t.router($routes_object)`,
                 $routes_object <: object($properties),
-                $properties <: some process_route($imports, $refs, $dir) // todo: drop comma after fixing bug
+                $properties <: some process_route($imports, $refs, $dir, $main_file_imports) // todo: drop comma after fixing bug
             },
             and {
                 $middlewares += $s,
-                $s => .
+                if ($s <: not contains `initTRPC`) {
+                    $s => .
+                }
             }
         },
         lexical_declaration(declarations = [variable_declarator($value)]) as $s => . where {
@@ -80,14 +83,15 @@ pattern process_one_statement($imports, $middlewares, $refs, $dir) {
         named_thing($_) as $s => . where $refs += $s
     }
 }
- 
+
 file($name, body = program($statements) as $p) where {
     $name <: r"(.*)/[^/]*"($dir),
     $statements <: contains `t.router($_)`,
     $imports = [],
     $middlewares = [],
     $refs = [],
-    $statements <: some process_one_statement($imports, $middlewares, $refs, $dir),
+    $main_file_imports = [],
+    $statements <: some process_one_statement($imports, $middlewares, $refs, $dir, $main_file_imports),
 
     // construct the middleware file
     
@@ -100,7 +104,14 @@ file($name, body = program($statements) as $p) where {
     $separator = `;\n`,
     $middleware_body = join(list = $middleware_statments, $separator),
     $middleware_file = `$dir/middleware.ts`,
-    $new_files += file(name = $middleware_file, body = $middleware_body)
+    $new_files += file(name = $middleware_file, body = $middleware_body),
+
+    $main_file_imports += `import { t } from './middleware'`,
+    $main_file_imports_merged = join(list = $main_file_imports, $separator),
+    $statements <: some bubble ($main_file_imports_merged) $s where {
+        $s <: contains `initTRPC`,
+        $s => `$main_file_imports_merged`
+    }
 }
 ```
 
