@@ -38,7 +38,9 @@ pattern filter_used_imports($local_imports, $content) {
             import_specifier($name),
             namespace_import(namespace = $name) 
         } as $i where {
-            $content <: contains $name,
+            // replace `includes` below with `contains` once we
+            // do contains matching on rhs snippet parts
+            $content <: includes $name,
             $used_list += $i
         },
         $separator = `, `,
@@ -79,15 +81,24 @@ pattern process_one_statement($imports, $middlewares, $refs, $dir) {
     }
 }
  
-file($name, body = program($statements)) where {
+file($name, body = program($statements) as $p) where {
     $name <: r"(.*)/[^/]*"($dir),
     $statements <: contains `t.router($_)`,
     $imports = [],
     $middlewares = [],
     $refs = [],
     $statements <: some process_one_statement($imports, $middlewares, $refs, $dir),
+
+    // construct the middleware file
+    
+    $middleware_statments = [],
+    $imports <: maybe some filter_used_imports(local_imports = $middleware_statments, content = $middlewares),
+
+    // we can simplify this traversal to list concatenation once we implement that
+    $middlewares <: some bubble($middleware_statments) $s where $middleware_statments += $s,
+
     $separator = `;\n`,
-    $middleware_body = join(list = $middlewares, $separator),
+    $middleware_body = join(list = $middleware_statments, $separator),
     $middleware_file = `$dir/middleware.ts`,
     $new_files += file(name = $middleware_file, body = $middleware_body)
 }
