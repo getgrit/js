@@ -23,11 +23,11 @@ pattern process_route($imports, $refs, $dir, $main_file_imports) {
             $new_file_statements += $s
         },
 
-        $new_file_statements += `export ${route_name} = $value`,
+        $new_file_statements += `export const ${route_name} = $value`,
 
         $separator = `;\n`,
         $body = join(list = $new_file_statements, $separator),
-        $main_file_imports += `import { $route_name } from './${key}.route.ts'`,
+        $main_file_imports += `import { $route_name } from './${key}.route'`,
         $new_files += file(name = $file_name, $body)
     }
 }
@@ -35,18 +35,25 @@ pattern process_route($imports, $refs, $dir, $main_file_imports) {
 pattern filter_used_imports($local_imports, $content) {
     import_statement($source) as $import where {
         $used_list = [],
-        $import <: contains bubble($used_list, $content) or {
-            import_specifier($name),
-            namespace_import(namespace = $name) 
-        } as $i where {
-            // replace `includes` below with `contains` once we
-            // do contains matching on rhs snippet parts
-            $content <: includes $name,
-            $used_list += $i
-        },
         $separator = `, `,
-        $used = join(list = $used_list, $separator),
-        $local_imports += `import { $used } from $source`
+        or {
+          and {
+            $import <: contains bubble($used_list, $content) import_specifier($name) as $i where {
+                // replace `includes` below with `contains` once we
+                // do contains matching on rhs snippet parts
+                $content <: includes $name,
+                $used_list += $i
+            },
+            $used = join(list = $used_list, $separator),
+            $local_imports += `import { $used } from $source`
+          },
+          and {
+            $import <: contains bubble($content, $local_imports, $source) namespace_import(namespace = $name) where {
+              $content <: includes $name,
+              $local_imports += `import * as $name from $source`
+            }
+          }
+        }
     }
 }
 
@@ -110,7 +117,7 @@ file($name, body = program($statements) as $p) where {
     $main_file_imports_merged = join(list = $main_file_imports, $separator),
     $statements <: some bubble ($main_file_imports_merged) $s where {
         $s <: contains `initTRPC`,
-        $s => `$main_file_imports_merged`
+        $s => `$main_file_imports_merged;`
     }
 }
 ```
@@ -153,9 +160,18 @@ export type AppRouter = typeof appRouter;
 
 ```typescript
 // @file js/trpcRouter.server.ts
+
+
+
+
+
 import { helloRoute } from './hello.route';
 import { goodbyeRoute } from './goodbye.route';
 import { t } from './middleware';
+
+
+
+
 
 export const appRouter = t.router({
   hello: helloRoute,
@@ -164,26 +180,20 @@ export const appRouter = t.router({
 
 export type AppRouter = typeof appRouter;
 // @file js/goodbye.route.ts
+import { proc } from "./middleware";
 import { db } from '../db';
-import { proc } from './middleware';
-
 export const goodbyeRoute = proc.input(z.object({ name: z.string() })).query(async ({ input }) => {
-  await db.remove(input.name);
-  return { text: `Goodbye ${input.name}` };
-});
-// @file js/hello.route.ts
-import { proc } from './middleware';
-
+    await db.remove(input.name);
+    return { text: `Goodbye ${input.name}` };
+  })// @file js/hello.route.ts
+import { proc } from "./middleware";
 export const helloRoute = proc.input(z.object({ name: z.string() })).query(async ({ input }) => {
-  return { text: `Hello ${input.name}` };
-});
-// @file js/middleware.ts
+    return { text: `Hello ${input.name}` };
+  })// @file js/middleware.ts
 import { initTRPC } from '@trpc/server';
 import * as Sentry from '@sentry/remix';
 import { Context } from './trpcContext.server';
-
-export const t = initTRPC.context<Context>().create();
-
+export const t = initTRPC.context<Context>().create();;
 export const proc = t.procedure.use(
   t.middleware(
     Sentry.Handlers.trpcMiddleware({
