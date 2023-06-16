@@ -11,10 +11,11 @@ on:
 
 jobs:
   build:
-    runs-on: nscloud-ubuntu-22.04-amd64-4x16
+    runs-on: ${{ matrix.runner }}
 
     strategy:
       matrix:
+        runner: [ubuntu-22.04, nscloud-ubuntu-22.04-amd64-4x16]
         node-version: [16.16, 18.x, 20.x]
 
     steps:
