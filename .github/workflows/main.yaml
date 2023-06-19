@@ -29,8 +29,17 @@ jobs:
       - name: Install @getgrit/launcher
         run: npm install -g @getgrit/launcher
 
-      - name: Run doctor
-        run: npx grit doctor
+    - name: Run doctor pre-update
+      run: npx grit doctor
 
-      - name: Run grit patterns test
-        run: npx grit patterns test
+    - name: Update grit patterns
+      run: npx grit install --update
+
+    - name: Run doctor post-update
+      run: npx grit doctor
+
+    - name: Run grit patterns test for simple pattern for sanity check
+      run: npx grit patterns test --filter=NoConsoleLog
+
+    - name: Run all grit patterns test
+      run: npx grit patterns test
