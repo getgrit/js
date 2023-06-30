@@ -12,7 +12,7 @@ tags: #bug, #fix, #good
 engine marzano(0.1)
 language js
 
-for_statement($body, $condition, $increment, $initializer) where {
+for_statement($condition, $increment, $initializer) where {
     or {
         and {
             $condition <: contains or { `$x < $_` , `$x <= $_` , `$_ > $x` , `$_ >= $x`},
