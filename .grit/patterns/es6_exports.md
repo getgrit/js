@@ -20,7 +20,7 @@ or {
             // it's only safe to remove the overall export if every property is individually exported
             $vals <: some bubble($new_export) $prop where {
                 $prop <: or {
-                    shorthand_property_identifier() as $name,
+                    shorthand_property_identifier() as $name where { $value = $name },
                     pair(key=$name, $value)
                 },
                 or {
@@ -36,7 +36,11 @@ or {
                             function_declaration($name)
                         } as $match => `export $match`
                     },
-                    $new_export += `export const $name = $value`
+                    if ($value <: $name) {
+                        $new_export += `export { $name };\n`
+                    } else {
+                        $new_export += `export const $name = $value;\n`
+                    }
                 }
             }
         } => `$new_export`
