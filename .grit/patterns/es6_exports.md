@@ -48,7 +48,7 @@ or {
     // handle other default exports
     `module.exports = $export` => `export default $export`,
     // Handle individually named exports
-    `module.exports.$name = $export` => `export const $name = $export`
+    `module.exports.$name = $export` => `export const $name = $export;\n`
 }
 ```
 
@@ -59,7 +59,8 @@ module.exports.king = '9';
 ```
 
 ```js
-export const king = '9'```
+export const king = '9';
+```
 
 ## Transform default exports
 
@@ -82,7 +83,6 @@ export async function createTeam() {
 }
 
 export const addTeamToOrgSubscription = () => console.log('cool');
-
 ```
 
 ### Keep inline values in tact
