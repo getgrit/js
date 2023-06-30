@@ -16,30 +16,30 @@ or {
     and {
         // handle a default export of an object by exporting the individual original definitions
         `module.exports = { $vals }` where {
+            $new_export = "",
             // it's only safe to remove the overall export if every property is individually exported
-            $vals <: some bubble($exportedVals) pair(key=$key, value=$name) as $prop => . where {
-                $name <: identifier(),
-                $exportedVals = [... $exportedVals, $prop],
-                $program <: contains or {
-                    // special case of exporting a require() - see ES6Import pattern
-                    or {
+            $vals <: some bubble($new_export) $prop where {
+                $prop <: or {
+                    shorthand_property_identifier() as $name,
+                    pair(key=$name, $value)
+                },
+                or {
+                    $program <: contains or {
                         // does not handle difficult trying to match a sublist of the module.exports
-                        `const $name = require($val).default` => `export { default as $name } from "$val"`,
-                        `const $name = require($val).$foo` => `export { $foo as $name } from "$val"`,
-                        `const $name = require($val)` => `export { default as $name } from "$val"`
+                        `const $name = require($val).$foo` => `export { $foo as $name } from $val`,
+                        `const $name = require($val)` => `export { default as $name } from $val`,
+                        `const $name = require($val).default` => `export { default as $name } from $val`,
+                        or {
+                            `let $name = $val`,
+                            `var $name = $val`,
+                            `const $name = $val`,
+                            function_declaration($name)
+                        } as $match => `export $match`
                     },
-                    // normal case
-                    or {
-                        `const $name = $val`,
-                        `let $name = $val`,
-                        `var $name = $val`,
-                        `const $name = $val`,
-                        function_declaration($name)
-                    } as $match => `export $match`
+                    $new_export += `export const $name = $value`
                 }
             }
-        },
-        maybe `module.exports = { $vals }` => . where $vals <: $exportedVals
+        } => `$new_export`
     },
     // handle other default exports
     `module.exports = $export` => `export default $export`,
