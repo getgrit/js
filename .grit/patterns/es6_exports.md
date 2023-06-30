@@ -59,8 +59,7 @@ module.exports.king = '9';
 ```
 
 ```js
-export const king = '9';
-```
+export const king = '9'```
 
 ## Transform default exports
 
@@ -83,6 +82,7 @@ export async function createTeam() {
 }
 
 export const addTeamToOrgSubscription = () => console.log('cool');
+
 ```
 
 ### Keep inline values in tact
@@ -99,9 +99,7 @@ module.exports = {
 ```js
 export const king = '9';
 
-module.exports = {
-  queen: '8',
-};
+export const queen = '8';
 ```
 
 ### Work on
@@ -118,15 +116,13 @@ module.exports = { c1, c2, c3, myDefaultConst, myRenamed, sub1, sub2 };
 ```
 
 ```js
-export { default as c1 } from './mod1';
-export { default as c2 } from './mod2';
-export { default as c3 } from './mod3';
-export { default as myDefaultConst } from './mod4';
-export { originalName as myRenamed } from 'mod5';
+export { default as c1 } from './mod1'
+export { default as c2 } from './mod2'
+export { default as c3 } from './mod3'
+export { default as myDefaultConst } from './mod4'
+export { originalName as myRenamed } from 'mod5'
 const { sub1, sub2 } = require('mod5'); // not handled
 
-module.exports = {
-  sub1,
-  sub2,
-};
+export { sub1 };
+export { sub2 };
 ```
