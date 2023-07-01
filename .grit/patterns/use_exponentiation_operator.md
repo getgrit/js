@@ -25,8 +25,8 @@ var d = Math.pow(b + 1, 1);
 ```
 
 ```typescript
-var a = 0 ** 1;
-var b = 0 ** (b - 1);
+var a = (0) ** (1);
+var b = (0) ** (b - 1);
 var c = (b + 1) ** (b - 1);
-var d = (b + 1) ** 1;
+var d = (b + 1) ** (1);
 ```
