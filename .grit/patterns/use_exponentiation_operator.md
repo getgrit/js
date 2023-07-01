@@ -12,22 +12,7 @@ tags: #ES7, #SE
 engine marzano(0.1)
 language js
 
-`Math.pow($base, $exponent)` as $expression where {
-    $args = [],
-    if (! $base <: number()) {
-        $args += `($base)`
-    } else {
-        $args += $base
-    },
-    if (! $exponent <: number()) {
-        $args += `($exponent)`
-    } else {
-        $args += $exponent
-    },
-    $separator = ` ** `,
-    $newExpression = join(list = $args, $separator),
-    $expression => `$newExpression`
-}
+`Math.pow($base, $exponent)` => `($base) ** ($exponent)`
 ```
 
 ## Transforms Math.pow to exponentiation operator
