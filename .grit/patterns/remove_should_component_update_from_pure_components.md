@@ -43,7 +43,8 @@ class Foo extends React.PureComponent {
   render() {
     return <Hello />;
   }
-}```
+}
+```
 
 ## Removes the entire shouldComponentUpdate() when extending destructured PureComponent
 
@@ -68,7 +69,8 @@ class Foo extends PureComponent {
   render() {
     return <Hello />;
   }
-}```
+}
+```
 
 ## Does nothing when extending React.Component
 
