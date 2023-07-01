@@ -54,15 +54,15 @@ foo.indexOf("a") != -1;
 ```typescript
 !foo.includes("a");
 
-!foo.includes("a");
+!foo.includes("a")
 
-!foo.includes("a");
+!foo.includes("a")
 
-foo.includes("a");
+foo.includes("a")
 
-foo.includes("a");
+foo.includes("a")
 
-foo.includes("a");
+foo.includes("a")
 ```
 
 ## Transforms lastIndexOf
@@ -84,15 +84,15 @@ foo.lastIndexOf("a") != -1;
 ```typescript
 !foo.includes("a");
 
-!foo.includes("a");
+!foo.includes("a")
 
-!foo.includes("a");
+!foo.includes("a")
 
-foo.includes("a");
+foo.includes("a")
 
-foo.includes("a");
+foo.includes("a")
 
-foo.includes("a");
+foo.includes("a")
 ```
 
 ## Does not change lastIndexOf or indexOf if it checks for a real index
