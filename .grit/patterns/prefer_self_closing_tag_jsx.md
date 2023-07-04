@@ -27,10 +27,9 @@ pattern html_tags_pair() { or { html_headings() , html_containers() , html_block
 
 `<$name $props>$body</$name>` => `<$name $props />` where {
     // In order for a snippet of code to be rewritten, it must satisfy both of the where conditions below
-    // $body can be either empty – as the lone '.' represents – or match the syntax-tree node JSXText with the denoted value
     // The r prefix causes the attached string to be interpreted as a regular expression, in this case matching any amount of whitespace
     $body <: r"\s*",
-    // $name must NOT match the syntax-tree node JSXIdentifier with a name attribute equivalent to one of the HTMLTagsWithPair defined at the top of the file
+    // $name must NOT match one of the html_tags_pair defined at the top of the file
     $name <: not html_tags_pair()
 }
 ```
