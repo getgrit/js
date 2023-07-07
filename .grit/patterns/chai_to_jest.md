@@ -94,7 +94,6 @@ describe('sum', () => {
   it('should work for positive numbers', () => {
     const object = { nine: 9 };
     expect(object).contains({ nine: 9 });
-    expect(object).toMatchObject({ nine: 9 });
     assert.equal(1 + 2, 3, '1 plus 2 is 3');
   }).timeout(1000);
 });
@@ -103,6 +102,8 @@ describe('sum', () => {
 ```typescript
 describe('sum', () => {
   it('should work for positive numbers', () => {
+    const object = { nine: 9 };
+    expect(object).toMatchObject({ nine: 9 });
     expect(1 + 2).toEqual(3);
   }).timeout(1000);
 });
