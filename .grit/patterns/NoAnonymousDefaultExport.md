@@ -2,18 +2,17 @@
 title: Rename anonymous default export functions ⇒ main
 ---
 
-# {{ page.title }}
-
 Replaces `export default function () { }` with `export default function main () { }` and `export default () => { }` with `const main = () => { }; export default main`
 
 tags: #syntax
 
 ```grit
+engine marzano(0.1)
+language js
+
 or {
-  `export default function $name($args) { $body }` where {
-    $name <: null => `main`
-  },
-  `export default $f` => [`const main = $f`, `export default main`] where {
+  `export default function($args) { $body }` => `export default function($args) { $body }`,
+  `export default $f` => `const main = $f;\nexport default main` where {
     $f <: `($args) => { $body }`
   }
 }
@@ -23,13 +22,13 @@ or {
 
 ```javascript
 export default function () {
-  console.log("test");
+  console.log('test');
 }
 ```
 
 ```typescript
 export default function main() {
-  console.log("test");
+  console.log('test');
 }
 ```
 
@@ -51,13 +50,13 @@ export default async function main(test) {
 
 ```javascript
 export default async (test) => {
-  console.log("test");
+  console.log('test');
 };
 ```
 
 ```typescript
-const main = async test => {
-  console.log("test");
+const main = async (test) => {
+  console.log('test');
 };
 
 export default main;
