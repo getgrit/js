@@ -9,17 +9,19 @@ This migration helps with migrating your Knockout code to React.
 
 tags: #react, #migration, #complex, #knockout, #framework
 
-```grit
+````grit
+engine marzano(0.1)
+language js
+
 or {
   `$vm = function($args) { $body }` where {
     $vm <: `ViewModel` => `ViewComponent`,
     $args => `props`,
     $body <: maybe contains bubble or {
-      `this.$name = ko.observable($original)` => `const [$name, $setter] = useState(props.$name)` where {
-        $capitalized = capitalize($name),
-        $setter = s"set${capitalized}",
-        ensureImportFrom(`useState`, "react")
-      },
+      `this.$name = ko.observable($original)` where {
+        $capitalized = capitalize(string=$name),
+        // ensureImportFrom(`useState`, "react")
+      } => `const [$name, set$capitalized] = useState(props.$name)`,
       `this.$name = ko.computed($func, $_)` => `const name = useMemo($func)` where {
         $func <: maybe contains bubble { `this.$name()` => `$name`}
       }
@@ -34,21 +36,21 @@ or {
 var ViewModel = function(first, last) {
     this.firstName = ko.observable(first);
     this.lastName = ko.observable(last);
- 
+
     this.fullName = ko.computed(function() {
         return this.firstName() + " " + this.lastName();
     }, this);
 };
-```
+````
 
 ```typescript
 import { useState } from 'react';
-var ViewComponent = function(props) {
+var ViewComponent = function (props) {
   const [firstName, setFirstName] = useState(props.firstName);
   const [lastName, setLastName] = useState(props.lastName);
 
-  const name = useMemo(function() {
-      return firstName + " " + lastName;
+  const name = useMemo(function () {
+    return firstName + ' ' + lastName;
   });
 };
 ```
