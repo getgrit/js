@@ -163,51 +163,60 @@ pattern awaitables() {
 }
 
 pattern main_playwright_migration() {
-    file($body) where {
-        $body <: contains bubble or {
-            `describe($name, $body)` => `test.describe($name, $body)`,
-            `fdescribe($name, $body)` => `test.describe($name, $body)`,
-            `it($name, function() {$testBody})`       => `test($name, async function ({page}) { $testBody })`,
-            `it($name, async function() {$testBody})` => `test($name, async function ({page}) {$testBody})`,
-            `it($name, () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
-            `it($name, async () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
+    and {
+        before_each_file(),
+        file($body) where {
+            $body <: contains bubble or {
+                `describe($name, $body)` => `test.describe($name, $body)`,
+                `fdescribe($name, $body)` => `test.describe($name, $body)`,
+                `it($name, function() {$testBody})`       => `test($name, async function ({page}) { $testBody })`,
+                `it($name, async function() {$testBody})` => `test($name, async function ({page}) {$testBody})`,
+                `it($name, () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
+                `it($name, async () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
 
-            or {
-                function($name, $body) => `async function $name() {
-                    $body
-                }`,
-                arrow_function($body) => `async () => $body`,
-                // TODO:
-                // FunctionExpression(body=$body, async=$_ => true)
+                or {
+                    function($name, $body) => `async function $name() {
+                        $body
+                    }`,
+                    arrow_function($body) => `async () => $body`,
+                    // TODO:
+                    // FunctionExpression(body=$body, async=$_ => true)
+                } where {
+                    $body <: contains bubble or {
+                        jasmine_rewrite(),
+                        by_containing_text(),
+                        `expect(browser.getTitle()).toEqual($res)` => `expect(page).toHaveTitle($res)`,
+                        `expect(browser.getCurrentUrl()).toEqual($res)` => `expect(page).toHaveURL($res)`,
+                        awaitables(),
+                        by_handler(),
+                        by_other_handler(),
+                        `get` => `nth`,
+                        `element.all` => `page.locator`,
+                        `var EC = protractor.ExpectedConditions;` => .
+                    } until function_like()
+                }
             } where {
-                $body <: contains bubble or {
-                    jasmine_rewrite(),
-                    by_containing_text(),
-                    `expect(browser.getTitle()).toEqual($res)` => `expect(page).toHaveTitle($res)`,
-                    `expect(browser.getCurrentUrl()).toEqual($res)` => `expect(page).toHaveURL($res)`,
-
-                    awaitables(),
-                    // TODO: insert an await in front
-
-                    by_handler(),
-                    by_other_handler(),
-
-                    `get` => `nth`,
-                    `element.all` => `page.locator`,
-                    `var EC = protractor.ExpectedConditions;` => .
-                } until function_like()
+                $test = `test`,
+                $source = `"@playwright/test"`,
+                $test <: ensure_import_from($source),
+                $expect = `expect`,
+                $expect <: ensure_import_from($source)
             }
-        } where {
-            $test = `test`,
-            $source = `"@playwright/test"`,
-            $test <: ensure_import_from($source),
-            $expect = `expect`,
-            $expect <: ensure_import_from($source)
-        }
+        },
+        after_each_file()
     }
 }
 
-main_playwright_migration()
+pattern fix_await() {
+    file($body) where {
+        $body <: contains bubble `page.$_` as $exp => `await $exp`
+    }
+}
+
+sequential {
+    main_playwright_migration(),
+    fix_await()
+}
 ```
 
 ## Basic Sample
