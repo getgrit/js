@@ -270,10 +270,9 @@ describe('angularjs homepage todo list', function () {
 ```
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 test.describe('angularjs homepage todo list', function () {
-  test('should add a todo', async function ({ page }) {
-    await page.goto('https://angularjs.org');
+  test('should add a todo', async function ({page}) { await page.goto('https://angularjs.org');
 
     await page.locator(`[ng-model="${module.sample}"]`).fill('first test');
     await page.locator(`[ng-model="${'todoList.todoText'}"]`).fill('first test');
@@ -284,10 +283,9 @@ test.describe('angularjs homepage todo list', function () {
     await expect(todoList.nth(2)).toHaveText('first test');
 
     // You wrote your first test, cross it off the list
-    todoList.nth(2).locator('input').click();
+    await todoList.nth(2).locator('input').click();;
     var completedAmount = page.locator('.done-true');
-    await expect(completedAmount).toHaveCount(2);
-  });
+    await expect(completedAmount).toHaveCount(2); })
 });
 ```
 
@@ -311,28 +309,20 @@ var three = async () => {
 ```
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 var wait = async function () {
-  await page.locator('#someId').waitFor({
-    state: 'attached',
-  });
-  await page.locator('#hello').waitFor({
-    state: 'attached',
-    timeout: 1000,
-  });
+  
+  await page.locator('#someId').waitFor({ state: "attached"});
+  await page.locator('#hello').waitFor({ state: "attached", timeout: 1000 });
 };
 
 var two = async () => {
-  await page.locator('#someId').waitFor({
-    state: 'attached',
-  });
+  await page.locator('#someId').waitFor({ state: "attached"});
 };
 
 // Already sync
 var three = async () => {
-  await page.locator('#someId').waitFor({
-    state: 'attached',
-  });
+  await page.locator('#someId').waitFor({ state: "attached"});
 };
 ```
 
