@@ -13,18 +13,20 @@ engine marzano(0.1)
 language js
 
 or {
-    `import $import from "$source"` => `const $import = require("$source")`,
     `import { $import } from "$source"` where {
         $newports = [],
-        $import <: some bubble($newports) `$key as $val` where {
-            $obj = ObjectProperty(key=$key, value=$val),
-            // no need to do {foo: foo}, just say {foo}
-            if ($key <: $val) {
-                $obj = $key
-            },
-            $newports = [...$newports, $obj]
-        }
-    } => `const { $newports } = require("$source")`
+        $import <: some bubble($newports) {
+            import_specifier($alias, $name) where {
+                if (!$alias <: .) {
+                $newports += `$name: $alias`
+                } else {
+                    $newports += `$name`
+                }
+            }
+        },
+        $transformed = join(list = $newports, separator = ", "),
+    } => `const { $transformed } = require("$source")`,
+    `import $import from "$source"` => `const $import = require("$source")`,
 }
 ```
 
@@ -34,6 +36,7 @@ or {
 import { something, another } from './lib';
 import { assert } from 'chai';
 import { config as conf } from 'chai';
+import { mixed as mixie, foo } from 'life';
 import starImport from 'star';
 
 // no special handling for default. Also, comments get removed.
@@ -42,11 +45,11 @@ import defaultImport from '../../shared/default';
 
 ```ts
 const { something, another } = require('./lib');
-
 const { assert } = require('chai');
-
 const { config: conf } = require('chai');
-
+const { mixed: mixie, foo } = require('life');
 const starImport = require('star');
+
+// no special handling for default. Also, comments get removed.
 const defaultImport = require('../../shared/default');
 ```
