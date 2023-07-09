@@ -311,28 +311,20 @@ var three = async () => {
 ```
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 var wait = async function () {
-  await page.locator('#someId').waitFor({
-    state: 'attached',
-  });
-  await page.locator('#hello').waitFor({
-    state: 'attached',
-    timeout: 1000,
-  });
+  
+  await page.locator('#someId').waitFor({ state: "attached"});
+  await page.locator('#hello').waitFor({ state: "attached", timeout: 1000 });
 };
 
 var two = async () => {
-  await page.locator('#someId').waitFor({
-    state: 'attached',
-  });
+  await page.locator('#someId').waitFor({ state: "attached"});
 };
 
 // Already sync
 var three = async () => {
-  await page.locator('#someId').waitFor({
-    state: 'attached',
-  });
+  await page.locator('#someId').waitFor({ state: "attached"});
 };
 ```
 
