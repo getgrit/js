@@ -7,14 +7,21 @@ Protractor to Playwright.
 tags: #migration, #js, #playwright, #protractor
 
 ```grit
+engine marzano(0.1)
 language js
 
-// ProtractorToPlaywrite.grit
+pattern function_like($name, $args, $statements) {
+  or {
+    `function $name($args) { $statements }`,
+    `($args) => { $statements }`,
+    `($args) => $statements`
+  }
+}
 
 //========================================================================
 // High level function rewrites
 
-pattern JasmineRewrite() {
+pattern jasmine_rewrite() {
   bubble `$jasmineFn($jasmineArgs)` as $jasmineBody where {
     $jasmineFn <: or {
         `beforeEach`,
@@ -30,80 +37,72 @@ pattern JasmineRewrite() {
 //========================================================================
 // Fancy string replacement for: by => page.locator
 
-predicate ExtractString($any, $cssString) {
-  $any <: or {
-    StringLiteral(value = $cssString),
-    $_ where $cssString = "${" + unparse($any) + "}"
+pattern extract_string($css_string) {
+  or {
+    string() as $css_string,
+    $input where $css_string = `${input}`
   }
 }
 
-pattern ByChange($selector, $locator) {
+
+pattern change_by($selector, $locator) {
   or {
     `buttonText` where {
-        ExtractString($selector, $selectorString),
-        $almost = s"button, input[type=\"button\"], input[type=\"submit\"] >> text=\"${selectorString}\"",
-        $locator = raw(s"`${almost}`")
+        $selector <: extract_string($css_string),
+        $locator = `button, input[type="button"], input[type="submit"] >> text="$css_string"`
     },
     `css` where $locator = $selector,
     `id` where {
-        ExtractString($selector, $selectorString),
-        $almost = "#" + $selectorString,
-        $locator = raw(s"`${almost}`")
+        $selector <: extract_string($css_string),
+        $locator = `#css_string`
     },
     `model` where {
-        ExtractString($selector, $selectorString),
-        $almost = s"[ng-model=\"${selectorString}\"]",
-        $locator = raw(s"`${almost}`")
+        $selector <: extract_string($css_string),
+        $locator = `[ng-model="$css_string"]`
     },
     `repeater` where {
-        ExtractString($selector, $selectorString),
-        $almost = s"[ng-repeat=\"${selectorString}\"]",
-        $locator = raw(s"`${almost}`")
+        $selector <: extract_string($css_string),
+        $locator = `[ng-repeat="$css_string"]`
     },
     `xpath` where {
-        ExtractString($selector, $selectorString),
-        $almost = s"xpath=${selectorString}",
-        $locator = raw(s"`${almost}`")
+        $selector <: extract_string($css_string),
+        $locator = `xpath=$css_string`
     }
   }
 }
 
-pattern ByCssContainingText() {
-  bubble or {
-    `$element(by.cssContainingText($css, $text))` where {$element <: Elements()},
-    `by.cssContainingText($css, $text)`
-} => `page.locator($locator)` where {
-    ExtractString($css, $cssString),
-    ExtractString($text, $textString),
-    $almost = $cssString + " >> text=" + $textString,
-    $locator = raw(s"`${almost}`")
-  }
+pattern pw_elements() {
+  or { `element`, `element.all`, "$"}
 }
 
-//========================================================================
-// expect() and element()
-
-pattern Elements() {
-  or { `element`, `element.all`, `$`}
+pattern by_containing_text() {
+    bubble or {
+        `$element(by.cssContainingText($css, $text))` where {$element <: pw_elements()},
+        `by.cssContainingText($css, $text)`
+    } where {
+        $css <: extract_string($css_string),
+        $text <: extract_string(text_string=$text_string),
+        $locator = `$css_string >> text="$text_string"`
+    } => `page.locator($locator)`
 }
 
-pattern ByHandler() {
+pattern by_handler() {
   bubble or {
-    `$element(by.$by($selector))` where {$element <: Elements()},
+    `$element(by.$by($selector))` where {$element <: pw_elements()},
     `by.$by($selector)`
-  } => `page.locator($locator)` where {
-      $by <: ByChange($selector, $locator)
-  }
+  } where {
+      $by <: change_by($selector, $locator)
+  } => `page.locator($locator)`
 }
 
-pattern ByOtherHandler() {
-  bubble `$other.$element(by.$by($selector))` => `$other.locator($locator)` where {
-    $by <: ByChange($selector, $locator),
-    $element <: Elements()
-  }
+pattern by_other_handler() {
+  bubble `$other.$element(by.$by($selector))` where {
+    $by <: change_by($selector, $locator),
+    $element <: pw_elements()
+  } => `$other.locator($locator)`
 }
 
-pattern BrowserMisc() {
+pattern browser_misc() {
   bubble or {
     // need a generic way to handle TIMEOUT
     `browser.wait($ec.visibilityOf($locator), $timeout)` => `expect($locator).toBeVisible({timeout: $timeout})`,
@@ -143,63 +142,66 @@ pattern BrowserMisc() {
   }
 }
 
-//========================================================================
-// Combined
+// Put it all together
 
-Program(contains bubble or {
-    `describe($name, $body)` => `test.describe($name, $body)`,
-    `fdescribe($name, $body)` => `test.describe($name, $body)`,
-    `it($name, function() {$testBody})`       => `test($name, async function ({page}) {$testBody})`,
-    `it($name, async function() {$testBody})` => `test($name, async function ({page}) {$testBody})`,
-    `it($name, () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
-    `it($name, async () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
-
-    or {
-        FunctionDeclaration(body=$body, async=$_ => true),
-        ArrowFunctionExpression(body=$body, async=$_ => true),
-        FunctionExpression(body=$body, async=$_ => true)
-    } where {
+    file($body) where {
         $body <: contains bubble or {
-            JasmineRewrite(),
+        `describe($name, $body)` => `test.describe($name, $body)`,
+        `fdescribe($name, $body)` => `test.describe($name, $body)`,
+        `it($name, function() {$testBody})`       => `test($name, async function ({page}) {$testBody})`,
+        `it($name, async function() {$testBody})` => `test($name, async function ({page}) {$testBody})`,
+        `it($name, () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
+        `it($name, async () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
 
-            ByCssContainingText(),
-            `expect(browser.getTitle()).toEqual($res)` => `expect(page).toHaveTitle($res)`,
-            `expect(browser.getCurrentUrl()).toEqual($res)` => `expect(page).toHaveURL($res)`,
+        or {
+            function($name, $body) => `async function $name() { $body }`,
+            arrow_function($body) => `async () => $body`,
+            // TODO:
+            // FunctionExpression(body=$body, async=$_ => true)
+        } where {
+            $body <: contains bubble or {
+                jasmine_rewrite(),
+                by_containing_text(),
+                `expect(browser.getTitle()).toEqual($res)` => `expect(page).toHaveTitle($res)`,
+                `expect(browser.getCurrentUrl()).toEqual($res)` => `expect(page).toHaveURL($res)`,
 
-            // Awaitable
-            or {
-                BrowserMisc(),
-                `expect($actual.count()).toEqual($expected)` => `expect($actual).toHaveCount($expected)`,
-                `expect($actual.getText()).toEqual($expected)` => `expect($actual).toHaveText($expected)`,
-                `$element(by.$by($selector)).$act($args)` => `page.locator($locator).$act($args)` where {
-                    $act <: or {`click`, `clear`},
-                    $element <: Elements(),
-                    $by <: maybe ByChange($selector, $locator)
+                // Awaitable
+                or {
+                    browser_misc(),
+                    `expect($actual.count()).toEqual($expected)` => `expect($actual).toHaveCount($expected)`,
+                    `expect($actual.getText()).toEqual($expected)` => `expect($actual).toHaveText($expected)`,
+                    `$element(by.$by($selector)).$act($args)` where {
+                        $act <: or {`click`, `clear`},
+                        $element <: pw_elements(),
+                        $by <: maybe change_by($selector, $locator)
+                    } => `page.locator($locator).$act($args)`,
+                    `$element($inner).$act($args)` where {
+                        $act <: or {`click`, `clear`},
+                        $element <: pw_elements()
+                    } => `page.locator($inner).$act($args)`,
+                    `$element(by.$by($selector)).sendKeys($args)` where { $by <: maybe change_by($selector, $locator) } => `page.locator($locator).fill($args)` ,
+                    // `$element($inner).sendKeys($args)` => `page.locator($inner).fill($args)`
+                } as $exp where {
+                    // TODO:
+                    // $exp => `await $exp`
                 },
-                `$element($inner).$act($args)` => `page.locator($inner).$act($args)` where {
-                    $act <: or {`click`, `clear`},
-                    $element <: Elements()
-                },
-                `$element(by.$by($selector)).sendKeys($args)` => `page.locator($locator).fill($args)` where $by <: maybe ByChange($selector, $locator),
-                `$element($inner).sendKeys($args)` => `page.locator($inner).fill($args)`
-            } as $exp where {
-                if ($exp <: not within AwaitExpression()) {
-                    $exp => AwaitExpression(argument=$exp)
-                }
-            },
 
-            ByHandler(),
-            ByOtherHandler(),
+                by_handler(),
+                by_other_handler(),
 
-            `get` => `nth`,
-            `element.all` => `page.locator`,
-            `var EC = protractor.ExpectedConditions;` => .
-        } until FunctionLike()
+                `get` => `nth`,
+                `element.all` => `page.locator`,
+                `var EC = protractor.ExpectedConditions;` => .
+            } until function_like()
+        }
+    } where {
+        $test = `test`,
+        $source = `"@playwright/test"`,
+        $test <: ensure_import_from($source),
+        $expect = `expect`,
+        $expect <: ensure_import_from($source)
     }
-} where {
-    ensureImportFrom(`test`, `"@playwright/test"`),
-    ensureImportFrom(`expect`, `"@playwright/test"`)
-})
+}
 ```
 
 ## Basic Sample
@@ -230,11 +232,7 @@ describe('angularjs homepage todo list', function () {
 ```typescript
 import { test, expect } from '@playwright/test';
 test.describe('angularjs homepage todo list', function () {
-  test('should add a todo', async function(
-    {
-      page
-    }
-  ) {
+  test('should add a todo', async function ({ page }) {
     await page.goto('https://angularjs.org');
 
     await page.locator(`[ng-model="${module.sample}"]`).fill('first test');
@@ -274,26 +272,26 @@ var three = async () => {
 
 ```typescript
 import { test, expect } from '@playwright/test';
-var wait = async function() {
+var wait = async function () {
   await page.locator('#someId').waitFor({
-    state: 'attached'
+    state: 'attached',
   });
   await page.locator('#hello').waitFor({
     state: 'attached',
-    timeout: 1000
+    timeout: 1000,
   });
 };
 
 var two = async () => {
   await page.locator('#someId').waitFor({
-    state: 'attached'
+    state: 'attached',
   });
 };
 
 // Already sync
 var three = async () => {
   await page.locator('#someId').waitFor({
-    state: 'attached'
+    state: 'attached',
   });
 };
 ```
@@ -325,11 +323,14 @@ import { test, expect } from '@playwright/test';
 async function attributeNotToMatch(selector, attr, text, { timeout } = {}) {
   let actual = '';
 
-  return await page.waitForFunction(async () => {
-    actual = await attribute(selector, attr, { timeout });
-    return !doMatch(actual, text);
-  }, {
-    timeout: utils.getTimeout(timeout)
-  });
+  return await page.waitForFunction(
+    async () => {
+      actual = await attribute(selector, attr, { timeout });
+      return !doMatch(actual, text);
+    },
+    {
+      timeout: utils.getTimeout(timeout),
+    },
+  );
 }
 ```
