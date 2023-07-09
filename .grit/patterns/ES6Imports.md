@@ -12,18 +12,16 @@ tags: #js, #es6, #migration, #cjs, #commonjs
 engine marzano(0.1)
 language js
 
-pattern object_property($key, $value) {
-    shorthand_property_identifier_pattern() as $key
-}
-
 or {
     `const $sentry = require('@sentry/node')` => `import * as $sentry from '@sentry/node'`,
     `const { $imports } = require($source)` where {
         $import_list = [],
-        $imports <: some bubble($import_list) {object_property($key, $value) where {
-            $import_list += $key
-            // $transformed = [...$transformed, `$key as $value`]
-        } },
+        $imports <: some bubble($import_list) {
+            or {
+                shorthand_property_identifier_pattern() as $key where $import_list += $key,
+                pair_pattern($key, $value) where $import_list += `$key as $value`
+            }
+        },
         $transformed = join(list = $import_list, separator = ", "),
     } => `import { $transformed } from "$source"`,
     `const $import = require($source).default` => `import $import from "$source"`,
