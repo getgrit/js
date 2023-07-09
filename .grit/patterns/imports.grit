@@ -68,5 +68,5 @@ pattern insert_imports() {
 }
 
 pattern after_each_file_handle_imports() {
-    file(body = $p) where $p <: maybe insert_imports()
+  file(body = $p) where $p <: maybe insert_imports()
 }

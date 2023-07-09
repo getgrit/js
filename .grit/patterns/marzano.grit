@@ -6,11 +6,11 @@ pattern literal_value() {
 }
 
 // All core stdlib functions can be done here
-pattern before_each_file_stdlib {
+pattern before_each_file_stdlib() {
   before_each_file_prep_imports()
 }
 
-pattern before_each_file {
+pattern before_each_file() {
   before_each_file_stdlib()
 }
 
