@@ -144,24 +144,28 @@ pattern browser_misc() {
   }
 }
 
-
-pattern awaitables() {
-    or {
-        browser_misc(),
-        `expect($actual.count()).toEqual($expected)` => `expect($actual).toHaveCount($expected)`,
-        `expect($actual.getText()).toEqual($expected)` => `expect($actual).toHaveText($expected)`,
-        `$element(by.$by($selector)).$act($args)` where {
-            $act <: or {`click`, `clear`},
-            $element <: pw_elements(),
-            $by <: maybe change_by($selector, $locator)
-        } => `page.locator($locator).$act($args)`,
-        `$element($inner).$act($args)` where {
-            $act <: or {`click`, `clear`},
-            $element <: pw_elements()
-        } => `page.locator($inner).$act($args)`,
-        `$element(by.$by($selector)).sendKeys($args)` where { $by <: maybe change_by($selector, $locator) } => `page.locator($locator).fill($args)` ,
-        `$element($inner).sendKeys($args)` => `page.locator($inner).fill($args)`
-    }
+pattern things_to_await() {
+  or {
+    `page.$_`,
+    `page.goto($_)`,
+    `$_.toHaveCount($_)`,
+    `$_.toHaveText($_)`,
+    `$_.toBeVisible($_)`,
+    `$_.toBeHidden($_)`,
+    `$_.toHaveTitle($_)`,
+    `$_.toHaveURL($_)`,
+    `$_.waitFor($_)`,
+    `$_.waitForFunction($_)`,
+    `$_.waitForTimeout($_)`,
+    `$_.fill($_)`,
+    `$_.click($_)`,
+    `$_.clear($_)`,
+    `$_.nth($_)`,
+    `$_.locator($_)`,
+    `$_.waitForSelector($_)`,
+    `$_.waitForFunction($_)`,
+    `$_.waitForTimeout($_)`,
+  }
 }
 
 pattern main_playwright_migration() {
@@ -189,7 +193,20 @@ pattern main_playwright_migration() {
                         by_containing_text(),
                         `expect(browser.getTitle()).toEqual($res)` => `expect(page).toHaveTitle($res)`,
                         `expect(browser.getCurrentUrl()).toEqual($res)` => `expect(page).toHaveURL($res)`,
-                        awaitables(),
+                         browser_misc(),
+                        `expect($actual.count()).toEqual($expected)` => `expect($actual).toHaveCount($expected)`,
+                        `expect($actual.getText()).toEqual($expected)` => `expect($actual).toHaveText($expected)`,
+                        `$element(by.$by($selector)).$act($args)` where {
+                            $act <: or {`click`, `clear`},
+                            $element <: pw_elements(),
+                            $by <: maybe change_by($selector, $locator)
+                        } => `page.locator($locator).$act($args)`,
+                        `$element($inner).$act($args)` where {
+                            $act <: or {`click`, `clear`},
+                            $element <: pw_elements()
+                        } => `page.locator($inner).$act($args)`,
+                        `$element(by.$by($selector)).sendKeys($args)` where { $by <: maybe change_by($selector, $locator) } => `page.locator($locator).fill($args)` ,
+                        `$element($inner).sendKeys($args)` => `page.locator($inner).fill($args)`,
                         by_handler(),
                         by_other_handler(),
                         `get` => `nth`,
@@ -209,29 +226,6 @@ pattern main_playwright_migration() {
     }
 }
 
-pattern things_to_await() {
-  or {
-    `page.$_`,
-    `page.goto($_)`,
-    `$_.toHaveCount($_)`,
-    `$_.toHaveText($_)`,
-    `$_.toBeVisible($_)`,
-    `$_.toBeHidden($_)`,
-    `$_.toHaveTitle($_)`,
-    `$_.toHaveURL($_)`,
-    `$_.waitFor($_)`,
-    `$_.waitForFunction($_)`,
-    `$_.waitForTimeout($_)`,
-    `$_.fill($_)`,
-    `$_.click($_)`,
-    `$_.clear($_)`,
-    `$_.nth($_)`,
-    `$_.locator($_)`,
-    `$_.waitForSelector($_)`,
-    `$_.waitForFunction($_)`,
-    `$_.waitForTimeout($_)`,
-  }
-}
 
 pattern fix_await() {
     file($body) where {
