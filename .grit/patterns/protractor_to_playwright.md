@@ -209,9 +209,38 @@ pattern main_playwright_migration() {
     }
 }
 
+pattern things_to_await() {
+  or {
+    `page.$_`,
+    `paege.$_($_)`,
+    `$_.toHaveCount($_)`,
+    `$_.toHaveText($_)`,
+    `$_.toBeVisible($_)`,
+    `$_.toBeHidden($_)`,
+    `$_.toHaveTitle($_)`,
+    `$_.toHaveURL($_)`,
+    `$_.waitFor($_)`,
+    `$_.waitForFunction($_)`,
+    `$_.waitForTimeout($_)`,
+    `$_.fill($_)`,
+    `$_.click($_)`,
+    `$_.clear($_)`,
+    `$_.nth($_)`,
+    `$_.locator($_)`,
+    `$_.waitForSelector($_)`,
+    `$_.waitForFunction($_)`,
+    `$_.waitForTimeout($_)`,
+  }
+}
+
 pattern fix_await() {
     file($body) where {
-        $body <: contains bubble `page.$_` as $exp => `await $exp`
+        $body <: contains bubble expression_statement() as $exp where {
+          $exp <: or {
+            things_to_await(),
+            contains things_to_await() until expression_statement()
+          }
+        } => `await $exp`
     }
 }
 
@@ -261,7 +290,7 @@ test.describe('angularjs homepage todo list', function () {
     await expect(todoList.nth(2)).toHaveText('first test');
 
     // You wrote your first test, cross it off the list
-    todoList.nth(2).locator('input').click();
+    await todoList.nth(2).locator('input').click();
     var completedAmount = page.locator('.done-true');
     await expect(completedAmount).toHaveCount(2);
   });
