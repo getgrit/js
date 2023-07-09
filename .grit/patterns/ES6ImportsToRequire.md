@@ -9,11 +9,14 @@ Converts ES6-style `import` to `require` statements.
 tags: #js, #es6, #migration, #cjs, #commonjs
 
 ```grit
+engine marzano(0.1)
+language js
+
 or {
     `import $import from "$source"` => `const $import = require("$source")`,
-    `import { $import } from "$source"` => `const { $newports } = require("$source")` where {
+    `import { $import } from "$source"` where {
         $newports = [],
-        $import <: some bubble($newports) `$key as $val` where { 
+        $import <: some bubble($newports) `$key as $val` where {
             $obj = ObjectProperty(key=$key, value=$val),
             // no need to do {foo: foo}, just say {foo}
             if ($key <: $val) {
@@ -21,36 +24,29 @@ or {
             },
             $newports = [...$newports, $obj]
         }
-    }
+    } => `const { $newports } = require("$source")`
 }
 ```
 
 ## Transform standard require statements
 
 ```ts
-import { something, another } from "./lib";
+import { something, another } from './lib';
 import { assert } from 'chai';
 import { config as conf } from 'chai';
-import starImport from "star";
+import starImport from 'star';
 
- // no special handling for default. Also, comments get removed.
-import defaultImport from "../../shared/default";
+// no special handling for default. Also, comments get removed.
+import defaultImport from '../../shared/default';
 ```
 
 ```ts
-const {
-  something,
-  another
-} = require("./lib");
+const { something, another } = require('./lib');
 
-const {
-  assert
-} = require('chai');
+const { assert } = require('chai');
 
-const {
-  config: conf
-} = require('chai');
+const { config: conf } = require('chai');
 
-const starImport = require("star");
-const defaultImport = require("../../shared/default");
+const starImport = require('star');
+const defaultImport = require('../../shared/default');
 ```
