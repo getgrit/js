@@ -142,66 +142,72 @@ pattern browser_misc() {
   }
 }
 
-// Put it all together
 
-    file($body) where {
-        $body <: contains bubble or {
-        `describe($name, $body)` => `test.describe($name, $body)`,
-        `fdescribe($name, $body)` => `test.describe($name, $body)`,
-        `it($name, function() {$testBody})`       => `test($name, async function ({page}) {$testBody})`,
-        `it($name, async function() {$testBody})` => `test($name, async function ({page}) {$testBody})`,
-        `it($name, () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
-        `it($name, async () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
-
-        or {
-            function($name, $body) => `async function $name() { $body }`,
-            arrow_function($body) => `async () => $body`,
-            // TODO:
-            // FunctionExpression(body=$body, async=$_ => true)
-        } where {
-            $body <: contains bubble or {
-                jasmine_rewrite(),
-                by_containing_text(),
-                `expect(browser.getTitle()).toEqual($res)` => `expect(page).toHaveTitle($res)`,
-                `expect(browser.getCurrentUrl()).toEqual($res)` => `expect(page).toHaveURL($res)`,
-
-                // Awaitable
-                or {
-                    browser_misc(),
-                    `expect($actual.count()).toEqual($expected)` => `expect($actual).toHaveCount($expected)`,
-                    `expect($actual.getText()).toEqual($expected)` => `expect($actual).toHaveText($expected)`,
-                    `$element(by.$by($selector)).$act($args)` where {
-                        $act <: or {`click`, `clear`},
-                        $element <: pw_elements(),
-                        $by <: maybe change_by($selector, $locator)
-                    } => `page.locator($locator).$act($args)`,
-                    `$element($inner).$act($args)` where {
-                        $act <: or {`click`, `clear`},
-                        $element <: pw_elements()
-                    } => `page.locator($inner).$act($args)`,
-                    `$element(by.$by($selector)).sendKeys($args)` where { $by <: maybe change_by($selector, $locator) } => `page.locator($locator).fill($args)` ,
-                    // `$element($inner).sendKeys($args)` => `page.locator($inner).fill($args)`
-                } as $exp where {
-                    // TODO:
-                    // $exp => `await $exp`
-                },
-
-                by_handler(),
-                by_other_handler(),
-
-                `get` => `nth`,
-                `element.all` => `page.locator`,
-                `var EC = protractor.ExpectedConditions;` => .
-            } until function_like()
-        }
-    } where {
-        $test = `test`,
-        $source = `"@playwright/test"`,
-        $test <: ensure_import_from($source),
-        $expect = `expect`,
-        $expect <: ensure_import_from($source)
+pattern awaitables() {
+    or {
+        browser_misc(),
+        `expect($actual.count()).toEqual($expected)` => `expect($actual).toHaveCount($expected)`,
+        `expect($actual.getText()).toEqual($expected)` => `expect($actual).toHaveText($expected)`,
+        `$element(by.$by($selector)).$act($args)` where {
+            $act <: or {`click`, `clear`},
+            $element <: pw_elements(),
+            $by <: maybe change_by($selector, $locator)
+        } => `page.locator($locator).$act($args)`,
+        `$element($inner).$act($args)` where {
+            $act <: or {`click`, `clear`},
+            $element <: pw_elements()
+        } => `page.locator($inner).$act($args)`,
+        `$element(by.$by($selector)).sendKeys($args)` where { $by <: maybe change_by($selector, $locator) } => `page.locator($locator).fill($args)` ,
+        `$element($inner).sendKeys($args)` => `page.locator($inner).fill($args)`
     }
 }
+
+pattern main_playwright_migration() {
+    file($body) where {
+        $body <: contains bubble or {
+            `describe($name, $body)` => `test.describe($name, $body)`,
+            `fdescribe($name, $body)` => `test.describe($name, $body)`,
+            `it($name, function() {$testBody})`       => `test($name, async function ({page}) { $testBody })`,
+            `it($name, async function() {$testBody})` => `test($name, async function ({page}) {$testBody})`,
+            `it($name, () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
+            `it($name, async () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
+
+            or {
+                function($name, $body) => `async function $name() {
+                    $body
+                }`,
+                arrow_function($body) => `async () => $body`,
+                // TODO:
+                // FunctionExpression(body=$body, async=$_ => true)
+            } where {
+                $body <: contains bubble or {
+                    jasmine_rewrite(),
+                    by_containing_text(),
+                    `expect(browser.getTitle()).toEqual($res)` => `expect(page).toHaveTitle($res)`,
+                    `expect(browser.getCurrentUrl()).toEqual($res)` => `expect(page).toHaveURL($res)`,
+
+                    awaitables(),
+                    // TODO: insert an await in front
+
+                    by_handler(),
+                    by_other_handler(),
+
+                    `get` => `nth`,
+                    `element.all` => `page.locator`,
+                    `var EC = protractor.ExpectedConditions;` => .
+                } until function_like()
+            }
+        } where {
+            $test = `test`,
+            $source = `"@playwright/test"`,
+            $test <: ensure_import_from($source),
+            $expect = `expect`,
+            $expect <: ensure_import_from($source)
+        }
+    }
+}
+
+main_playwright_migration()
 ```
 
 ## Basic Sample
