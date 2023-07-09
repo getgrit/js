@@ -212,7 +212,7 @@ pattern main_playwright_migration() {
 pattern things_to_await() {
   or {
     `page.$_`,
-    `paege.$_($_)`,
+    `page.goto($_)`,
     `$_.toHaveCount($_)`,
     `$_.toHaveText($_)`,
     `$_.toBeVisible($_)`,
