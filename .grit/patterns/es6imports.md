@@ -23,10 +23,10 @@ or {
             }
         },
         $transformed = join(list = $import_list, separator = ", "),
-    } => `import { $transformed } from "$source"`,
-    `const $import = require($source).default` => `import $import from "$source"`,
-    `const $import = require($source).$foo` => `import { $foo as $import } from "$source"`,
-    `const $import = require($source)` => `import $import from "$source"`, // this relies on healing for correctness
+    } => `import { $transformed } from $source`,
+    `const $import = require($source).default` => `import $import from $source`,
+    `const $import = require($source).$foo` => `import { $foo as $import } from $source`,
+    `const $import = require($source)` => `import $import from $source`, // this relies on healing for correctness
     // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
     `require("dotenv").config($config)` => `import * as dotenv from 'dotenv';\ndotenv.config($config)`
 }
