@@ -181,10 +181,10 @@ pattern main_playwright_migration() {
                 `it($name, async () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
 
                 or {
-                    function($name, $body) => `async function $name() {
-                        $body
-                    }`,
-                    arrow_function($body) => `async () => $body`,
+                    function($name, $body) as $func => `async $func`,
+                    arrow_function($body, $async) where { $async <: . } as $func => `async $func`,
+                    function($body),
+                    arrow_function($body)
                     // TODO:
                     // FunctionExpression(body=$body, async=$_ => true)
                 } where {
@@ -234,7 +234,7 @@ pattern fix_await() {
             things_to_await(),
             contains things_to_await() until expression_statement()
           }
-        } => `await $exp`
+        } => `await $exp;`
     }
 }
 
