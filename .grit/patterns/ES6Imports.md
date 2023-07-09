@@ -9,18 +9,28 @@ Converts `require` statements to ES6-style `import`.
 tags: #js, #es6, #migration, #cjs, #commonjs
 
 ```grit
+engine marzano(0.1)
+language js
+
+pattern object_property($key, $value) {
+    shorthand_property_identifier_pattern() as $key
+}
+
 or {
     `const $sentry = require('@sentry/node')` => `import * as $sentry from '@sentry/node'`,
-    `const { $imports } = require($source)` => `import { $transformed } from "$source"` where {
-        $imports <: some bubble($transformed) {ObjectProperty(key=$key, value=$val) where {
-            $transformed = [...$transformed, `$key as $val`]
-        } }
-    },
+    `const { $imports } = require($source)` where {
+        $import_list = [],
+        $imports <: some bubble($import_list) {object_property($key, $value) where {
+            $import_list += $key
+            // $transformed = [...$transformed, `$key as $value`]
+        } },
+        $transformed = join(list = $import_list, separator = ", "),
+    } => `import { $transformed } from "$source"`,
     `const $import = require($source).default` => `import $import from "$source"`,
     `const $import = require($source).$foo` => `import { $foo as $import } from "$source"`,
     `const $import = require($source)` => `import $import from "$source"`, // this relies on healing for correctness
     // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
-    `require("dotenv").config($config)` => [`import * as dotenv from 'dotenv'`, `dotenv.config($config)`]
+    `require("dotenv").config($config)` => `import * as dotenv from 'dotenv';\ndotenv.config($config)`
 }
 ```
 
@@ -29,6 +39,7 @@ or {
 ```js
 const defaultImport = require('../../shared/default').default;
 const { something, another } = require('./lib');
+const { value, original: renamed } = require('something');
 const assert = require('chai').assert;
 const conf = require('chai').config;
 const starImport = require('star');
@@ -37,6 +48,7 @@ const starImport = require('star');
 ```ts
 import defaultImport from '../../shared/default';
 import { something, another } from './lib';
+import { value, original as renamed } from 'something';
 import { assert } from 'chai';
 import { config as conf } from 'chai';
 import starImport from 'star';
