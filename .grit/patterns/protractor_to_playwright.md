@@ -40,12 +40,13 @@ pattern jasmine_rewrite() {
 pattern extract_string($css_string) {
   or {
     string() as $css_string,
-    $input where $css_string = `${input}`
+    $input where $css_string = `$input`
   }
 }
 
 
 pattern change_by($selector, $locator) {
+    $t = "`",
   or {
     `buttonText` where {
         $selector <: extract_string($css_string),
@@ -54,19 +55,19 @@ pattern change_by($selector, $locator) {
     `css` where $locator = $selector,
     `id` where {
         $selector <: extract_string($css_string),
-        $locator = `#css_string`
+        $locator = `$t#css_string$t`
     },
     `model` where {
         $selector <: extract_string($css_string),
-        $locator = `[ng-model="$css_string"]`
+        $locator = `$t[ng-model="${$css_string}"]$t`
     },
     `repeater` where {
         $selector <: extract_string($css_string),
-        $locator = `[ng-repeat="$css_string"]`
+        $locator = `$t[ng-repeat="${$css_string}"]$t`
     },
     `xpath` where {
         $selector <: extract_string($css_string),
-        $locator = `xpath=$css_string`
+        $locator = `$t xpath=$css_string$t`
     }
   }
 }
@@ -80,9 +81,10 @@ pattern by_containing_text() {
         `$element(by.cssContainingText($css, $text))` where {$element <: pw_elements()},
         `by.cssContainingText($css, $text)`
     } where {
+        $t = "`",
         $css <: extract_string($css_string),
         $text <: extract_string(text_string=$text_string),
-        $locator = `$css_string >> text="$text_string"`
+        $locator = `$t$css_string >> text="$text_string"$t`,
     } => `page.locator($locator)`
 }
 
