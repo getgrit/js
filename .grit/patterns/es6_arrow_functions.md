@@ -2,8 +2,6 @@
 title: Function expressions to arrow functions
 ---
 
-# {{ page.title }}
-
 Converts function expressions to ES6 arrow functions
 
 tags: #js, #es6, #migration
