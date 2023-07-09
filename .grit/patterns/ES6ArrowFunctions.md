@@ -1,5 +1,5 @@
 ---
-title: Function expressions to arrow functions
+title: Legacy - function expressions to arrow functions
 ---
 
 # {{ page.title }}
