@@ -10,12 +10,14 @@ pattern before_each_file_stdlib() {
   before_each_file_prep_imports()
 }
 
-pattern before_each_file() {
-  before_each_file_stdlib()
-}
-
 pattern after_each_file_stdlib() {
   after_each_file_handle_imports()
+}
+
+
+// These could be redefined
+pattern before_each_file() {
+  before_each_file_stdlib()
 }
 
 pattern after_each_file() {
