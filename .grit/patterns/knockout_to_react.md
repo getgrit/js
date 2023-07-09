@@ -20,7 +20,9 @@ or {
     $body <: maybe contains bubble or {
       `this.$name = ko.observable($original)` where {
         $capitalized = capitalize(string=$name),
-        // ensureImportFrom(`useState`, "react")
+        $importable = `useState`,
+        $source = `"react"`,
+        $importable <: ensure_import_from($source)
       } => `const [$name, set$capitalized] = useState(props.$name)`,
       `this.$name = ko.computed($func, $_)` => `const name = useMemo($func)` where {
         $func <: maybe contains bubble { `this.$name()` => `$name`}
