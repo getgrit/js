@@ -15,7 +15,7 @@ pattern after_each_file_stdlib() {
 }
 
 
-// These could be redefined
+// These could be redefined in the future (not presently supported)
 pattern before_each_file() {
   before_each_file_stdlib()
 }
