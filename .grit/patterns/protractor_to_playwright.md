@@ -10,14 +10,6 @@ tags: #migration, #js, #playwright, #protractor
 engine marzano(0.1)
 language js
 
-pattern function_like($name, $args, $statements) {
-  or {
-    `function $name($args) { $statements }`,
-    `($args) => { $statements }`,
-    `($args) => $statements`
-  }
-}
-
 //========================================================================
 // High level function rewrites
 
