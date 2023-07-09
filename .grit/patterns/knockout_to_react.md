@@ -2,14 +2,12 @@
 title: Migrate Knockout to React
 ---
 
-# {{ page.title }}
-
 Knockout.js is an older JavaScript framework that is still used by many developers.
 This migration helps with migrating your Knockout code to React.
 
 tags: #react, #migration, #complex, #knockout, #framework
 
-````grit
+```grit
 engine marzano(0.1)
 language js
 
@@ -35,15 +33,15 @@ or {
 ## HelloWorld View Model
 
 ```javascript
-var ViewModel = function(first, last) {
-    this.firstName = ko.observable(first);
-    this.lastName = ko.observable(last);
+var ViewModel = function (first, last) {
+  this.firstName = ko.observable(first);
+  this.lastName = ko.observable(last);
 
-    this.fullName = ko.computed(function() {
-        return this.firstName() + " " + this.lastName();
-    }, this);
+  this.fullName = ko.computed(function () {
+    return this.firstName() + ' ' + this.lastName();
+  }, this);
 };
-````
+```
 
 ```typescript
 import { useState } from 'react';
