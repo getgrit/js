@@ -217,6 +217,7 @@ pattern main_playwright_migration() {
     }
 }
 
+
 pattern fix_await() {
     file($body) where {
         $body <: contains bubble expression_statement() as $exp where {
@@ -230,7 +231,7 @@ pattern fix_await() {
 
 sequential {
     main_playwright_migration(),
-    fix_await()
+    maybe fix_await()
 }
 ```
 
