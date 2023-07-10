@@ -13,10 +13,12 @@ engine marzano(0.1)
 language js
 
 `return $else` as $the_fallthrough where {
-    $the_fallthrough <: after if_statement($condition, $consequence, alternative = .) as $the_if, // `if ($cond) { $cond_true }` as $the_if,
-    $consequence <: contains `return $_`,
+    $the_fallthrough <: after if_statement($condition, $consequence, alternative = .) as $the_if,
+    // `if ($cond) { $cond_true }` as $the_if,
+    $consequence <: statement_block($statements),
+    $statements <: contains `return $_`,
     $the_if => `if (!$condition) { return $else }`,
-    $the_fallthrough => `$consequence`
+    $the_fallthrough => `$statements`
 }
 ```
 
@@ -71,27 +73,23 @@ export const activityHandler = async (activityObj: ActivityObject, eventType: st
     inputData: activityObj,
   });
   const customEvent = checkCustomEvent(activityObj);
-
-  if (!customEvent) {
-    return logPromise;
-  }
-
+  if (!(customEvent)) { return logPromise }
   const internalUser = InternalServiceAccount.getNamed('webhook');
-  const baseCommitObj = createCommitRef(customEvent.pull_request.head.ref);
-  const branchRefObj = createBranchRef(customEvent.pull_request.head.ref);
-  const response = await executeOperation({
-    operationName: 'platform_reply',
-    internalUser,
-    projectFullName: customEvent.project.full_name,
-    baseCommitObj,
-    branchRefObj,
-    workflowArgs: { eventType: customEvent },
-  });
-  if (!response) {
-    logger.error('failed to execute operation');
-    return false;
-  } else {
-    return Promise.all([logPromise, response.handle]);
-  }
+    const baseCommitObj = createCommitRef(customEvent.pull_request.head.ref);
+    const branchRefObj = createBranchRef(customEvent.pull_request.head.ref);
+    const response = await executeOperation({
+      operationName: 'platform_reply',
+      internalUser,
+      projectFullName: customEvent.project.full_name,
+      baseCommitObj,
+      branchRefObj,
+      workflowArgs: { eventType: customEvent },
+    });
+    if (!response) {
+      logger.error('failed to execute operation');
+      return false;
+    } else {
+      return Promise.all([logPromise, response.handle]);
+    }
 };
 ```
