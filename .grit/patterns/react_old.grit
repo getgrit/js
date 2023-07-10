@@ -9,10 +9,3 @@ predicate AddToStateDefs($stateDefs, $key, $initialVal) {
 predicate DoubleBraceToSingle($inval, $outval) {
   $outval = replaceAll($inval, r"\\{\\{([^{}]+)\\}\\}", "{$1}")
 }
-
-pattern ReactNode($name, $props, $children) {
-  or {
-    `<$name $props>$children</$name>`,
-    `<$name $props />`
-  }
-}
