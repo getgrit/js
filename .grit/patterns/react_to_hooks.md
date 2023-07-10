@@ -403,58 +403,49 @@ class App extends Component {
 ```js
 import { useState, useEffect, useCallback } from 'react';
 const App = () => {
-    const [name, setName] = useState('');
-    const [another, setAnother] = useState(3);
-    const [isOpen, setIsOpen] = useState();
+  const [name, setName] = useState('');
+  const [another, setAnother] = useState(3);
+  const [isOpen, setIsOpen] = useState();
 
-    useEffect(() => {
+  useEffect(() => {
     document.title = `You clicked ${count} times`;
   }, []);
-    useEffect(() => {
+  useEffect(() => {
     // alert("This component was mounted");
     document.title = `You clicked ${count} times`;
-    
+
     if (isOpen && !prevProps.isOpen) {
-      alert("You just opened the modal!");
+      alert('You just opened the modal!');
     }
   }, [isOpen]);
-    const alertNameHandler = useCallback(() => {
+  const alertNameHandler = useCallback(() => {
     alert(name);
   }, [name]);
-    const handleNameInputHandler = useCallback(e => {
+  const handleNameInputHandler = useCallback((e) => {
     setName(e.target.value);
-    setAnother("cooler");
+    setAnother('cooler');
   }, []);
-    const asyncAlertHandler = useCallback(async () => {
-    await alert("async alert");
+  const asyncAlertHandler = useCallback(async () => {
+    await alert('async alert');
   }, []);
 
-    return (
-      (<div>
-        <h3>This is a Class Component</h3>
-        <input
-          type="text"
-          onChange={handleNameInputHandler}
-          value={name}
-          placeholder="Your Name"
-        />
-        <button onClick={alertNameHandler}>
-          Alert
-        </button>
-        <button onClick={asyncAlertHandler}>
-          Alert
-        </button>
-      </div>)
-    ); 
+  return (
+    <div>
+      <h3>This is a Class Component</h3>
+      <input type='text' onChange={handleNameInputHandler} value={name} placeholder='Your Name' />
+      <button onClick={alertNameHandler}>Alert</button>
+      <button onClick={asyncAlertHandler}>Alert</button>
+    </div>
+  );
 };
 App.foo = 1;
-    App.fooBar = 21;
-    App.bar = (input) => {
-      console.log(input);
-  };
-    App.another = (input) => {
-      console.error(input);
-  };
+App.fooBar = 21;
+App.bar = (input) => {
+  console.log(input);
+};
+App.another = (input) => {
+  console.error(input);
+};
 ```
 
 ## MobX - Observables and Computed
@@ -492,24 +483,23 @@ class SampleComponent extends React.Component {
 import React, { useState, useCallback } from 'react';
 
 const SampleComponent = (props) => {
-    const [clicks, setClicks] = useState(props.initialCount);
+  const [clicks, setClicks] = useState(props.initialCount);
 
-    const onClickHandler = useCallback(() => {
+  const onClickHandler = useCallback(() => {
     setClicks(clicks + 1);
   }, [clicks]);
-    const isEven = useMemo(() => {
+  const isEven = useMemo(() => {
     return clicks % 2 === 0;
   }, [clicks]);
 
-    return (
-        <>
-            <p>Clicks: {clicks}</p>
-            <p>Is even: {isEven}</p>
-            <a onClick={onClickHandler}>click</a>
-        </>
-    ); 
+  return (
+    <>
+      <p>Clicks: {clicks}</p>
+      <p>Is even: {isEven}</p>
+      <a onClick={onClickHandler}>click</a>
+    </>
+  );
 };
-
 ```
 
 ## MobX - reactions
@@ -556,26 +546,25 @@ class SampleComponent extends React.Component {
 import React, { useState, useCallback, useEffect } from 'react';
 
 const SampleComponent = (props) => {
-    const [clicks, setClicks] = useState(props.initialCount);
+  const [clicks, setClicks] = useState(props.initialCount);
 
-    const onClickHandler = useCallback(() => {
+  const onClickHandler = useCallback(() => {
     setClicks(clicks + 1);
   }, [clicks]);
-    useEffect(() => {
-     console.log("clicks", clicks);
-   }, [clicks]);
-    useEffect(() => {
-     console.log("second click handler");
-   }, []);
+  useEffect(() => {
+    console.log('clicks', clicks);
+  }, [clicks]);
+  useEffect(() => {
+    console.log('second click handler');
+  }, []);
 
-    return (
-        <>
-            <p>Clicks: {clicks}</p>
-            <a onClick={onClickHandler}>click</a>
-        </>
-    ); 
+  return (
+    <>
+      <p>Clicks: {clicks}</p>
+      <a onClick={onClickHandler}>click</a>
+    </>
+  );
 };
-
 ```
 
 ## Only processes top-level components
@@ -612,18 +601,17 @@ class SampleComponent extends Component {
 ```js
 import { useRef } from 'react';
 
-import { observer } from "mobx-react";
+import { observer } from 'mobx-react';
 
 const SampleComponent = observer(() => {
-    
+  const viewState = useRef(new ViewState());
 
-    const viewState = useRef(new ViewState());
-
-    return (
-        <p>This component has a <span onClick={viewState.click}>ViewState</span></p>
-    ); 
+  return (
+    <p>
+      This component has a <span onClick={viewState.click}>ViewState</span>
+    </p>
+  );
 });
-
 ```
 
 ## Prop types are preserved
@@ -690,21 +678,17 @@ import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 const Foo = () => {
-    
-
-    useEffect(() => {
+  useEffect(() => {
     console.log('mounted');
   }, []);
-    useEffect(() => { 
+  useEffect(() => {
     return () => {
-    console.log('unmounted');
-  };
-});
+      console.log('unmounted');
+    };
+  });
 
-    return <p>Foo</p>; 
+  return <p>Foo</p>;
 };
-
-
 
 export default Foo;
 ```
@@ -735,18 +719,13 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 
 const Link = (props) => {
-    
+  const { href } = props;
 
-    
-
-    const { href } = props;
-
-    return <a href={href}>Link Text</a>; 
+  return <a href={href}>Link Text</a>;
 };
 Link.propTypes = {
-    href: PropTypes.string.isRequired,
-  };
-
+  href: PropTypes.string.isRequired,
+};
 
 export default Link;
 ```
@@ -827,22 +806,23 @@ interface Person {
 }
 
 const ObservedComponent = (inputProps) => {
-    const [me, setMe] = useState<Person>({
-    name: "John",
+  const [me, setMe] = useState<Person>({
+    name: 'John',
   });
 
-    const props = { 
-    king: "viking",
+  const props = {
+    king: 'viking',
     ...inputProps,
   };
 
-    return (
-      <>
-        <p>This is {me.name}, {props.king}</p>
-      </>
-    ); 
+  return (
+    <>
+      <p>
+        This is {me.name}, {props.king}
+      </p>
+    </>
+  );
 };
-
 ```
 
 # Examples
