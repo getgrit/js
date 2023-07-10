@@ -173,12 +173,11 @@ pattern main_playwright_migration() {
                 `it($name, async () => {$testBody})`      => `test($name, async function ({page}) {$testBody})`,
 
                 or {
-                    function($name, $body) as $func => `async $func`,
+                    function($body, $async) where { $async <: . } as $func => `async $func`,
                     arrow_function($body, $async) where { $async <: . } as $func => `async $func`,
                     function($body),
-                    arrow_function($body)
-                    // TODO:
-                    // FunctionExpression(body=$body, async=$_ => true)
+                    arrow_function($body),
+                    function_declaration($body),
                 } where {
                     $body <: contains bubble or {
                         jasmine_rewrite(),
@@ -217,7 +216,6 @@ pattern main_playwright_migration() {
         after_each_file()
     }
 }
-
 
 pattern fix_await() {
     file($body) where {
