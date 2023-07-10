@@ -341,18 +341,13 @@ async function attributeNotToMatch(selector, attr, text, { timeout } = {}) {
 ```
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 async function attributeNotToMatch(selector, attr, text, { timeout } = {}) {
   let actual = '';
 
-  return await page.waitForFunction(
-    async () => {
+  return page.waitForFunction(async () => {
       actual = await attribute(selector, attr, { timeout });
       return !doMatch(actual, text);
-    },
-    {
-      timeout: utils.getTimeout(timeout),
-    },
-  );
+    }, { timeout: utils.getTimeout(timeout) });
 }
 ```
