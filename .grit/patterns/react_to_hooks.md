@@ -2,7 +2,7 @@
 title: Convert React Class Components to Functional Components
 ---
 
-# {{ page.title }}
+This pattern converts React class components to functional components, with hooks.
 
 tags: #react, #migration, #complex
 
@@ -380,7 +380,7 @@ const App = () => {
     // alert("This component was mounted");
     document.title = `You clicked ${count} times`;
     if (isOpen && !prevProps.isOpen) {
-      alert("You just opened the modal!");
+      alert('You just opened the modal!');
     }
   }, []);
 
@@ -388,42 +388,33 @@ const App = () => {
     alert(name);
   }, []);
 
-  const handleNameInputHandler = useCallback(e => {
+  const handleNameInputHandler = useCallback((e) => {
     setName(e.target.value);
-    setAnother("cooler");
+    setAnother('cooler');
   }, []);
 
   const asyncAlertHandler = useCallback(async () => {
-    await alert("async alert");
+    await alert('async alert');
   }, []);
 
   return (
-    (<div>
+    <div>
       <h3>This is a Class Component</h3>
-      <input
-        type="text"
-        onChange={handleNameInputHandler}
-        value={name}
-        placeholder="Your Name"
-      />
-      <button onClick={alertNameHandler}>
-        Alert
-      </button>
-      <button onClick={asyncAlertHandler}>
-        Alert
-      </button>
-    </div>)
+      <input type='text' onChange={handleNameInputHandler} value={name} placeholder='Your Name' />
+      <button onClick={alertNameHandler}>Alert</button>
+      <button onClick={asyncAlertHandler}>Alert</button>
+    </div>
   );
 };
 
 App.foo = 1;
 App.fooBar = 21;
 
-App.bar = input => {
+App.bar = (input) => {
   console.log(input);
 };
 
-App.another = input => {
+App.another = (input) => {
   console.error(input);
 };
 ```
@@ -462,7 +453,7 @@ class SampleComponent extends React.Component {
 ```js
 import React, { useCallback, useState } from 'react';
 
-const SampleComponent = props => {
+const SampleComponent = (props) => {
   const [clicks, setClicks] = useState(props.initialCount);
 
   const onClickHandler = useCallback(() => {
@@ -473,11 +464,13 @@ const SampleComponent = props => {
     return clicks % 2 === 0;
   }, [clicks]);
 
-  return (<>
-    <p>Clicks: {clicks}</p>
-    <p>Is even: {isEven}</p>
-    <a onClick={onClickHandler}>click</a>
-  </>);
+  return (
+    <>
+      <p>Clicks: {clicks}</p>
+      <p>Is even: {isEven}</p>
+      <a onClick={onClickHandler}>click</a>
+    </>
+  );
 };
 ```
 
@@ -524,7 +517,7 @@ class SampleComponent extends React.Component {
 ```js
 import React, { useCallback, useState } from 'react';
 
-const SampleComponent = props => {
+const SampleComponent = (props) => {
   const [clicks, setClicks] = useState(props.initialCount);
 
   const onClickHandler = useCallback(() => {
@@ -532,24 +525,26 @@ const SampleComponent = props => {
   }, []);
 
   useEffect(() => {
-    console.log("clicks", clicks);
+    console.log('clicks', clicks);
   }, [clicks]);
 
   useEffect(() => {
-    console.log("second click handler");
+    console.log('second click handler');
   }, [props]);
 
-  return (<>
-    <p>Clicks: {clicks}</p>
-    <a onClick={onClickHandler}>click</a>
-  </>);
+  return (
+    <>
+      <p>Clicks: {clicks}</p>
+      <a onClick={onClickHandler}>click</a>
+    </>
+  );
 };
 ```
 
 ## Only processes top-level components
 
 ```js
-import React from "react";
+import React from 'react';
 
 class FooClass {
   static component = class extends React.Component {
@@ -584,14 +579,18 @@ import { observer } from 'mobx-react';
 
 const SampleComponent = observer(() => {
   const viewState = useRef(new ViewState());
-  return (<p>This component has a<span onClick={viewState.click}>ViewState</span></p>);
+  return (
+    <p>
+      This component has a<span onClick={viewState.click}>ViewState</span>
+    </p>
+  );
 });
 ```
 
 ## Prop types are preserved
 
 ```js
-import React from "react";
+import React from 'react';
 
 interface Props {
   name: string;
@@ -609,32 +608,34 @@ class SampleComponent extends React.Component<Props> {
 ```
 
 ```ts
-import React from "react";
+import React from 'react';
 
 interface Props {
   name: string;
 }
 
 const SampleComponent = (props: Props) => {
-  return (<>
-    <p>Hello {props.name}</p>
-  </>);
+  return (
+    <>
+      <p>Hello {props.name}</p>
+    </>
+  );
 };
 ```
 
 ## Handle lifecycle events
 
 ```js
-import { Component } from "react";
-import PropTypes from "prop-types";
+import { Component } from 'react';
+import PropTypes from 'prop-types';
 
 class Foo extends Component {
   componentDidMount() {
-    console.log("mounted");
+    console.log('mounted');
   }
 
   componentWillUnmount() {
-    console.log("unmounted");
+    console.log('unmounted');
   }
 
   render() {
@@ -646,17 +647,17 @@ export default Foo;
 ```
 
 ```js
-import { Component, useEffect } from "react";
-import PropTypes from "prop-types";
+import { Component, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
 const Foo = () => {
   useEffect(() => {
-    console.log("mounted");
+    console.log('mounted');
   }, []);
 
   useEffect(() => {
     return () => {
-      console.log("unmounted");
+      console.log('unmounted');
     };
   });
 
@@ -669,8 +670,8 @@ export default Foo;
 ## Pure JavaScript works, with no types inserted
 
 ```js
-import { Component } from "react";
-import PropTypes from "prop-types";
+import { Component } from 'react';
+import PropTypes from 'prop-types';
 
 class Link extends Component {
   static propTypes = {
@@ -688,13 +689,11 @@ export default Link;
 ```
 
 ```js
-import { Component } from "react";
-import PropTypes from "prop-types";
+import { Component } from 'react';
+import PropTypes from 'prop-types';
 
-const Link = props => {
-  const {
-    href
-  } = props;
+const Link = (props) => {
+  const { href } = props;
 
   return <a href={href}>Link Text</a>;
 };
@@ -731,15 +730,19 @@ class ObservedComponent extends React.Component {
 ```
 
 ```ts
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 const ObservedComponent = () => {
   const [name, setName] = useState<string>(undefined);
   const [age, setAge] = useState(21);
 
-  return (<>
-    <p>Hello {name}, you are {age}</p>
-  </>);
+  return (
+    <>
+      <p>
+        Hello {name}, you are {age}
+      </p>
+    </>
+  );
 };
 ```
 
@@ -771,7 +774,7 @@ class ObservedComponent extends React.Component {
 ```
 
 ```ts
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 interface Person {
   name: string;
@@ -779,17 +782,21 @@ interface Person {
 
 const ObservedComponent = (inputProps: any) => {
   const props = {
-    king: "viking",
-    ...inputProps
+    king: 'viking',
+    ...inputProps,
   };
 
   const [me, setMe] = useState<Person>({
-    name: "John",
+    name: 'John',
   });
 
-  return (<>
-    <p>This is {me.name}, {props.king}</p>
-  </>);
+  return (
+    <>
+      <p>
+        This is {me.name}, {props.king}
+      </p>
+    </>
+  );
 };
 ```
 
