@@ -1,0 +1,119 @@
+engine marzano(0.1)
+language js
+
+pattern expect_is($actual) {
+    or {
+       `expect($actual)` => `t.is`,
+       `expect($actual).not` => `t.not`,
+    }
+}
+
+pattern expect_not($actual) {
+    or {
+       `expect($actual)` => `t.not`,
+       `expect($actual).not` => `t.is`,
+    }
+}
+
+pattern expect_true($actual) {
+    or {
+       `expect($actual)` => `t.true`,
+       `expect($actual).not` => `t.false`,
+    }
+}
+
+// TODO: Compose with `expect_{is, not, true}`?
+pattern expect_resolves($actual, $expected) {
+    or {
+        `expect($actual)` => `t.is($actual, $expected)`,
+        `expect($actual).resolves` => `$actual.then(result => t.is(result, $expected))`,
+    }
+}
+
+or {
+    `test($name, () => {$body})` => `test($name, t => {\n  $body})`,
+
+    `expect($actual).toEqual($expected)` => `t.deepEqual($actual, $expected)`,
+    `expect($actual).not.toEqual($expected)` => `t.notDeepEqual($actual, $expected)`,
+    `expect($actual).toBe($expected)` => `t.is($actual, $expected)`,
+    `expect($actual).not.toBe($expected)` => `t.not($actual, $expected)`,
+    `expect($actual).toBeTruthy()` => `t.truthy($actual)`,
+    `expect($actual).not.toBeTruthy()` => `t.falsy($actual)`,
+    `expect($actual).toBeFalsy()` => `t.falsy($actual)`,
+    `expect($actual).not.toBeFalsy()` => `t.truthy($actual)`,
+    `expect($fn).toThrow($expected)` => `t.throws($fn, $expected)`,
+    `expect($promise).rejects.toThrow($expected)` => `t.throwsAsync($promise, $expected)`,
+    `expect($fn).not.toThrow($expected)` => `t.notThrows($fn, $expected)`,
+    `expect($promise).not.rejects.toThrow($expected)` => `t.notThrowsAsync($promise, $expected)`,
+
+    // TODO: Handle .resolves, .rejects in a generic way
+    `$expect.toHaveLength($length)` where { $expect <: expect_is($actual) } => `$expect($actual.length, $length)`,
+    `$expect.toBeCloseTo($expected, $numDigits)` where { $expect <: expect_true($actual) } => `$expect(Math.abs($actual - $expected) < 10 ** -$numDigits / 2)`,
+    `$expect.toBeCloseTo($args)` where { $expect <: expect_true($actual), $args <: [$expected] } => `$expect(Math.abs($actual - $expected) < 0.005)`, 
+    `$expect.toBeDefined()` where { $expect <: expect_not($actual) } => `$expect($actual, undefined)`,
+    `$expect.toBeGreaterThan($number)` where { $expect <: expect_true($actual) } => `$expect($actual > $number)`,
+    `$expect.toBeGreaterThanOrEqual($number)` where { $expect <: expect_true($actual) } => `$expect($actual >= $number)`,
+    `$expect.toBeLessThan($number)` where { $expect <: expect_true($actual) } => `$expect($actual < $number)`,
+    `$expect.toBeLessThanOrEqual($number)` where { $expect <: expect_true($actual) } => `$expect($actual <= $number)`,
+    `$expect.toBeInstanceOf($class)` where { $expect <: expect_true($instance) } => `$expect($instance instanceof $class)`,
+    `$expect.toBeNull()` where { $expect <: expect_is($actual) } => `$expect($actual, null)`,
+    `$expect.toBeUndefined()` where { $expect <: expect_is($actual) } => `$expect($actual, undefined)`,
+    `$expect.toBeNaN()` where { $expect <: expect_is($actual) } => `$expect($actual, NaN)`,
+    `$expect.toMatch($string)` where { $expect <: expect_is($actual) } => `$expect($actual, $string)` where { $string <: string() },
+    `expect($actual).toMatch($regex)` => `t.regex($actual, $regex)` where { $regex <: regex() },
+    `expect($actual).toMatch($regex)` => `t.regex($actual, $regex)`, // Fallback due to lack of `semantic`
+
+    //
+    // TODO: Everything below
+    //
+
+    // Requires mocking library like Sinon.js
+    `expect($actual).toHaveBeenCalled()` => ``,
+    `expect($actual).toHaveBeenCalledTimes($number)` => ``,
+    `expect($actual).toHaveBeenCalledWith($args)` => ``,
+    `expect($actual).toHaveBeenLastCalledWith($args)` => ``,
+    `expect($actual).toHaveBeenNthCalledWith($nth, $arg0, $arg1, $arg2)` => ``,
+    `expect($actual).toHaveReturned()` => ``,
+    `expect($actual).toHaveReturnedTimes($number)` => ``,
+    `expect($actual).toHaveReturnedWith($value)` => ``,
+    `expect($actual).toHaveLastReturnedWith($value)` => ``,
+    `expect($actual).toHaveNthReturnedWith($nthCall, $value)` => ``,
+
+    // Requires path selection logic
+    `expect($actual).toHaveProperty($keyPath, $value)` => ``,
+
+	// === on array items, or substring on string
+    `expect($actual).toContain($item)` => ``,
+
+	// deepEqual on array items
+    `expect($actual).toContainEqual($item)` => ``,
+
+    `expect($actual).toMatchObject($object)` => ``,
+    `expect($actual).toMatchSnapshot($propertyMatchers, $hint)` => ``,
+    `expect($actual).toMatchInlineSnapshot($propertyMatchers, $inlineSnapshot)` => ``,
+
+    // TODO: Check Ava.js / Concordance behavior
+    `expect($actual).toStrictEqual($value)` => ``,
+
+    `expect($actual).toThrowErrorMatchingSnapshot($hint)` => ``,
+    `expect($actual).toThrowErrorMatchingInlineSnapshot($inlineSnapshot)` => ``,
+
+    `expect.anything()` => ``,
+    `expect.any($constructor)` => ``,
+    `expect.arrayContaining($array)` => ``,
+    `expect.not.arrayContaining($array)` => ``,
+    `expect.closeTo($number)` => ``,
+    `expect.closeTo($number, $numDigits)` => ``,
+    `expect.objectContaining($object)` => ``,
+    `expect.not.objectContaining($object)` => ``,
+    `expect.stringContaining($object)` => ``,
+    `expect.not.stringContaining($object)` => ``,
+    `expect.stringMatching($stringOrRegexp)` => ``,
+    `expect.not.stringMatching($stringOrRegexp)` => ``,
+
+	`expect.assertions($number)` => ``,
+	`expect.hasAssertions()` => ``,
+	`expect.addEqualityTesters($testers)` => ``,
+	`expect.addSnapshotSerializer($serializer)` => ``,
+	`expect.extend($matchers)` => ``,
+}
