@@ -2,7 +2,7 @@
 title: Import management
 ---
 
-Grit includes standard functions for declaratively adding, removing, and updating imports.
+Grit includes standard patterns for declaratively adding, removing, and updating imports.
 
 ```grit
 and {
