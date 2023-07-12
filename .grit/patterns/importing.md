@@ -11,7 +11,7 @@ language js
 and {
     before_each_file(),
     contains or {
-            `v4` as $v4 where {
+        `v4` as $v4 where {
           $source = `"uuid"`,
           // Use ensure_import_from to ensure a metavariable is imported.
           $v4 <: ensure_import_from($source),
