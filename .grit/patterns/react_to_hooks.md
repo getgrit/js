@@ -304,10 +304,6 @@ pattern rewrite_accesses($hoisted_states) {
                     $statements += `set$capitalized($identifier);`
                 }
             },
-            $x <: contains bubble($statements) shorthand_property_identifier() as $identifier where {
-                $capitalized = capitalize(string = $identifier),
-                $statements += `set$capitalized($identifier);`
-            },
             $separator = `\n    `,
             // a bit of hack because we cannot use a code snippet as an argument to a builtin function yet
             $separator += "",
