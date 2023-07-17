@@ -78,7 +78,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 },
                 or {
                     and {
-                        $type <:  type_annotation(type = $inner_type),
+                        $type <: type_annotation(type = $inner_type),
                         $states_statements += `const [$name, set$capitalized] = useState<$inner_type>($after_value);`
                     },
                     and {
@@ -200,6 +200,29 @@ pattern first_step() {
         // todo: replace contains with list pattern match once we have the field set
         // we are missing a field for the statements in class_body
         $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements),
+        $program <: maybe contains interface_declaration(body=$interface, name=$interface_name) where {
+            $interface_name <: js"State",
+            $interface <: contains bubble($states_statements, $body) {
+                property_signature($name, $type) where {
+                    $type <: type_annotation(type = $inner_type),
+                    $capitalized = capitalize(string = $name),
+                    $body <: not contains or {
+                        public_field_definition(name=$public_name, $value) where or {
+                            $public_name <: $name,
+                            and {
+                                $public_name <: js"state",
+                                $value <: contains $name
+                            }
+                        },
+                        method_definition(name=$method_name) where {
+                            $method_name <: js"constructor",
+                            $body <: contains `this.state.$name = $_`
+                        }
+                    },
+                    $states_statements += `const [$name, set$capitalized] = useState<$inner_type | undefined>(undefined);`
+                }
+            }            
+        },
         $body <: not contains `componentDidCatch`,
         $class <: not within class_declaration(name = not $class_name),
 
