@@ -279,11 +279,14 @@ pattern find_dependencies($hoisted_states, $dependencies) {
     }
 }
 
-pattern rewrite_accesses($hoisted_states) {
+pattern rewrite_accesses($hoisted_states, $hoisted_refs) {
     or {
         `this.state.$x` => `$x`,
         `this.$property` as $p where {
-            if ($hoisted_states <: some $property) {
+            if (or {
+                $hoisted_states <: some $property,
+                $hoisted_refs <: some $property
+            }) {
                 $p => `${property}`
             } else {
                 $p => `${property}Handler`
@@ -292,10 +295,16 @@ pattern rewrite_accesses($hoisted_states) {
 
         lexical_declaration(declarations = [variable_declarator(value = or { `this.state`, `this` })]) => .,
 
-        assignment_expression($left, $right) as $assignment where {
-            $hoisted_states <: some $left,
-            $capitalized = capitalize(string = $left),
-            $assignment => `set${capitalized}($right)`
+        assignment_expression($left, $right) as $assignment where or {
+            and {
+                $hoisted_refs <: some $left,
+                $assignment => `$left.current = $right`
+            },
+            and {
+                $hoisted_states <: some $left,
+                $capitalized = capitalize(string = $left),
+                $assignment => `set${capitalized}($right)`
+            },
         },
 
         `this.setState($x)` as $set_state where {
@@ -336,51 +345,55 @@ pattern rewrite_accesses($hoisted_states) {
     }
 }
 
-pattern gather_accesses($hoisted_states) {
-    contains bubble($hoisted_states) variable_declarator($name, $value) where {
+pattern gather_accesses($hoisted_states, $hoisted_refs) {
+    contains bubble($hoisted_states, $hoisted_refs) variable_declarator($name, $value) where {
         or {
             and {
                 $name <: array_pattern(elements = [$used_name, $_]),
-                $value <: `useState($_)`
+                $value <: `useState($_)`,
+                $hoisted_states += $name
             },
             and {
                 $name <: $used_name,
-                $value <: or { `useRef($_)`, `useMemo($_, $_)` }
+                $value <: `useRef($_)`,
+                $hoisted_refs += $name
             }
         },
-        $hoisted_states += $name
     },
 
-    contains bubble($hoisted_states) or {
+   contains bubble($hoisted_states, $hoisted_refs) or {
         variable_declarator(
             name = array_pattern(elements = [$name, $_]),
             value = `useState($_)`
         ) as $var where {
             $var <: not within object()
-        },
+        } where $hoisted_states += $name,
         variable_declarator(
             name = $name,
-            value = or { `useRef($_)`, `useMemo($_, $_)` }
-        )
-    } where $hoisted_states += $name
+            value = `useRef($_)`
+        ) as $var where {
+            $var <: not within object()
+        } where $hoisted_refs += $name,
+    }
 }
 
 pattern second_step() {
     maybe and {
         $hoisted_states = [],
+        $hoisted_refs = [],
         $hoisted_states += `props`,
         program($statements) where {
             and {
-                $statements <: maybe gather_accesses($hoisted_states),
+                $statements <: maybe gather_accesses($hoisted_states, $hoisted_refs),
                 $statements <: some or {
                     export_statement(
                         decorator = contains `@observer` => .,
-                        declaration = lexical_declaration(declarations = contains rewrite_accesses($hoisted_states))
+                        declaration = lexical_declaration(declarations = contains rewrite_accesses($hoisted_states, $hoisted_refs))
                     ),
                     export_statement(
-                        declaration = lexical_declaration(declarations = contains rewrite_accesses($hoisted_states))
+                        declaration = lexical_declaration(declarations = contains rewrite_accesses($hoisted_states, $hoisted_refs))
                     ),
-                    lexical_declaration(declarations = contains rewrite_accesses($hoisted_states))
+                    lexical_declaration(declarations = contains rewrite_accesses($hoisted_states, $hoisted_refs))
                 }
             }
         }
