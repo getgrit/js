@@ -839,6 +839,37 @@ const ObservedComponent = (inputProps) => {
 };
 ```
 
+## State defined as class attribute
+
+```js
+import { Component } from 'react';
+
+class Link extends Component {
+  state = {
+    visible: false,
+  };
+
+  render() {
+    return <></>;
+  }
+}
+
+export default Link;
+```
+
+```js
+import { useState } from 'react';
+
+const Link = () => {
+  const [visible, setVisible] = useState(false);
+
+  return <></>;
+};
+
+export default Link;
+```
+
+
 # Examples
 
 ## From gutenberg
