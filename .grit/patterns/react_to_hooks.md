@@ -61,10 +61,16 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 $name <: `defaultProps`,
                 $statements += `const props = { \n    $properties,\n    ...inputProps,\n  };`
             },
-
             and {
                 $static <: `static`,
-                $static_statements += `$class_name.$name = $value;`
+                or {
+                    and {
+                        $value <: .,
+                        $after_value = `undefined`,
+                    },
+                    $after_value = $value,
+                },
+                $static_statements += `$class_name.$name = $after_value;`
             },
             and {
                 $statement <: after `@observable`,
