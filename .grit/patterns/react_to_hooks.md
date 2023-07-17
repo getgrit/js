@@ -898,6 +898,39 @@ const Link = () => {
 export default Link;
 ```
 
+## State defined in interface
+
+```js
+import { Component } from 'react';
+
+class Link extends Component<Props, State> {
+  render() {
+    return <></>;
+  }
+}
+
+interface State {
+  visible?: boolean;
+}
+
+export default Link;
+```
+
+```js
+import { useState } from 'react';
+
+const Link = () => {
+  const [visible, setVisible] = useState<boolean | undefined>(undefined);
+
+  return <></>;
+};
+
+interface State {
+  visible?: boolean;
+}
+
+export default Link;
+```
 
 # Examples
 
