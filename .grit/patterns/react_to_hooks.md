@@ -38,7 +38,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             },
             and {
                 $async <: `async`,
-                $statements += `const ${name}Handler = useCallback(async () => $body, []);`
+                $statements += `const ${name}Handler = useCallback(async $parameters => $body, []);`
             },
             and {
                 $statement <: after `@computed`,
