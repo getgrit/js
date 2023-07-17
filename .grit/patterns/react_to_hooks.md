@@ -291,6 +291,10 @@ pattern rewrite_accesses($hoisted_states) {
                 $capitalized = capitalize(string = $key),
                 $statements += `set$capitalized($value);`
             },
+            $x <: contains bubble($statements) shorthand_property_identifier() as $identifier where {
+                $capitalized = capitalize(string = $identifier),
+                $statements += `set$capitalized($identifier);`
+            },
             $separator = `\n    `,
             // a bit of hack because we cannot use a code snippet as an argument to a builtin function yet
             $separator += "",
@@ -365,7 +369,7 @@ pattern second_step() {
 }
 
 sequential {
-    file(body = program(statements = some bubble first_step())),
+    file(body = program(statements = some bubble($program) first_step())),
     file(body = second_step()),
     file(body = second_step()),
     file(body = second_step()),
