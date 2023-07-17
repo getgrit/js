@@ -354,7 +354,7 @@ pattern gather_accesses($hoisted_states) {
             name = array_pattern(elements = [$name, $_]),
             value = `useState($_)`
         ) as $var where {
-            $var <: within object()
+            $var <: not within object()
         },
         variable_declarator(
             name = $name,
