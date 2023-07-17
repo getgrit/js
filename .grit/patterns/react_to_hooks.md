@@ -1028,6 +1028,40 @@ interface State {
 export default Link;
 ```
 
+## Initializes and sets refs correctly
+
+```js
+import { Component } from 'react';
+
+class Link extends Component {
+  private previouslyFocusedTextInput: InputHandle = {}
+  show(options: Options): void {
+    this.previouslyFocusedTextInput = KeyboardHelper.currentlyFocusedInput()
+  }
+
+  render() {
+    return <></>;
+  }
+}
+
+export default Link;
+```
+
+```ts
+import { useRef, useCallback } from 'react';
+
+const Link = () => {
+  const previouslyFocusedTextInput = useRef({});
+  const showHandler = useCallback((options: Options) => {
+    previouslyFocusedTextInput.current = KeyboardHelper.currentlyFocusedInput()
+  }, []);
+
+  return <></>;
+};
+
+export default Link;
+```
+
 # Examples
 
 ## From gutenberg
