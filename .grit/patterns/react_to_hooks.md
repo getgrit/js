@@ -92,8 +92,11 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             },
             and {
                 $name <: js"state",
-                $value <: object($properties) where $properties <: pair($key, value=$val) where {
-                    $states_statements += `const [$key, set$key] = useState($val);`
+                $value <: object($properties) where {
+                    $properties <: contains bubble($states_statements) pair($key, value=$val) where {
+                        $capitalized = capitalize(string = $key),
+                        $states_statements += `const [$key, set$capitalized] = useState($val);`
+                    }
                 }
             },
             and {
