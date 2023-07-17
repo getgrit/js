@@ -191,17 +191,24 @@ pattern first_step() {
         },
 
         if ($class <: contains extends_clause(type_arguments = contains type_arguments($types))) {
-            $types <: [$first_type, ...],
-            $type_annotation = `: $first_type`
+            or {
+                $types <: [$props_type, $state_type, ...],
+                and {
+                    $types <: [$props_type, ...],
+                    $state_type = .
+                }
+            },
+            $type_annotation = `: $props_type`,
         } else {
-            $type_annotation = .
+            $type_annotation = .,
+            $state_type = .
         },
 
         // todo: replace contains with list pattern match once we have the field set
         // we are missing a field for the statements in class_body
         $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements),
         $program <: maybe contains interface_declaration(body=$interface, name=$interface_name) where {
-            $interface_name <: js"State",
+            $state_type <: $interface_name,
             $interface <: contains bubble($states_statements, $body) {
                 property_signature($name, $type) where {
                     $type <: type_annotation(type = $inner_type),
