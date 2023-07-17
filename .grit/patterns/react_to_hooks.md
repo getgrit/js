@@ -938,6 +938,26 @@ class InnerStuff extends Component<Props, State> {
 }
 ```
 
+```ts
+import React, { useState, useCallback, ReactNode } from 'react';
+
+const InnerStuff = () => {
+  const [visible, setVisible] = useState(false);
+  const [showDetails, setShowDetails] = useState(true);
+
+  const showHandler = useCallback(
+    (options: Options) => {
+      const { otherStuff, showDetails = true } = options;
+
+      console.log('options are', showDetails);
+    },
+    [showDetails],
+  );
+
+  return <>Component</>;
+};
+```
+
 ## State defined in interface
 
 ```js
