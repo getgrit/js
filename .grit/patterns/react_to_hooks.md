@@ -91,6 +91,12 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 $statements += `const ${name}Handler = useCallback($value, []);`
             },
             and {
+                $name <: js"state",
+                $value <: object($properties) where $properties <: pair($key, value=$val) where {
+                    $states_statements += `const [$key, set$key] = useState($val);`
+                }
+            },
+            and {
                 $statements += `const $name = useRef($value);`
             }
         },
