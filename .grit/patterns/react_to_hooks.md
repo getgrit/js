@@ -140,7 +140,10 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                             $type <: type_annotation(type = $inner_type),
                             and {
                                 $value <: contains js"createRef",
-                                $statement <: contains type_identifier() as $inner_type
+                                $statement <: contains or { 
+                                    type_identifier(),
+                                    predefined_type() 
+                                } as $inner_type
                             }
                         },
                         $statements += `const $name = useRef<$inner_type>($new_value);`
@@ -1086,6 +1089,7 @@ export default Link;
 import { Component } from 'react';
 
 class Link extends Component {
+  input = React.createRef<string>()
   private previouslyFocusedTextInput: InputHandle = {}
   show(options: Options): void {
     this.previouslyFocusedTextInput = KeyboardHelper.currentlyFocusedInput()
@@ -1103,6 +1107,7 @@ export default Link;
 import { useRef, useCallback } from 'react';
 
 const Link = () => {
+  const input = useRef<string>();
   const previouslyFocusedTextInput = useRef<InputHandle>({});
   const showHandler = useCallback((options: Options) => {
     previouslyFocusedTextInput.current = KeyboardHelper.currentlyFocusedInput()
