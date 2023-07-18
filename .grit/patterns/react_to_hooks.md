@@ -71,6 +71,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                     },
                     $after_value = $value,
                 },
+                $statement <: prepend_comment(statements=$static_statements),
                 $static_statements += `$class_name.$name = $after_value;`
             },
             and {
@@ -106,22 +107,31 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                     }
                 }
             },
-            or {
-                and {
-                    or {
-                        and {
-                            $statement <: contains js"?",
-                            $type <: type_annotation(type=$annotated),
-                            $annotated <: not contains js"undefined",
-                            $inner_type = js"$annotated | undefined"
+            and {
+                $statement <: prepend_comment($statements),
+                or {
+                    and {
+                        or {
+                            and {
+                                $statement <: contains js"?",
+                                $type <: type_annotation(type=$annotated),
+                                $annotated <: not contains js"undefined",
+                                $inner_type = js"$annotated | undefined"
+                            },
+                            $type <: type_annotation(type = $inner_type),
                         },
-                        $type <: type_annotation(type = $inner_type),
+                        $statements += `const $name = useRef<$inner_type>($value);`
                     },
-                    $statements += `const $name = useRef<$inner_type>($value);`
-                },
-                $statements += `const $name = useRef($value);`
+                    $statements += `const $name = useRef($value);`
+                }
             }
         },
+    }
+}
+
+pattern prepend_comment($statements) {
+    maybe after comment() as $comment where {
+        $statements += js"$comment"
     }
 }
 
@@ -279,7 +289,7 @@ pattern first_step() {
         },
 
         $static_statements = join(list = $static_statements, $separator),
-        $class => `$the_const\n$static_statements\n`
+        $class => `$the_const\n\n$static_statements\n`
     }
 }
 
