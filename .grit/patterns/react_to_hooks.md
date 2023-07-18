@@ -1100,6 +1100,7 @@ class Link extends Component {
   input = React.createRef<string>()
   private previouslyFocusedTextInput: InputHandle = {}
   show(options: Options): void {
+    this.input.current = 'Hello world'
     this.previouslyFocusedTextInput = KeyboardHelper.currentlyFocusedInput()
   }
 
@@ -1118,6 +1119,7 @@ const Link = () => {
   const input = useRef<string>();
   const previouslyFocusedTextInput = useRef<InputHandle>({});
   const showHandler = useCallback((options: Options) => {
+    input.current = 'Hello world'
     previouslyFocusedTextInput.current = KeyboardHelper.currentlyFocusedInput()
   }, []);
 
