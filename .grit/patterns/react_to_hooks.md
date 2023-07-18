@@ -51,6 +51,11 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             },
             and {
                 $statement <: prepend_comment($statements),
+                $statement <: contains js"get",
+                $statements += `const ${name} = useMemo(() => $body, []);`
+            },
+            and {
+                $statement <: prepend_comment($statements),
                 $statements += `const ${name}Handler = useCallback($parameters => $body, []);`
             }
         },
