@@ -286,10 +286,11 @@ pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos) {
         `this.$property` as $p where {
             if (or {
                 $hoisted_states <: some $property,
-                $hoisted_refs <: some $property,
                 $use_memos <: some $property
             }) {
                 $p => `${property}`
+            } else if ($hoisted_refs <: some $property) {
+                $p => `${property}.current`
             } else {
                 $p => `${property}Handler`
             }
