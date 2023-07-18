@@ -18,11 +18,13 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 $body <: change_this($states_statements)
             },
             and {
+                $statement <: prepend_comment($statements),
                 $name <: or { `componentDidUpdate`, `componentDidMount` },
                 $body <: change_this($states_statements),
                 $statements += `useEffect(() => $body, []);`
             },
             and {
+                $statement <: prepend_comment($statements),
                 $name <: `componentWillUnmount`,
                 $body <: change_this($states_statements),
                 $statements += `useEffect(() => { \n    return () => $body;\n});`
@@ -32,19 +34,23 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 $body <: statement_block(statements = $render_statements)
             },
             and {
+                $statement <: prepend_comment(statements=$static_statements),
                 $static <: `static`,
                 $body <: change_this($states_statements),
                 $static_statements += `$class_name.$name = $parameters => $body;`
             },
             and {
+                $statement <: prepend_comment($statements),
                 $async <: `async`,
                 $statements += `const ${name}Handler = useCallback(async $parameters => $body, []);`
             },
             and {
+                $statement <: prepend_comment($statements),
                 $statement <: after `@computed`,
                 $statements += `const ${name} = useMemo(() => $body, []);`
             },
             and {
+                $statement <: prepend_comment($statements),
                 $statements += `const ${name}Handler = useCallback($parameters => $body, []);`
             }
         },
