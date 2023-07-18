@@ -263,7 +263,10 @@ pattern first_step() {
                         },
                         method_definition(name=$method_name) where {
                             $method_name <: js"constructor",
-                            $body <: contains `this.state.$name = $_`
+                            $body <: contains  or {
+                                `this.state.$name = $_`,
+                                js"this.state = $obj" where $obj <: contains pair(key=$name)
+                            }
                         }
                     },
                     $states_statements += `const [$name, set$capitalized] = useState<$inner_type | undefined>(undefined);`
