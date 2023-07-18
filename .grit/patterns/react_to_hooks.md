@@ -1088,6 +1088,42 @@ const Link = () => {
 export default Link;
 ```
 
+## Preserves comments
+
+```js
+class MyComponent extends Component<PropsWithChildren> {
+  /**
+   * Comment on a static variable
+   */
+  private static someVariable: number | undefined
+
+  /**
+   * Comment on a private class property
+   */
+  private lucy = 'good'
+
+  render() {
+      return <></>
+  }
+}
+```
+
+```ts
+const MyComponent = () => {  
+  /**
+   * Comment on a private class property
+   */
+  const lucy = useRef('good')
+
+  return <></>
+}
+
+/**
+ * Comment on a static variable
+ */
+MyComponent.someVariable = undefined;
+```
+
 # Examples
 
 ## From gutenberg
