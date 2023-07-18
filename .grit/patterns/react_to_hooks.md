@@ -551,6 +551,7 @@ const App = () => {
     </div>
   );
 };
+
 App.foo = 1;
 App.fooBar = 21;
 App.bar = (input) => {
@@ -837,6 +838,7 @@ const Link = (props) => {
 
   return <a href={href}>Link Text</a>;
 };
+
 Link.propTypes = {
   href: PropTypes.string.isRequired,
 };
