@@ -452,7 +452,7 @@ sequential {
 
 ## Input for playground
 
-```
+```js
 import { Component } from 'react';
 class App extends Component {
   constructor(...args) {
@@ -513,7 +513,7 @@ class App extends Component {
 }
 ```
 
-```js
+```ts
 import { useState, useEffect, useCallback } from 'react';
 const App = () => {
   const [name, setName] = useState('');
