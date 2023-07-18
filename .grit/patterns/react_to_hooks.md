@@ -120,6 +120,14 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             },
             and {
                 $statement <: prepend_comment($statements),
+                if ($value <: or {
+                    js"React.createRef($ref)",
+                    js"createRef($ref)",
+                }) {
+                    $new_value = $ref
+                } else {
+                    $new_value = $value
+                },
                 or {
                     and {
                         or {
@@ -130,11 +138,15 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                                 $inner_type = js"$annotated | undefined"
                             },
                             $type <: type_annotation(type = $inner_type),
+                            and {
+                                $value <: contains js"createRef",
+                                $statement <: contains type_identifier() as $inner_type
+                            }
                         },
-                        $statements += `const $name = useRef<$inner_type>($value);`
+                        $statements += `const $name = useRef<$inner_type>($new_value);`
                     },
-                    $statements += `const $name = useRef($value);`
-                }
+                    $statements += `const $name = useRef($new_value);`
+                },
             }
         },
     }
