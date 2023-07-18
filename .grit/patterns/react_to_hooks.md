@@ -106,7 +106,19 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                     }
                 }
             },
-            and {
+            or {
+                and {
+                    or {
+                        and {
+                            $statement <: contains js"?",
+                            $type <: type_annotation(type=$annotated),
+                            $annotated <: not contains js"undefined",
+                            $inner_type = js"$annotated | undefined"
+                        },
+                        $type <: type_annotation(type = $inner_type),
+                    },
+                    $statements += `const $name = useRef<$inner_type>($value);`
+                },
                 $statements += `const $name = useRef($value);`
             }
         },
