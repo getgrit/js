@@ -711,7 +711,8 @@ const SampleComponent = observer(() => {
 
   return (
     <p>
-      This component has a <span onClick={viewState.click}>ViewState</span>
+      This component has a{" "}
+      <span onClick={viewState.current.click}>ViewState</span>
     </p>
   );
 });
@@ -1064,7 +1065,7 @@ export default Link;
 import { useRef, useCallback } from 'react';
 
 const Link = () => {
-  const previouslyFocusedTextInput = useRef({});
+  const previouslyFocusedTextInput = useRef<InputHandle>({});
   const showHandler = useCallback((options: Options) => {
     previouslyFocusedTextInput.current = KeyboardHelper.currentlyFocusedInput()
   }, []);
