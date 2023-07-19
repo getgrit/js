@@ -10,7 +10,7 @@ tags: #react, #migration, #complex
 engine marzano(0.1)
 language js
 
-pattern handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements) {
+pattern handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix) {
     or {
         method_definition($static, $async, $name, $body, $parameters) as $statement where or {
             and {
@@ -50,7 +50,11 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             and {
                 $statement <: prepend_comment($statements),
                 $async <: `async`,
-                $statements += `const ${name}Handler = useCallback(async $parameters => $body, []);`
+                if ($handler_callback_suffix) {
+                  $statements += `const ${name}Handler = useCallback(async $parameters => $body, []);`
+                } else {
+                  $statements += `const ${name} = async $parameters => $body;`
+                }
             },
             and {
                 $statement <: prepend_comment($statements),
@@ -112,7 +116,11 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             },
             and {
                 $value <: arrow_function(),
-                $statements += `const ${name}Handler = useCallback($value, []);`
+                if ($handler_callback_suffix) {
+                  $statements += `const ${name}${handler_callback_suffix} = useCallback($value, []);`
+                } else {
+                  $statements += `const ${name} = $value;`
+                }
             },
             and {
                 $name <: js"state",
@@ -257,7 +265,7 @@ pattern first_step() {
         },
         // todo: replace contains with list pattern match once we have the field set
         // we are missing a field for the statements in class_body
-        $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements),
+        $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix="Handler"),
         $program <: maybe contains interface_declaration(body=$interface, name=$interface_name) where {
             $state_type <: $interface_name,
             $interface <: contains bubble($states_statements, $body) {
@@ -357,9 +365,7 @@ pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos) {
                 $p => `${property}Handler`
             }
         },
-
         lexical_declaration(declarations = [variable_declarator(value = or { `this.state`, `this` })]) => .,
-
         assignment_expression($left, $right) as $assignment where or {
             and {
                 $hoisted_refs <: some $left,
@@ -488,19 +494,19 @@ sequential {
 import { Component } from 'react';
 class App extends Component {
   constructor(...args) {
-    super(args)
+    super(args);
     this.state = {
       name: '',
-      another: 3
-    }
+      another: 3,
+    };
   }
   static foo = 1;
   static fooBar = 21;
   static bar = (input) => {
-      console.log(input);
-  }
+    console.log(input);
+  };
   static another(input) {
-      console.error(input);
+    console.error(input);
   }
   componentDidMount() {
     document.title = `You clicked ${this.state.count} times`;
