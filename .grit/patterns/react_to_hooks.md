@@ -35,7 +35,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 $statement <: prepend_comment($statements),
                 $name <: `componentWillUnmount`,
                 $body <: change_this($states_statements),
-                $statements += `useEffect(() => { \n    return () => $body;\n});`
+                $statements += `useEffect(() => { \n    return () => $body;\n}, []);`
             },
             and {
                 $name <: `render`,
