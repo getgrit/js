@@ -209,7 +209,7 @@ pattern gather_hooks($hooks) {
         }
     }
 }
-pattern adjust_imports() {
+pattern adjust_imports($use_ref_from) {
     maybe and {
         $hooks = [],
         gather_hooks($hooks),
@@ -228,10 +228,16 @@ pattern adjust_imports() {
                     $i => `$i\nimport { $hooks } from 'react';`
                 }
             }
+        },
+        if (!$use_ref_from <: .) {
+          maybe contains js"useRefFrom" where {
+              $program <: not contains import_specifier(name=js"useRefFrom"),
+              $existing = $program,
+              $program => js"import { useRefFrom } from $use_ref_from';\n$existing"
+          }
         }
     }
 }
-
 pattern maybe_wrapped_class_declaration($class_name, $body, $class) {
     or {
         export_statement(declaration = class_declaration(name = $class_name, $body, $heritage) as $class),
@@ -341,7 +347,6 @@ pattern find_dependencies($hoisted_states, $dependencies) {
         $dependencies += `$i`
     }
 }
-
 pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos) {
     or {
         `this.state.$x` => `$x`,
@@ -483,7 +488,8 @@ sequential {
     file(body = second_step()),
     file($body) where {
       $body <: program($statements),
-      $statements <: bubble($body) { adjust_imports() }
+      $use_ref_from = .
+      $statements <: bubble($body) { adjust_imports($use_ref_from) }
     }
 }
 ```
