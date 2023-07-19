@@ -10,6 +10,32 @@ tags: #react, #migration, #complex
 engine marzano(0.1)
 language js
 
+pattern handle_ref($statements, $type) {
+  $new_value where {
+    or {
+      // The type has an undefined, so our ref type must be undefined
+      and {
+          $statement <: contains js"?",
+          $type <: type_annotation(type=$annotated),
+          $annotated <: not contains js"undefined",
+          $inner_type = js"$annotated | undefined"
+      },
+      // We have a type annotation, use this
+      $type <: type_annotation(type = $inner_type),
+      // Fall back to creating an inner_type this way
+      and {
+          $value <: contains js"createRef",
+          $statement <: contains or {
+              type_identifier(),
+              predefined_type()
+          } as $inner_type
+      }
+    },
+    // We have our type and our ref, so now create the statement
+    $statements += `const $name = useRef<$inner_type>($new_value);`
+  }
+}
+
 pattern handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix, $use_ref) {
     or {
         method_definition($static, $async, $name, $body, $parameters) as $statement where or {
@@ -136,23 +162,13 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 }
             },
             and {
+                // Handle explicit createRef calls
                 $statement <: prepend_comment($statements),
                 $value <: or {
                     js"React.createRef($ref)",
                     js"createRef($ref)",
                 },
-                $new_value = $ref,
-                or {
-                    and {
-                        $value <: contains js"createRef",
-                        $statement <: contains or {
-                            type_identifier(),
-                            predefined_type()
-                        } as $inner_type,
-                        $statements += `const $name = useRef<$inner_type>($new_value);`
-                    },
-                    $statements += `const $name = useRef($new_value);`
-                },
+                $ref <: handle_ref($statements, $type)
             },
             and {
                 $statement <: prepend_comment($statements),
