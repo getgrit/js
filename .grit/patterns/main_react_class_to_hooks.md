@@ -50,7 +50,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             and {
                 $statement <: prepend_comment($statements),
                 $async <: `async`,
-                $statements += `const ${name}Handler = useCallback(async $parameters => $body, []);`
+                $statements += `const ${name} = async $parameters => $body;`
             },
             and {
                 $statement <: prepend_comment($statements),
@@ -64,7 +64,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             },
             and {
                 $statement <: prepend_comment($statements),
-                $statements += `const ${name}Handler = useCallback($parameters => $body, []);`
+                $statements += `const ${name} = $parameters => $body;`
             }
         },
 
@@ -115,7 +115,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             },
             and {
                 $value <: arrow_function(),
-                $statements += `const ${name}Handler = useCallback($value, []);`
+                $statements += `const ${name} = $value;`
             },
             and {
                 $name <: js"state",
