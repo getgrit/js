@@ -854,7 +854,7 @@ const Foo = () => {
     return () => {
       console.log('unmounted');
     };
-  });
+  }, []);
 
   return <p>Foo</p>;
 };
