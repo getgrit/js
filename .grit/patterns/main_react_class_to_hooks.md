@@ -320,11 +320,7 @@ pattern first_step() {
             $the_props = "props"
         },
 
-        $const_type_annotation = .,
-        if ($program <: contains `FunctionComponent`) {
-            $const_type_annotation = `: React.FunctionComponent<${props_type}>`,
-            $type_annotation = .
-        },
+        $const_type_annotation = js": React.FC<${props_type}>",
 
         if ($body <: contains `props`) {
             $args = `${the_props}${type_annotation}`
