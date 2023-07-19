@@ -10,7 +10,7 @@ tags: #react, #migration, #complex
 engine marzano(0.1)
 language js
 
-pattern handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix) {
+pattern handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix, $use_ref) {
     or {
         method_definition($static, $async, $name, $body, $parameters) as $statement where or {
             and {
@@ -163,7 +163,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                     },
                     $after_value = $value,
                 },
-                $statements += js"const $name = useRefFrom(() => $after_value).current"
+                $statements += js"const $name = $use_ref(() => $after_value).current"
             }
         },
     }
@@ -250,7 +250,7 @@ pattern maybe_wrapped_class_declaration($class_name, $body, $class) {
         $heritage <: contains extends_clause(value = contains `Component`)
     }
 }
-pattern first_step() {
+pattern first_step($use_ref) {
     maybe_wrapped_class_declaration($class_name, $body, $class) where {
         $statements = [],
         $constructor_statements = [],
@@ -275,8 +275,11 @@ pattern first_step() {
         },
         // todo: replace contains with list pattern match once we have the field set
         // we are missing a field for the statements in class_body
+
+        // Set an alternative callback suffix, or remove it entirely
         $handler_callback_suffix="Handler",
-        $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix),
+
+        $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix, $use_ref),
         $program <: maybe contains interface_declaration(body=$interface, name=$interface_name) where {
             $state_type <: $interface_name,
             $interface <: contains bubble($states_statements, $body) {
@@ -486,8 +489,9 @@ pattern second_step() {
         }
     }
 }
+
 sequential {
-    file(body = program(statements = some bubble($program) first_step())),
+    file(body = program(statements = some bubble($program) first_step(use_ref=`useRef`))),
     file(body = second_step()),
     file(body = second_step()),
     file(body = second_step()),
