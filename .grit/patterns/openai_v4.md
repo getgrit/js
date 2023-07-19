@@ -1,11 +1,10 @@
 ---
-title: Pattern Name
+title: Upgrade OpenAI SDK to v4
 ---
-# {{ page.title }}
 
-Pattern Description
+Upgrade the OpenAI SDK to v4 following [this guide](https://github.com/openai/openai-node/discussions/182).
 
-tags: #JS
+tags: #js, #ts, #npm, #upgrade, #openai
 
 ```grit
 engine marzano(0.1)
@@ -20,43 +19,29 @@ language js
         `let $config = new Configuration($details)`,
         `var $config = new Configuration($details)`
     } => .,
-    $params => `$details`
+    $params => `$details`,
+    $program <: contains `import $old from $src` where {
+      $src <: `"openai"`,
+      $old => `OpenAI`
+    }
 }
 ```
 
-## grit/example.js
+## Initialization
 
 ```js
-// Old
-import { Configuration, OpenAIApi } from "openai";
+import { Configuration, OpenAIApi } from 'openai';
 
-const bob = new Configuration({
+const myConfig = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(bob);
-
-// New
-import OpenAI from 'openai';
-
-const openAI = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
-});
+const openai = new OpenAIApi(myConfig);
 ```
-```js
-// Old
-import { Configuration, OpenAIApi } from "openai";
 
+```js
+import OpenAI from 'openai';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
-// New
-import OpenAI from 'openai';
-
-const openAI = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
-});
 ```
-
-
