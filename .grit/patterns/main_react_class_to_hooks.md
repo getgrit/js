@@ -139,7 +139,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                         $statement <: contains or {
                             type_identifier(),
                             predefined_type()
-                        } as $inner_type
+                        } as $inner_type,
                         $statements += `const $name = useRef<$inner_type>($new_value);`
                     },
                     $statements += `const $name = useRef($new_value);`
