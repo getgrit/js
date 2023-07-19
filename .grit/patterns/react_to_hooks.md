@@ -26,7 +26,7 @@ pattern handle_ref($statements, $statement, $name, $type) {
           $type <: type_annotation(type = $inner_type),
           // Fall back to creating an inner_type this way
           and {
-              $value <: contains js"createRef",
+              $statement <: contains js"createRef",
               $statement <: contains or {
                   type_identifier(),
                   predefined_type()
@@ -36,8 +36,14 @@ pattern handle_ref($statements, $statement, $name, $type) {
         // We have our type and our ref, so now create the statement
         $statements += `const $name = useRef<$inner_type>($value);`
       },
-      // We have no type, so just try a basic statement
-      $statements += `const $name = useRef($value);`
+      // If type is not defined, we can't use a type annotation
+      and {
+        // Type is still not defined, try to find it from the statement
+        $type <: .,
+        $statements += `const $name = useRef($value);`
+      },
+      // We some have a type, so try to use it
+      $statements += `const $name = useRef<$type>($value);`
     }
   }
 }
