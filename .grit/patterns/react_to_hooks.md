@@ -1265,7 +1265,7 @@ const MyComponent = () => {
   /**
    * Comment on a private class property
    */
-  const lucy = useRef(() => 'good').current;
+  const lucy = useRef('good');
 
   return <></>;
 };
