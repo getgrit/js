@@ -10,8 +10,8 @@ tags: #react, #migration, #complex
 engine marzano(0.1)
 language js
 
-pattern handle_ref($statements, $type) {
-  $new_value where {
+pattern handle_ref($statements, $statement, $name, $type) {
+  $value where {
     or {
       // The type has an undefined, so our ref type must be undefined
       and {
@@ -32,7 +32,7 @@ pattern handle_ref($statements, $type) {
       }
     },
     // We have our type and our ref, so now create the statement
-    $statements += `const $name = useRef<$inner_type>($new_value);`
+    $statements += `const $name = useRef<$inner_type>($value);`
   }
 }
 
@@ -169,7 +169,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                     js"React.createRef($ref)",
                     js"createRef($ref)",
                 },
-                $ref <: handle_ref($statements, $type)
+                $ref <: handle_ref($statements, $statement, $name, $type)
             },
             and {
                 // If we have a use_ref_from, we can use it to wrap values
@@ -182,12 +182,12 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                     },
                     $after_value = $value,
                 },
-                $statements += js"const $name = $use_ref(() => $after_value).current"
+                $statements += js"const $name = useRefFrom(() => $after_value).current"
             },
             and {
                 // our final fallback is to wrap it in a useRef
                 $statement <: prepend_comment($statements),
-                $value <: handle_ref($statements, $type)
+                $value <: handle_ref($statements, $statement, $name, $type)
             },
         },
     }
@@ -279,12 +279,13 @@ pattern maybe_wrapped_class_declaration($class_name, $body, $class) {
         $heritage <: contains extends_clause(value = contains `Component`)
     }
 }
-pattern first_step($use_ref_from) {
+pattern first_step() {
     maybe_wrapped_class_declaration($class_name, $body, $class) where {
         $statements = [],
         $constructor_statements = [],
         $states_statements = [],
         $static_statements = [],
+        $use_ref_from = .,
         if ($body <: contains js"$class_name.$name = $_" ) {
             $static_statements += raw`/*\n* TODO: Class component's static variables are reassigned, needs manual handling\n*/`,
         },
@@ -522,7 +523,7 @@ pattern second_step() {
 }
 
 sequential {
-    file(body = program(statements = some bubble($program) first_step($use_ref_from=.))),
+    file(body = program(statements = some bubble($program) first_step())),
     file(body = second_step()),
     file(body = second_step()),
     file(body = second_step()),
