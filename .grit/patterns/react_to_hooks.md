@@ -794,19 +794,16 @@ class SampleComponent extends Component {
 ```
 
 ```js
-import { useRef } from 'react';
+import { Component } from 'react';
 
-import { observer } from 'mobx-react';
-
-const SampleComponent = observer(() => {
-  const viewState = useRef(new ViewState());
-
+const SampleComponentBase = () => {
   return (
     <p>
       This component has a <span onClick={viewStateHandler.click}>ViewState</span>
     </p>
   );
-});
+};
+export const SampleComponent = observer(SampleComponentBase);
 ```
 
 ## Prop types are preserved
@@ -1230,11 +1227,11 @@ export default Link;
 import { useRef, useCallback } from 'react';
 
 const Link = () => {
-  const input = useRef<string>();
-  const previouslyFocusedTextInput = useRef(() => {}).current;
+  const input = useRef<string>(React.createRef<string>());
+  const previouslyFocusedTextInput = useRef<InputHandle>({});
   const showHandler = useCallback((options: Options) => {
     input.current = 'Hello world';
-    previouslyFocusedTextInputHandler = KeyboardHelper.currentlyFocusedInput();
+    previouslyFocusedTextInput.current = KeyboardHelper.currentlyFocusedInput();
   }, []);
 
   return <></>;
