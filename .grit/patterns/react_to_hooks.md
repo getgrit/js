@@ -800,12 +800,14 @@ class SampleComponent extends Component {
 ```
 
 ```js
-import { Component } from 'react';
+import { useRef } from 'react';
 
 const SampleComponentBase = () => {
+  const viewState = useRef(new ViewState());
+
   return (
     <p>
-      This component has a <span onClick={viewStateHandler.click}>ViewState</span>
+      This component has a <span onClick={viewState.current.click}>ViewState</span>
     </p>
   );
 };
