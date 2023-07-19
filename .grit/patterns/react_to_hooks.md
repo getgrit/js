@@ -217,28 +217,33 @@ pattern adjust_imports($use_ref_from) {
     maybe and {
         $hooks = [],
         gather_hooks($hooks),
+        $more_imports = "",
         $hooks = join(list = $hooks, separator = ", "),
+        // If we use MobX, insert it
+        if ($program <: contains `observer($_)`) {
+          $more_imports += `import { observer } from "mobx-react";`
+        },
+        // If we have useRefFrom, use it
+        if (and {
+          $program <: contains js"useRefFrom",
+          !$use_ref_from <: .
+        }) {
+          $more_imports += `import { useRefFrom } from $use_ref_from';`
+        },
         or {
             // ugly dealing with imports
             contains import_specifier(name = `Component`) => `$hooks`,
             contains `import React from 'react'` as $i where {
                 $i <: not contains namespace_import(),
-                $i => `import React, { $hooks } from 'react';`
+                $i => `import React, { $hooks } from 'react';$more_imports`
             },
             contains `import React from "react"` as $i where {
                 if ($i <: not contains namespace_import()) {
-                    $i => `import React, { $hooks } from 'react';`
+                    $i => `import React, { $hooks } from 'react';$more_imports`
                 } else {
-                    $i => `$i\nimport { $hooks } from 'react';`
+                    $i => `$i\nimport { $hooks } from 'react';$more_imports`
                 }
             }
-        },
-        if (!$use_ref_from <: .) {
-          maybe contains js"useRefFrom" where {
-              $program <: not contains import_specifier(name=js"useRefFrom"),
-              $existing = $program,
-              $program => js"import { useRefFrom } from $use_ref_from';\n$existing"
-          }
         }
     }
 }
@@ -334,9 +339,11 @@ pattern first_step($use_ref) {
         $statements = join(list = $statements, $separator),
         $constructor_statements = join(list = $constructor_statements, $separator),
         $the_function = `($args) => {\n$constructor_statements\n\n    $states_statements\n\n    ${statements}\n\n    ${render_statements} \n}`,
+
+        // Construct the final class name
         $original_name = $class_name,
         if ($body <: contains r"(v|V)iewState"($_)) {
-            $class_name = js"${class_name}Base"
+            $class_name = js"${class_name}Base",
         },
         $the_const = `const $class_name$const_type_annotation = $the_function;`,
         if ($body <: contains r"(v|V)iewState"($_)) {
