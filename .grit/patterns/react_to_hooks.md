@@ -13,26 +13,32 @@ language js
 pattern handle_ref($statements, $statement, $name, $type) {
   $value where {
     or {
-      // The type has an undefined, so our ref type must be undefined
       and {
-          $statement <: contains js"?",
-          $type <: type_annotation(type=$annotated),
-          $annotated <: not contains js"undefined",
-          $inner_type = js"$annotated | undefined"
+        or {
+          // The type has an undefined, so our ref type must be undefined
+          and {
+              $statement <: contains js"?",
+              $type <: type_annotation(type=$annotated),
+              $annotated <: not contains js"undefined",
+              $inner_type = js"$annotated | undefined"
+          },
+          // We have a type annotation, use this
+          $type <: type_annotation(type = $inner_type),
+          // Fall back to creating an inner_type this way
+          and {
+              $value <: contains js"createRef",
+              $statement <: contains or {
+                  type_identifier(),
+                  predefined_type()
+              } as $inner_type
+          }
+        },
+        // We have our type and our ref, so now create the statement
+        $statements += `const $name = useRef<$inner_type>($value);`
       },
-      // We have a type annotation, use this
-      $type <: type_annotation(type = $inner_type),
-      // Fall back to creating an inner_type this way
-      and {
-          $value <: contains js"createRef",
-          $statement <: contains or {
-              type_identifier(),
-              predefined_type()
-          } as $inner_type
-      }
-    },
-    // We have our type and our ref, so now create the statement
-    $statements += `const $name = useRef<$inner_type>($value);`
+      // We have no type, so just try a basic statement
+      $statements += `const $name = useRef($value);`
+    }
   }
 }
 
