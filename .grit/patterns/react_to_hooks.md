@@ -343,14 +343,13 @@ pattern first_step($use_ref) {
         // Construct the final class name
         $original_name = $class_name,
         if ($body <: contains r"(v|V)iewState"($_)) {
-            $class_name = js"${class_name}Base",
-        },
-        $the_const = `const $class_name$const_type_annotation = $the_function;`,
-        if ($body <: contains r"(v|V)iewState"($_)) {
-            $the_const = `import { observer } from "mobx-react";\n\n${the_const}\n\nexport const $original_name = observer($class_name)`
+            $base_name = js"${class_name}Base",
+            $the_const = `const $base_name$const_type_annotation = $the_function;
+export const $original_name = observer($base_name);`,
         } else {
-            $the_const = `export ${the_const}`
-        },
+            $the_const = `export const $class_name$const_type_annotation = $the_function;`
+        }
+
         $static_statements = join(list = $static_statements, $separator),
         $class => `$the_const\n\n$static_statements\n`
     }
