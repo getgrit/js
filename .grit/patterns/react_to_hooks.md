@@ -275,7 +275,8 @@ pattern first_step() {
         },
         // todo: replace contains with list pattern match once we have the field set
         // we are missing a field for the statements in class_body
-        $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix="Handler"),
+        $handler_callback_suffix=`"Handler"`,
+        $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix),
         $program <: maybe contains interface_declaration(body=$interface, name=$interface_name) where {
             $state_type <: $interface_name,
             $interface <: contains bubble($states_statements, $body) {
@@ -492,8 +493,8 @@ sequential {
     file(body = second_step()),
     file($body) where {
       $body <: program($statements),
-      $use_ref_from = .
-      $statements <: bubble($body) { adjust_imports($use_ref_from) }
+      $use_ref_from = .,
+      $statements <: bubble($body, $use_ref_from) { adjust_imports($use_ref_from) }
     }
 }
 ```
