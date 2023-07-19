@@ -36,7 +36,6 @@ pattern handle_ref($statements, $statement, $name, $type) {
         // We have our type and our ref, so now create the statement
         $statements += `const $name = useRef<$inner_type>($value);`
       },
-      // If type is not defined, we can't use a type annotation
       and {
         // Type can't be located, initialize `useRef` without a type
         $type <: .,
