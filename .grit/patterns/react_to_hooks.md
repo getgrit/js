@@ -381,6 +381,7 @@ pattern first_step() {
         if ($body <: contains r"(v|V)iewState"($_)) {
             $base_name = js"${class_name}Base",
             $the_const = `const $base_name$const_type_annotation = $the_function;
+            
 export const $original_name = observer($base_name);`,
         } else {
             $the_const = `const $class_name$const_type_annotation = $the_function;`
