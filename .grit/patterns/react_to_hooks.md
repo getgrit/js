@@ -38,7 +38,7 @@ pattern handle_ref($statements, $statement, $name, $type) {
       },
       // If type is not defined, we can't use a type annotation
       and {
-        // Type is still not defined, try to find it from the statement
+        // Type can't be located, initialize `useRef` without a type
         $type <: .,
         $statements += `const $name = useRef($value);`
       },
