@@ -135,22 +135,11 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 $new_value = $ref,
                 or {
                     and {
-                        // or {
-                            // and {
-                            //     $statement <: contains js"?",
-                            //     $type <: type_annotation(type=$annotated),
-                            //     $annotated <: not contains js"undefined",
-                            //     $inner_type = js"$annotated | undefined"
-                            // },
-                            // $type <: type_annotation(type = $inner_type),
-                            and {
-                                $value <: contains js"createRef",
-                                $statement <: contains or {
-                                    type_identifier(),
-                                    predefined_type()
-                                } as $inner_type
-                            },
-                        // },
+                        $value <: contains js"createRef",
+                        $statement <: contains or {
+                            type_identifier(),
+                            predefined_type()
+                        } as $inner_type
                         $statements += `const $name = useRef<$inner_type>($new_value);`
                     },
                     $statements += `const $name = useRef($new_value);`
