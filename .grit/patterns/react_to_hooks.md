@@ -50,10 +50,10 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             and {
                 $statement <: prepend_comment($statements),
                 $async <: `async`,
-                if ($handler_callback_suffix) {
-                  $statements += `const ${name}Handler = useCallback(async $parameters => $body, []);`
-                } else {
+                if ($handler_callback_suffix <: .) {
                   $statements += `const ${name} = async $parameters => $body;`
+                } else {
+                  $statements += `const ${name}${handler_callback_suffix} = useCallback(async $parameters => $body, []);`
                 }
             },
             and {
@@ -68,7 +68,11 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             },
             and {
                 $statement <: prepend_comment($statements),
-                $statements += `const ${name} = $parameters => $body;`
+                if ($handler_callback_suffix <: .) {
+                  $statements += `const ${name} = $parameters => $body;`
+                } else {
+                  $statements += `const ${name}${handler_callback_suffix} = useCallback($parameters => $body, []);`
+                }
             }
         },
         public_field_definition($static, $name, $value, $type) as $statement where or {
@@ -116,10 +120,10 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             },
             and {
                 $value <: arrow_function(),
-                if ($handler_callback_suffix) {
-                  $statements += `const ${name}${handler_callback_suffix} = useCallback($value, []);`
-                } else {
+                if ($handler_callback_suffix <: .) {
                   $statements += `const ${name} = $value;`
+                } else {
+                  $statements += `const ${name}${handler_callback_suffix} = useCallback($value, []);`
                 }
             },
             and {
