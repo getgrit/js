@@ -347,8 +347,8 @@ pattern first_step($use_ref) {
             $the_const = `const $base_name$const_type_annotation = $the_function;
 export const $original_name = observer($base_name);`,
         } else {
-            $the_const = `export const $class_name$const_type_annotation = $the_function;`
-        }
+            $the_const = `const $class_name$const_type_annotation = $the_function;`
+        },
 
         $static_statements = join(list = $static_statements, $separator),
         $class => `$the_const\n\n$static_statements\n`
