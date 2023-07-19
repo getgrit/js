@@ -36,7 +36,7 @@ pattern handle_ref($statements, $type) {
   }
 }
 
-pattern handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix, $use_ref) {
+pattern handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix, $use_ref_from) {
     or {
         method_definition($static, $async, $name, $body, $parameters) as $statement where or {
             and {
@@ -171,8 +171,9 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 },
                 $ref <: handle_ref($statements, $type)
             },
-            // If we have a use_ref
             and {
+                // If we have a use_ref_from, we can use it to wrap values
+                !$use_ref_from <: .,
                 $statement <: prepend_comment($statements),
                 or {
                     and {
@@ -182,7 +183,12 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                     $after_value = $value,
                 },
                 $statements += js"const $name = $use_ref(() => $after_value).current"
-            }
+            },
+            and {
+                // our final fallback is to wrap it in a useRef
+                $statement <: prepend_comment($statements),
+                $value <: handle_ref($statements, $type)
+            },
         },
     }
 }
@@ -273,7 +279,7 @@ pattern maybe_wrapped_class_declaration($class_name, $body, $class) {
         $heritage <: contains extends_clause(value = contains `Component`)
     }
 }
-pattern first_step($use_ref) {
+pattern first_step($use_ref_from) {
     maybe_wrapped_class_declaration($class_name, $body, $class) where {
         $statements = [],
         $constructor_statements = [],
@@ -302,7 +308,7 @@ pattern first_step($use_ref) {
         // Set an alternative callback suffix, or remove it entirely
         $handler_callback_suffix="Handler",
 
-        $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix, $use_ref),
+        $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix, $use_ref_from),
         $program <: maybe contains interface_declaration(body=$interface, name=$interface_name) where {
             $state_type <: $interface_name,
             $interface <: contains bubble($states_statements, $body) {
@@ -516,7 +522,7 @@ pattern second_step() {
 }
 
 sequential {
-    file(body = program(statements = some bubble($program) first_step(use_ref=`useRef`))),
+    file(body = program(statements = some bubble($program) first_step($use_ref_from=.))),
     file(body = second_step()),
     file(body = second_step()),
     file(body = second_step()),
