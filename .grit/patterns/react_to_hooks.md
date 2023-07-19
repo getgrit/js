@@ -771,7 +771,7 @@ const SampleComponent = observer(() => {
 
   return (
     <p>
-      This component has a <span onClick={viewState.current.click}>ViewState</span>
+      This component has a <span onClick={viewStateHandler.click}>ViewState</span>
     </p>
   );
 });
@@ -848,7 +848,7 @@ const Foo = () => {
     return () => {
       console.log('unmounted');
     };
-  });
+  }, []);
 
   return <p>Foo</p>;
 };
@@ -1199,10 +1199,10 @@ import { useRef, useCallback } from 'react';
 
 const Link = () => {
   const input = useRef<string>();
-  const previouslyFocusedTextInput = useRef<InputHandle>({});
+  const previouslyFocusedTextInput = useRef(() => {}).current;
   const showHandler = useCallback((options: Options) => {
     input.current = 'Hello world';
-    previouslyFocusedTextInput.current = KeyboardHelper.currentlyFocusedInput();
+    previouslyFocusedTextInputHandler = KeyboardHelper.currentlyFocusedInput();
   }, []);
 
   return <></>;
@@ -1236,7 +1236,7 @@ const MyComponent = () => {
   /**
    * Comment on a private class property
    */
-  const lucy = useRef('good');
+  const lucy = useRef(() => 'good').current;
 
   return <></>;
 };
