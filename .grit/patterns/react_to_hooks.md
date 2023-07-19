@@ -807,6 +807,7 @@ class SampleComponent extends Component {
 
 ```js
 import { useRef } from 'react';
+import { observer } from 'mobx-react';
 
 const SampleComponentBase = () => {
   const viewState = useRef(new ViewState());
