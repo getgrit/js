@@ -1235,7 +1235,7 @@ export default Link;
 import { useRef, useCallback } from 'react';
 
 const Link = () => {
-  const input = useRef<string>(React.createRef<string>());
+  const input = useRef<string>();
   const previouslyFocusedTextInput = useRef<InputHandle>({});
   const showHandler = useCallback((options: Options) => {
     input.current = 'Hello world';
