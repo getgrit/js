@@ -334,19 +334,20 @@ pattern first_step($use_ref) {
         $statements = join(list = $statements, $separator),
         $constructor_statements = join(list = $constructor_statements, $separator),
         $the_function = `($args) => {\n$constructor_statements\n\n    $states_statements\n\n    ${statements}\n\n    ${render_statements} \n}`,
-
-
-        if ($body <: contains `ViewState`) {
-            $the_const = `import { observer } from "mobx-react";\n\nconst $class_name$const_type_annotation = observer($the_function);`
-        } else {
-            $the_const = `const $class_name$const_type_annotation = $the_function;`
+        $original_name = $class_name,
+        if ($body <: contains r"(v|V)iewState"($_)) {
+            $class_name = js"${class_name}Base"
         },
-
+        $the_const = `const $class_name$const_type_annotation = $the_function;`,
+        if ($body <: contains r"(v|V)iewState"($_)) {
+            $the_const = `import { observer } from "mobx-react";\n\n${the_const}\n\nexport const $original_name = observer($class_name)`
+        } else {
+            $the_const = `export ${the_const}`
+        },
         $static_statements = join(list = $static_statements, $separator),
         $class => `$the_const\n\n$static_statements\n`
     }
 }
-
 pattern find_dependencies($hoisted_states, $dependencies) {
     contains bubble($hoisted_states, $dependencies) identifier() as $i where {
         $i <: not `props`,
