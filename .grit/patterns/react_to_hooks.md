@@ -35,7 +35,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 $statement <: prepend_comment($statements),
                 $name <: `componentWillUnmount`,
                 $body <: change_this($states_statements),
-                $statements += `useEffect(() => { \n    return () => $body;\n});`
+                $statements += `useEffect(() => {\n    return () => $body;\n}, []);`
             },
             and {
                 $name <: `render`,
@@ -64,23 +64,20 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             },
             and {
                 $statement <: prepend_comment($statements),
-                $statements += `const ${name}Handler = useCallback($parameters => $body, []);`
+                $statements += `const ${name} = $parameters => $body;`
             }
         },
-
         public_field_definition($static, $name, $value, $type) as $statement where or {
             and {
                 $value <: contains or { `reaction($_, $effect_function)`, `reaction($_, $effect_function, $_)` },
                 $effect_function <: or { `($_) => $effect` , `() => $effect` },
                 $statements += `useEffect(() => $effect, []);`
             },
-
             and {
                 $value <: object($properties),
                 $name <: `defaultProps`,
                 $statements += `const props = { \n    $properties,\n    ...inputProps,\n  };`
             },
-
             and {
                 $static <: `static`,
                 or {
@@ -128,47 +125,42 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             },
             and {
                 $statement <: prepend_comment($statements),
-                if ($value <: or {
+                $value <: or {
                     js"React.createRef($ref)",
                     js"createRef($ref)",
-                }) {
-                    $new_value = $ref
-                } else {
-                    $new_value = $value
                 },
+                $new_value = $ref,
                 or {
                     and {
-                        or {
-                            and {
-                                $statement <: contains js"?",
-                                $type <: type_annotation(type=$annotated),
-                                $annotated <: not contains js"undefined",
-                                $inner_type = js"$annotated | undefined"
-                            },
-                            $type <: type_annotation(type = $inner_type),
-                            and {
-                                $value <: contains js"createRef",
-                                $statement <: contains or {
-                                    type_identifier(),
-                                    predefined_type()
-                                } as $inner_type
-                            }
-                        },
+                        $value <: contains js"createRef",
+                        $statement <: contains or {
+                            type_identifier(),
+                            predefined_type()
+                        } as $inner_type,
                         $statements += `const $name = useRef<$inner_type>($new_value);`
                     },
                     $statements += `const $name = useRef($new_value);`
                 },
+            },
+            and {
+                $statement <: prepend_comment($statements),
+                or {
+                    and {
+                        $value <: .,
+                        $after_value = `undefined`,
+                    },
+                    $after_value = $value,
+                },
+                $statements += js"const $name = useRefFrom(() => $after_value).current"
             }
         },
     }
 }
-
 pattern prepend_comment($statements) {
     maybe after comment() as $comment where {
         $statements += js"$comment"
     }
 }
-
 pattern change_this($states_statements) {
     maybe contains or {
         assignment_expression(
@@ -189,7 +181,6 @@ pattern change_this($states_statements) {
         ) => .
     }
 }
-
 pattern gather_hooks($hooks) {
     contains or {
         `useEffect` where {
@@ -210,7 +201,6 @@ pattern gather_hooks($hooks) {
         }
     }
 }
-
 pattern adjust_imports() {
     maybe and {
         $hooks = [],
@@ -242,18 +232,15 @@ pattern maybe_wrapped_class_declaration($class_name, $body, $class) {
         $heritage <: contains extends_clause(value = contains `Component`)
     }
 }
-
 pattern first_step() {
     maybe_wrapped_class_declaration($class_name, $body, $class) where {
         $statements = [],
         $constructor_statements = [],
         $states_statements = [],
         $static_statements = [],
-
         if ($body <: contains js"$class_name.$name = $_" ) {
             $static_statements += raw`/*\n* TODO: Class component's static variables are reassigned, needs manual handling\n*/`,
         },
-
         if ($class <: contains extends_clause(type_arguments = contains type_arguments($types))) {
             or {
                 $types <: [$props_type, $state_type, ...],
@@ -268,7 +255,6 @@ pattern first_step() {
             $type_annotation = .,
             $state_type = .
         },
-
         // todo: replace contains with list pattern match once we have the field set
         // we are missing a field for the statements in class_body
         $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements),
@@ -384,9 +370,7 @@ pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos) {
                 $capitalized = capitalize(string = $left),
                 $assignment => `set${capitalized}($right)`
             },
-
         },
-
         `this.setState($x)` as $set_state where {
             $statements = [],
             $x <: contains bubble($statements) or {
@@ -405,7 +389,6 @@ pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos) {
             $statements = join(list = $statements, $separator),
             $set_state => `$statements`
         },
-
         // to deactivate dependency detection, comment out the following lines
         `$method($f, $dependencies_array)` where {
             $method <: or { `useEffect`, `useCallback`, `useMemo` },
@@ -414,7 +397,6 @@ pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos) {
             $dependencies = join(list = $dependencies, separator = ", "),
             $dependencies_array => `[$dependencies]`
         },
-
         // clean-up props arg -- not needed if only used in constructor, and first step introduced it
         // if it sees it anywhere in the pattern
         arrow_function(parameters=$props, body=$body) where {
@@ -424,7 +406,6 @@ pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos) {
         }
     }
 }
-
 pattern gather_accesses($hoisted_states, $hoisted_refs, $use_memos) {
     contains bubble($hoisted_states, $hoisted_refs, $use_memos) variable_declarator($name, $value) where {
         or {
@@ -445,7 +426,6 @@ pattern gather_accesses($hoisted_states, $hoisted_refs, $use_memos) {
             }
         },
     },
-
     contains bubble($hoisted_states, $hoisted_refs, $use_memos) or {
         variable_declarator(
             name = array_pattern(elements = [$name, $_]),
@@ -453,14 +433,12 @@ pattern gather_accesses($hoisted_states, $hoisted_refs, $use_memos) {
         ) as $var where {
             $var <: not within object()
         } where $hoisted_states += $name,
-
         variable_declarator(
             name = $name,
             value = `useRef($_)`
         ) as $var where {
             $var <: not within object()
         } where $hoisted_refs += $name,
-
         variable_declarator(
             name = $name,
             value = `useMemo($_)`
@@ -469,7 +447,6 @@ pattern gather_accesses($hoisted_states, $hoisted_refs, $use_memos) {
         } where $use_memos += $name,
     }
 }
-
 pattern second_step() {
     maybe and {
         $hoisted_states = [],
@@ -493,14 +470,15 @@ pattern second_step() {
         }
     }
 }
-
 sequential {
     file(body = program(statements = some bubble($program) first_step())),
     file(body = second_step()),
     file(body = second_step()),
     file(body = second_step()),
-    //maybe contains bubble `this.$props` => `$props`
-    file(body = adjust_imports())
+    file($body) where {
+      $body <: program($statements),
+      $statements <: bubble($body) { adjust_imports() }
+    }
 }
 ```
 
@@ -532,36 +510,32 @@ class App extends Component {
     document.title = `You clicked ${this.state.count} times`;
     const { isOpen } = this.state;
     if (isOpen && !prevProps.isOpen) {
-      alert("You just opened the modal!");
+      alert('You just opened the modal!');
     }
   }
   alertName = () => {
     alert(this.state.name);
   };
 
-  handleNameInput = e => {
-    this.setState({ name: e.target.value, another: "cooler" });
+  handleNameInput = (e) => {
+    this.setState({ name: e.target.value, another: 'cooler' });
   };
   async asyncAlert() {
-    await alert("async alert");
+    await alert('async alert');
   }
   render() {
     return (
-      (<div>
+      <div>
         <h3>This is a Class Component</h3>
         <input
-          type="text"
+          type='text'
           onChange={this.handleNameInput}
           value={this.state.name}
-          placeholder="Your Name"
+          placeholder='Your Name'
         />
-        <button onClick={this.alertName}>
-          Alert
-        </button>
-        <button onClick={this.asyncAlert}>
-          Alert
-        </button>
-      </div>)
+        <button onClick={this.alertName}>Alert</button>
+        <button onClick={this.asyncAlert}>Alert</button>
+      </div>
     );
   }
 }
@@ -776,8 +750,7 @@ const SampleComponent = observer(() => {
 
   return (
     <p>
-      This component has a{" "}
-      <span onClick={viewState.current.click}>ViewState</span>
+      This component has a <span onClick={viewState.current.click}>ViewState</span>
     </p>
   );
 });
@@ -1027,17 +1000,10 @@ const OtherComponent: React.FunctionComponent<{}> = () => {
 };
 
 const Link: React.FunctionComponent<{}> = () => {
+  const [visible, setVisible] = useState(false);
 
-
-    const [visible, setVisible] = useState(false);
-
-    
-
-    return <></>; 
+  return <></>;
 };
-
-
-
 
 export default Link;
 ```
