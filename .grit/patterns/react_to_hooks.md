@@ -161,6 +161,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                     }
                 }
             },
+            // Handle explicit createRef calls
             and {
                 // Handle explicit createRef calls
                 $statement <: prepend_comment($statements),
@@ -170,6 +171,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 },
                 $ref <: handle_ref($statements, $type)
             },
+            // If we have a use_ref
             and {
                 $statement <: prepend_comment($statements),
                 or {
