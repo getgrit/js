@@ -120,42 +120,44 @@ export interface IMainProps {
 }
 
 const BrandHeaderBase: React.FunctionComponent<IMainProps & IBrandProps> = (props) => {
-    const name = useRefFrom(() => "BrandHeader").current;
+
+
+
+
+    const name = useRefFrom(() => "BrandHeader").current
     const invoker = useRef<React.RefObject<HTMLElement>>();
-    const util = useRefFrom(() => 9).current;
-
+    const util = useRefFrom(() => 9).current
     const renderBannerDetails = () => {
-      if (!getGoodStuff()) {
-        return props.viewport.isMedium ? (
-          <InternalBrand
-              brand={brand}
-              height={240}
-            />
-        ) : null;
-      } else {
-        const CustomBanner: React.FC<{ height: number }> = ({
-          height,
-        }) => (
-          <InternalBrand
-              brand={brand}
-              height={height}
-            />
-        );
+    if (!getGoodStuff()) {
+      return props.viewport.isMedium ? (
+        <InternalBrand
+            brand={brand}
+            height={240}
+          />
+      ) : null;
+    } else {
+      const CustomBanner: React.FC<{ height: number }> = ({
+        height,
+      }) => (
+        <InternalBrand
+            brand={brand}
+            height={height}
+          />
+      );
 
-        return (
-          <ResponsiveBanner>
-            <CustomBanner height={240} />
-          </ResponsiveBanner>
-        );
-      }
-    };
+      return (
+        <ResponsiveBanner>
+          <CustomBanner height={240} />
+        </ResponsiveBanner>
+      );
+    }
+  };
 
     const {
       bannerStuff,
       dataHeaderRef,
       brandName
     } = props;
-
     return (
       <Banner>
         <h3>Some text</h3>

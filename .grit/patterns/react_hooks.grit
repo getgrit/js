@@ -357,7 +357,7 @@ pattern first_step($use_ref_from, $handler_callback_suffix) {
         $const_type_annotation = .,
         if (or {
           $program <: contains `FunctionComponent`,
-          // useRefFrom means useFunctionComponent
+          // If we have useRefFrom, then we force useFunctionComponent
           $use_ref_from <: not .
         }) {
             $const_type_annotation = `: React.FunctionComponent<${props_type}>`,
