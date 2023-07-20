@@ -62,3 +62,51 @@ class BrandHeaderBase extends React.Component<
   };
 }
 ```
+
+```ts
+import React from 'react';
+import styled from 'styled-components';
+
+import { CustomComponent } from 'components/CustomComponent/CustomComponent';
+import { IBrand } from 'models/brand';
+import { Banner, IBannerProps } from 'models/viewport';
+import { BannerPicture } from 'models/banner';
+
+import { useRefFrom } from '~/hooks/useRefFrom';
+
+export interface IMainProps {
+  bannerStuff: IBannerProps;
+  dataHeaderRef?: React.RefCallback<HTMLElement>;
+}
+
+export const BrandHeaderBase: React.FC<IMainProps & IBrandProps> = (props) => {
+  const { bannerStuff, dataHeaderRef, brandName } = props;
+
+  const renderBannerDetails = () => {
+    if (!getGoodStuff()) {
+      return props.viewport.isMedium ? <InternalBrand brand={brand} height={240} /> : null;
+    } else {
+      const CustomBanner: React.FC<{ height: number }> = ({ height }) => (
+        <InternalBrand brand={brand} height={height} />
+      );
+
+      return (
+        <ResponsiveBanner>
+          <CustomBanner height={240} />
+        </ResponsiveBanner>
+      );
+    }
+  };
+
+  const name = useRefFrom(() => 'BrandHeader').current;
+  const invoker = useRefFrom(() => React.createRef()).current;
+  const util = useRefFrom(() => 9).current;
+  return (
+    <Banner>
+      <h3>Some text</h3>
+      <p>Some more text</p>
+      {this.renderBannerDetails()}
+    </Banner>
+  );
+};
+```
