@@ -290,13 +290,13 @@ pattern maybe_wrapped_class_declaration($class_name, $body, $class) {
         $heritage <: contains extends_clause(value = contains `Component`)
     }
 }
-pattern first_step($use_ref_from) {
+pattern first_step() {
     maybe_wrapped_class_declaration($class_name, $body, $class) where {
         $statements = [],
         $constructor_statements = [],
         $states_statements = [],
         $static_statements = [],
-        $use_ref_from=.,
+        $use_ref_from = .,
         if ($body <: contains js"$class_name.$name = $_" ) {
             $static_statements += raw`/*\n* TODO: Class component's static variables are reassigned, needs manual handling\n*/`,
         },
@@ -320,10 +320,10 @@ pattern first_step($use_ref_from) {
         // Set an alternative callback suffix, or remove it entirely
         $handler_callback_suffix="Handler",
 
-        $body <: contains handle_one_statement($use_ref_from, $class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix),
+        $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix, $use_ref_from),
         $program <: maybe contains interface_declaration(body=$interface, name=$interface_name) where {
             $state_type <: $interface_name,
-            $interface <: contains bubble($states_statements, $body, $use_ref_from) {
+            $interface <: contains bubble($states_statements, $body) {
                 property_signature($name, $type) where {
                     $type <: type_annotation(type = $inner_type),
                     $capitalized = capitalize(string = $name),
@@ -391,7 +391,6 @@ export const $original_name = observer($base_name);`,
         $class => `$the_const\n\n$static_statements\n`
     }
 }
-
 pattern find_dependencies($hoisted_states, $dependencies) {
     contains bubble($hoisted_states, $dependencies) identifier() as $i where {
         $i <: not `props`,
@@ -400,7 +399,6 @@ pattern find_dependencies($hoisted_states, $dependencies) {
         $dependencies += `$i`
     }
 }
-
 pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos) {
     or {
         `this.state.$x` => `$x`,
