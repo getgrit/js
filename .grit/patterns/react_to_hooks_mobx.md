@@ -106,7 +106,7 @@ class BrandHeaderBase extends React.Component<
 
 ```ts
 import { useRefFrom } from "'~/hooks/useRefFrom'"';
-import React, { useRef, useCallback } from 'react';
+import React, { useRef } from 'react';
 import styled from "styled-components";
 
 import { CustomComponent } from "components/CustomComponent/CustomComponent";
@@ -119,34 +119,49 @@ export interface IMainProps {
   dataHeaderRef?: React.RefCallback<HTMLElement>;
 }
 
-export const BrandHeaderBase: React.FunctionComponent<IMainProps & IBrandProps> = (props) => {
-  const { bannerStuff, dataHeaderRef, brandName } = props;
+const BrandHeaderBase: React.FunctionComponent<IMainProps & IBrandProps> = (props) => {
+    const name = useRefFrom(() => "BrandHeader").current;
+    const invoker = useRef<React.RefObject<HTMLElement>>();
+    const util = useRefFrom(() => 9).current;
 
-  const renderBannerDetails = () => {
-    if (!getGoodStuff()) {
-      return props.viewport.isMedium ? <InternalBrand brand={brand} height={240} /> : null;
-    } else {
-      const CustomBanner: React.FC<{ height: number }> = ({ height }) => (
-        <InternalBrand brand={brand} height={height} />
-      );
+    const renderBannerDetails = () => {
+      if (!getGoodStuff()) {
+        return props.viewport.isMedium ? (
+          <InternalBrand
+              brand={brand}
+              height={240}
+            />
+        ) : null;
+      } else {
+        const CustomBanner: React.FC<{ height: number }> = ({
+          height,
+        }) => (
+          <InternalBrand
+              brand={brand}
+              height={height}
+            />
+        );
 
-      return (
-        <ResponsiveBanner>
-          <CustomBanner height={240} />
-        </ResponsiveBanner>
-      );
-    }
-  };
+        return (
+          <ResponsiveBanner>
+            <CustomBanner height={240} />
+          </ResponsiveBanner>
+        );
+      }
+    };
 
-  const name = useRefFrom(() => 'BrandHeader').current;
-  const invoker = useRefFrom(() => React.createRef()).current;
-  const util = useRefFrom(() => 9).current;
-  return (
-    <Banner>
-      <h3>Some text</h3>
-      <p>Some more text</p>
-      {renderBannerDetails()}
-    </Banner>
-  );
+    const {
+      bannerStuff,
+      dataHeaderRef,
+      brandName
+    } = props;
+
+    return (
+      <Banner>
+        <h3>Some text</h3>
+        <p>Some more text</p>
+        {renderBannerDetails()}
+      </Banner>
+    );
 };
 ```
