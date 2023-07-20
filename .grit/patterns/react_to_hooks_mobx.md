@@ -30,7 +30,7 @@ sequential {
       $body <: program($statements),
       $statements <: bubble($body, $program) and {
         maybe adjust_imports(),
-        add_more_imports(use_ref_from=`"'~/hooks/useRefFrom'"`),
+        add_more_imports(use_ref_from=`"~/hooks/useRefFrom"`),
       }
     }
 }
@@ -105,14 +105,14 @@ class BrandHeaderBase extends React.Component<
 ```
 
 ```ts
-import { useRefFrom } from "'~/hooks/useRefFrom'"';
+import { useRefFrom } from '~/hooks/useRefFrom';
 import React, { useRef } from 'react';
-import styled from "styled-components";
+import styled from 'styled-components';
 
-import { CustomComponent } from "components/CustomComponent/CustomComponent";
-import { IBrand } from "models/brand";
-import { Banner, IBannerProps } from "models/viewport";
-import { BannerPicture } from "models/banner";
+import { CustomComponent } from 'components/CustomComponent/CustomComponent';
+import { IBrand } from 'models/brand';
+import { Banner, IBannerProps } from 'models/viewport';
+import { BannerPicture } from 'models/banner';
 
 export interface IMainProps {
   bannerStuff: IBannerProps;
@@ -120,29 +120,15 @@ export interface IMainProps {
 }
 
 const BrandHeaderBase: React.FunctionComponent<IMainProps & IBrandProps> = (props) => {
-
-
-
-
-    const name = useRefFrom(() => "BrandHeader").current
-    const invoker = useRef<React.RefObject<HTMLElement>>();
-    const util = useRefFrom(() => 9).current
-    const renderBannerDetails = () => {
+  const name = useRefFrom(() => 'BrandHeader').current;
+  const invoker = useRef<React.RefObject<HTMLElement>>();
+  const util = useRefFrom(() => 9).current;
+  const renderBannerDetails = () => {
     if (!getGoodStuff()) {
-      return props.viewport.isMedium ? (
-        <InternalBrand
-            brand={brand}
-            height={240}
-          />
-      ) : null;
+      return props.viewport.isMedium ? <InternalBrand brand={brand} height={240} /> : null;
     } else {
-      const CustomBanner: React.FC<{ height: number }> = ({
-        height,
-      }) => (
-        <InternalBrand
-            brand={brand}
-            height={height}
-          />
+      const CustomBanner: React.FC<{ height: number }> = ({ height }) => (
+        <InternalBrand brand={brand} height={height} />
       );
 
       return (
@@ -153,17 +139,13 @@ const BrandHeaderBase: React.FunctionComponent<IMainProps & IBrandProps> = (prop
     }
   };
 
-    const {
-      bannerStuff,
-      dataHeaderRef,
-      brandName
-    } = props;
-    return (
-      <Banner>
-        <h3>Some text</h3>
-        <p>Some more text</p>
-        {renderBannerDetails()}
-      </Banner>
-    );
+  const { bannerStuff, dataHeaderRef, brandName } = props;
+  return (
+    <Banner>
+      <h3>Some text</h3>
+      <p>Some more text</p>
+      {renderBannerDetails()}
+    </Banner>
+  );
 };
 ```
