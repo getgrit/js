@@ -11,8 +11,13 @@ tags: #react, #migration, #complex
 // Most of the logic for this pattern is in react_hooks.grit
 // https://github.com/getgrit/js/blob/main/.grit/patterns/react_hooks.grit
 
+pattern wrapped_first_step() {
+  $use_ref_from = .,
+  first_step($use_ref_from)
+}
+
 sequential {
-    file(body = program(statements = some bubble($program) first_step())),
+    file(body = program(statements = some bubble($program) wrapped_first_step())),
     file(body = second_step()),
     file(body = second_step()),
     file(body = second_step()),

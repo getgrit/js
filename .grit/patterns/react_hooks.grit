@@ -290,13 +290,12 @@ pattern maybe_wrapped_class_declaration($class_name, $body, $class) {
         $heritage <: contains extends_clause(value = contains `Component`)
     }
 }
-pattern first_step() {
+pattern first_step($use_ref_from) {
     maybe_wrapped_class_declaration($class_name, $body, $class) where {
         $statements = [],
         $constructor_statements = [],
         $states_statements = [],
         $static_statements = [],
-        $use_ref_from = .,
         if ($body <: contains js"$class_name.$name = $_" ) {
             $static_statements += raw`/*\n* TODO: Class component's static variables are reassigned, needs manual handling\n*/`,
         },
