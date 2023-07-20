@@ -102,15 +102,14 @@ class BrandHeaderBase extends React.Component<
 ```
 
 ```ts
-import React from 'react';
-import styled from 'styled-components';
+import { useRefFrom } from "'~/hooks/useRefFrom'"';
+import React, { useRef, useCallback } from 'react';
+import styled from "styled-components";
 
-import { CustomComponent } from 'components/CustomComponent/CustomComponent';
-import { IBrand } from 'models/brand';
-import { Banner, IBannerProps } from 'models/viewport';
-import { BannerPicture } from 'models/banner';
-
-import { useRefFrom } from '~/hooks/useRefFrom';
+import { CustomComponent } from "components/CustomComponent/CustomComponent";
+import { IBrand } from "models/brand";
+import { Banner, IBannerProps } from "models/viewport";
+import { BannerPicture } from "models/banner";
 
 export interface IMainProps {
   bannerStuff: IBannerProps;
