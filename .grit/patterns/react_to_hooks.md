@@ -12,7 +12,12 @@ tags: #react, #migration, #complex
 // https://github.com/getgrit/js/blob/main/.grit/patterns/react_hooks.grit
 
 sequential {
-    file(body = program(statements = some bubble($program) first_step())),
+    file($body) where {
+      $body <: program($statements),
+      $statements <: bubble($program) {
+        first_step()
+      }
+    },
     file(body = second_step()),
     file(body = second_step()),
     file(body = second_step()),
