@@ -13,7 +13,7 @@ language js
 // Most of the logic for this pattern is in react_hooks.grit
 // https://github.com/getgrit/js/blob/main/.grit/patterns/react_hooks.grit
 
-pattern wrapped_first_step() {
+pattern special_first_step() {
   $use_ref_from = `useRefFrom`,
   // Avoid inserting the "Handler" suffix
   $handler_callback_suffix = .,
@@ -21,7 +21,7 @@ pattern wrapped_first_step() {
 }
 
 sequential {
-    file(body = program(statements = some bubble($program) wrapped_first_step())),
+    file(body = program(statements = some bubble($program) special_first_step())),
     // Run it 3 times to converge
     file(body = second_step(handler_callback_suffix = .)),
     file(body = second_step(handler_callback_suffix = .)),
@@ -34,7 +34,6 @@ sequential {
       }
     }
 }
-
 ```
 
 ## Input for playground

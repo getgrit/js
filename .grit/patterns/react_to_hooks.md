@@ -13,17 +13,18 @@ language js
 // Most of the logic for this pattern is in react_hooks.grit
 // https://github.com/getgrit/js/blob/main/.grit/patterns/react_hooks.grit
 
-pattern wrapped_first_step() {
+pattern regular_first_step() {
   $use_ref_from = .,
-  $handler_callback_suffix="Handler",
+  $handler_callback_suffix = "Handler",
   first_step($use_ref_from, $handler_callback_suffix)
 }
 
 sequential {
-    file(body = program(statements = some bubble($program) wrapped_first_step())),
-    file(body = second_step()),
-    file(body = second_step()),
-    file(body = second_step()),
+    file(body = program(statements = some bubble($program) regular_first_step())),
+    // Run it 3 times to converge
+    file(body = second_step(handler_callback_suffix = .)),
+    file(body = second_step(handler_callback_suffix = .)),
+    file(body = second_step(handler_callback_suffix = .)),
     file($body) where {
       $body <: program($statements),
       $statements <: bubble($body, $program) and {
