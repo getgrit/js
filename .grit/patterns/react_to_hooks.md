@@ -683,7 +683,7 @@ class MyComponent extends Component {
   constructor(props: Props) {
     const five = 2 + 3;
     this.state = {
-      secret: five;
+      secret: five,
     }
   }
 
