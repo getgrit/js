@@ -7,6 +7,9 @@ This is an alternative version of the React to Hooks pattern that uses MobX.
 tags: #react, #migration, #complex, #hidden
 
 ```grit
+engine marzano(0.1)
+language js
+
 // Most of the logic for this pattern is in react_hooks.grit
 // https://github.com/getgrit/js/blob/main/.grit/patterns/react_hooks.grit
 
