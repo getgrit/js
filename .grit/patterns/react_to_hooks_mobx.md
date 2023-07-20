@@ -145,7 +145,7 @@ export const BrandHeaderBase: React.FunctionComponent<IMainProps & IBrandProps> 
     <Banner>
       <h3>Some text</h3>
       <p>Some more text</p>
-      {this.renderBannerDetails()}
+      {renderBannerDetails()}
     </Banner>
   );
 };
