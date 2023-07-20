@@ -1,3 +1,34 @@
+---
+title: React to Hooks (MobX)
+---
+
+This is an alternative version of the React to Hooks pattern that uses MobX.
+
+tags: #react, #migration, #complex, #hidden
+
+```grit
+
+// Most of the logic for this pattern is in react_hooks.grit
+// https://github.com/getgrit/js/blob/main/.grit/patterns/react_hooks.grit
+
+sequential {
+    file(body = program(statements = some bubble($program) first_step())),
+    file(body = second_step()),
+    file(body = second_step()),
+    file(body = second_step()),
+    file($body) where {
+      $body <: program($statements),
+      $use_ref_from = `'~/hooks/useRefFrom'`,
+      $statements <: bubble($body, $program) and {
+        maybe adjust_imports($use_ref_from),
+        add_more_imports($use_ref_from),
+      }
+    }
+}
+```
+
+## Input for playground
+
 ```js
 import React from "react";
 import styled from "styled-components";
