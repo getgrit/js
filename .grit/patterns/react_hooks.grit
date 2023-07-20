@@ -260,7 +260,7 @@ pattern add_more_imports($use_ref_from) {
   } => `$more_imports\n$statements`
 }
 
-pattern adjust_imports($use_ref_from) {
+pattern adjust_imports() {
     maybe and {
         $hooks = [],
         gather_hooks($hooks),

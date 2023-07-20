@@ -22,10 +22,9 @@ sequential {
     file(body = second_step()),
     file($body) where {
       $body <: program($statements),
-      $use_ref_from = `useRefFrom`,
-      $statements <: bubble($body, $program, $use_ref_from) and {
-        maybe adjust_imports($use_ref_from),
-        add_more_imports($use_ref_from),
+      $statements <: bubble($body, $program) and {
+        maybe adjust_imports(),
+        add_more_imports(use_ref_from=`"'~/hooks/useRefFrom'"`),
       }
     }
 }
