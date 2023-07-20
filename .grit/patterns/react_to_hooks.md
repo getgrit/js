@@ -248,35 +248,44 @@ pattern gather_hooks($hooks) {
         }
     }
 }
+
+pattern add_more_imports($use_ref_from) {
+  $statements where {
+    $more_imports = "",
+    // If we use MobX, insert it
+    if (and {
+      $program <: contains `observer($_)`,
+      $program <: not contains js"mobx-react"
+    }) {
+      $more_imports += `import { observer } from "mobx-react";`
+    },
+    // If we have useRefFrom, use it
+    if (and {
+      $program <: contains js"useRefFrom",
+      !$use_ref_from <: .
+    }) {
+      $more_imports += `import { useRefFrom } from $use_ref_from';`
+    },
+  } => `$more_imports\n$statements`
+}
+
 pattern adjust_imports($use_ref_from) {
     maybe and {
         $hooks = [],
         gather_hooks($hooks),
-        $more_imports = "",
         $hooks = join(list = $hooks, separator = ", "),
-        // If we use MobX, insert it
-        if ($program <: contains `observer($_)`) {
-          $more_imports += `import { observer } from "mobx-react";`
-        },
-        // If we have useRefFrom, use it
-        if (and {
-          $program <: contains js"useRefFrom",
-          !$use_ref_from <: .
-        }) {
-          $more_imports += `import { useRefFrom } from $use_ref_from';`
-        },
         or {
             // ugly dealing with imports
             contains import_specifier(name = `Component`) => `$hooks`,
             contains `import React from 'react'` as $i where {
                 $i <: not contains namespace_import(),
-                $i => `import React, { $hooks } from 'react';$more_imports`
+                $i => `import React, { $hooks } from 'react';`
             },
             contains `import React from "react"` as $i where {
                 if ($i <: not contains namespace_import()) {
-                    $i => `import React, { $hooks } from 'react';$more_imports`
+                    $i => `import React, { $hooks } from 'react';`
                 } else {
-                    $i => `$i\nimport { $hooks } from 'react';$more_imports`
+                    $i => `$i\nimport { $hooks } from 'react';`
                 }
             }
         }
@@ -381,7 +390,7 @@ pattern first_step() {
         if ($body <: contains r"(v|V)iewState"($_)) {
             $base_name = js"${class_name}Base",
             $the_const = `const $base_name$const_type_annotation = $the_function;
-            
+
 export const $original_name = observer($base_name);`,
         } else {
             $the_const = `const $class_name$const_type_annotation = $the_function;`
@@ -542,7 +551,10 @@ sequential {
     file($body) where {
       $body <: program($statements),
       $use_ref_from = .,
-      $statements <: bubble($body, $use_ref_from) { adjust_imports($use_ref_from) }
+      $statements <: bubble($body, $program) and {
+        maybe adjust_imports($use_ref_from),
+        add_more_imports($use_ref_from),
+      }
     }
 }
 ```
@@ -806,8 +818,8 @@ class SampleComponent extends Component {
 ```
 
 ```js
-import { useRef } from 'react';
 import { observer } from 'mobx-react';
+import { useRef } from 'react';
 
 const SampleComponentBase = () => {
   const viewState = useRef(new ViewState());
@@ -818,6 +830,7 @@ const SampleComponentBase = () => {
     </p>
   );
 };
+
 export const SampleComponent = observer(SampleComponentBase);
 ```
 
