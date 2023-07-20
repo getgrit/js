@@ -11,7 +11,7 @@ tags: #react, #migration, #complex, #hidden
 // https://github.com/getgrit/js/blob/main/.grit/patterns/react_hooks.grit
 
 pattern wrapped_first_step() {
-  $use_ref_from = .,
+  $use_ref_from = `useRefFrom`,
   first_step($use_ref_from)
 }
 
