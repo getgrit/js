@@ -255,7 +255,7 @@ pattern add_more_imports($use_ref_from) {
       $program <: contains js"useRefFrom",
       !$use_ref_from <: .
     }) {
-      $more_imports += `import { useRefFrom } from $use_ref_from';`
+      $more_imports += `import { useRefFrom } from $use_ref_from;`
     },
   } => `$more_imports\n$statements`
 }

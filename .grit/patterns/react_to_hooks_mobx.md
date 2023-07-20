@@ -30,7 +30,7 @@ sequential {
       $body <: program($statements),
       $statements <: bubble($body, $program) and {
         maybe adjust_imports(),
-        add_more_imports(use_ref_from=`"~/hooks/useRefFrom"`),
+        add_more_imports(use_ref_from=`"~/hooks/myhooks"`),
       }
     }
 }
@@ -105,7 +105,7 @@ class BrandHeaderBase extends React.Component<
 ```
 
 ```ts
-import { useRefFrom } from '~/hooks/useRefFrom';
+import { useRefFrom } from '~/hooks/myhooks';
 import React, { useRef } from 'react';
 import styled from 'styled-components';
 
