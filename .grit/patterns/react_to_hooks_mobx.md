@@ -104,7 +104,7 @@ class BrandHeaderBase extends React.Component<
 }
 ```
 
-```ts
+```js
 import { useRefFrom } from '~/hooks/myhooks';
 import React, { useRef } from 'react';
 import styled from 'styled-components';
