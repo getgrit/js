@@ -22,9 +22,9 @@ pattern regular_first_step() {
 sequential {
     file(body = program(statements = some bubble($program) regular_first_step())),
     // Run it 3 times to converge
-    file(body = second_step(handler_callback_suffix = .)),
-    file(body = second_step(handler_callback_suffix = .)),
-    file(body = second_step(handler_callback_suffix = .)),
+    file(body = second_step(handler_callback_suffix = "Handler")),
+    file(body = second_step(handler_callback_suffix = "Handler")),
+    file(body = second_step(handler_callback_suffix = "Handler")),
     file($body) where {
       $body <: program($statements),
       $statements <: bubble($body, $program) and {
@@ -685,11 +685,11 @@ class MyComponent extends Component {
     const five = 2 + 3;
     this.state = {
       secret: five,
-    }
+    };
   }
 
   render() {
-    return <></>
+    return <></>;
   }
 }
 ```
