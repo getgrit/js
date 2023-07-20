@@ -7,7 +7,6 @@ This pattern converts React class components to functional components, with hook
 tags: #react, #migration, #complex
 
 ```grit
-
 // Most of the logic for this pattern is in react_hooks.grit
 // https://github.com/getgrit/js/blob/main/.grit/patterns/react_hooks.grit
 
