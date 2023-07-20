@@ -25,18 +25,18 @@ class BrandHeaderBase extends React.Component<
       <Banner>
         <h3>Some text</h3>
         <p>Some more text</p>
-        {bannerStuff && (
-          <InternalBrand
-            brand={brand}
-            height={240}
-          />
-        )}
+        {this.renderBannerDetails()}
       </Banner>
     );
   }
 
+  private name = "BrandHeader";
+
+  private invoker: React.RefObject<HTMLElement> = React.createRef();
+  private util: number = 9;
+
   private renderBannerDetails = () => {
-    if (!getSettingBrandPageFollowups()) {
+    if (!getGoodStuff()) {
       return this.props.viewport.isMedium ? (
         <InternalBrand
             brand={brand}
@@ -44,21 +44,18 @@ class BrandHeaderBase extends React.Component<
           />
       ) : null;
     } else {
-      const CustomBanner: React.FC<{ $height: number }> = ({
-        $height,
+      const CustomBanner: React.FC<{ height: number }> = ({
+        height,
       }) => (
         <InternalBrand
             brand={brand}
-            height={240}
+            height={height}
           />
       );
 
       return (
         <ResponsiveBanner>
-          <InternalBrand
-            brand={brand}
-            height={240}
-          />
+          <CustomBanner height={240} />
         </ResponsiveBanner>
       );
     }
