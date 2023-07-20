@@ -290,7 +290,7 @@ pattern maybe_wrapped_class_declaration($class_name, $body, $class) {
         $heritage <: contains extends_clause(value = contains `Component`)
     }
 }
-pattern first_step($use_ref_from) {
+pattern first_step($use_ref_from, $handler_callback_suffix) {
     maybe_wrapped_class_declaration($class_name, $body, $class) where {
         $statements = [],
         $constructor_statements = [],
@@ -317,7 +317,6 @@ pattern first_step($use_ref_from) {
         // we are missing a field for the statements in class_body
 
         // Set an alternative callback suffix, or remove it entirely
-        $handler_callback_suffix="Handler",
 
         $body <: contains handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix, $use_ref_from),
         $program <: maybe contains interface_declaration(body=$interface, name=$interface_name) where {
@@ -398,6 +397,7 @@ export const $original_name = observer($base_name);`,
         $class => `$the_const\n\n$static_statements\n`
     }
 }
+
 pattern find_dependencies($hoisted_states, $dependencies) {
     contains bubble($hoisted_states, $dependencies) identifier() as $i where {
         $i <: not `props`,
@@ -406,6 +406,7 @@ pattern find_dependencies($hoisted_states, $dependencies) {
         $dependencies += `$i`
     }
 }
+
 pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos) {
     or {
         `this.state.$x` => `$x`,
@@ -476,6 +477,8 @@ pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos) {
         }
     }
 }
+
+// Find places we're accessing state, refs, or memos
 pattern gather_accesses($hoisted_states, $hoisted_refs, $use_memos) {
     contains bubble($hoisted_states, $hoisted_refs, $use_memos) variable_declarator($name, $value) where {
         or {
@@ -517,6 +520,8 @@ pattern gather_accesses($hoisted_states, $hoisted_refs, $use_memos) {
         } where $use_memos += $name,
     }
 }
+
+// Rewrite accesses to state, refs, and memos
 pattern second_step() {
     maybe and {
         $hoisted_states = [],

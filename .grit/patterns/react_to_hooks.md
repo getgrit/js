@@ -15,7 +15,8 @@ language js
 
 pattern wrapped_first_step() {
   $use_ref_from = .,
-  first_step($use_ref_from)
+  $handler_callback_suffix="Handler",
+  first_step($use_ref_from, $handler_callback_suffix)
 }
 
 sequential {

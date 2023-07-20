@@ -15,11 +15,14 @@ language js
 
 pattern wrapped_first_step() {
   $use_ref_from = `useRefFrom`,
-  first_step($use_ref_from)
+  // Avoid inserting the "Handler" suffix
+  $handler_callback_suffix = .,
+  first_step($use_ref_from, $handler_callback_suffix)
 }
 
 sequential {
     file(body = program(statements = some bubble($program) wrapped_first_step())),
+    // Run it 3 times to converge
     file(body = second_step()),
     file(body = second_step()),
     file(body = second_step()),
