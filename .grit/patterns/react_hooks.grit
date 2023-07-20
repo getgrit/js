@@ -356,7 +356,11 @@ pattern first_step($use_ref_from) {
         },
 
         $const_type_annotation = .,
-        if ($program <: contains `FunctionComponent`) {
+        if (or {
+          $program <: contains `FunctionComponent`,
+          // useRefFrom means useFunctionComponent
+          $use_ref_from <: not .
+        }) {
             $const_type_annotation = `: React.FunctionComponent<${props_type}>`,
             $type_annotation = .
         },
@@ -384,6 +388,10 @@ pattern first_step($use_ref_from) {
 export const $original_name = observer($base_name);`,
         } else {
             $the_const = `const $class_name$const_type_annotation = $the_function;`
+        },
+
+        if ($class <: within export_statement()) {
+            $the_const = `export $the_const`
         },
 
         $static_statements = join(list = $static_statements, $separator),
