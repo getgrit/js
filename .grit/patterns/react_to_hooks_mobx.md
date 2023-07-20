@@ -116,7 +116,7 @@ export interface IMainProps {
   dataHeaderRef?: React.RefCallback<HTMLElement>;
 }
 
-export const BrandHeaderBase: React.FC<IMainProps & IBrandProps> = (props) => {
+export const BrandHeaderBase: React.FunctionComponent<IMainProps & IBrandProps> = (props) => {
   const { bannerStuff, dataHeaderRef, brandName } = props;
 
   const renderBannerDetails = () => {
