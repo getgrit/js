@@ -13,14 +13,9 @@ language js
 // Most of the logic for this pattern is in react_hooks.grit
 // https://github.com/getgrit/js/blob/main/.grit/patterns/react_hooks.grit
 
-pattern wrapped_first_step() {
-  $use_ref_from = .,
-  $handler_callback_suffix="Handler",
-  first_step($use_ref_from, $handler_callback_suffix)
-}
-
-sequential {
-    file(body = program(statements = some bubble($program) wrapped_first_step())),
+pattern react_to_hooks($use_ref_from, $handler_callback_suffix) {
+  sequential {
+    file(body = program(statements = some bubble($program, $use_ref_from, $handler_callback) first_step($use_ref_from, $handler_callback))),
     file(body = second_step()),
     file(body = second_step()),
     file(body = second_step()),
@@ -31,7 +26,11 @@ sequential {
         add_more_imports(),
       }
     }
+  }
 }
+
+
+react_to_hooks($use_ref_from = ., $handler_callback_suffix="Handler")
 ```
 
 ## Input for playground
