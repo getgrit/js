@@ -23,8 +23,8 @@ pattern change_constructor() {
         } => .,
         $params => `$details`,
         $program <: contains `import $old from $src` where {
-          $src <: `"openai"`,
-          $old => `OpenAI`
+            $src <: `"openai"`,
+            $old => `OpenAI`
         }
     }
 }
