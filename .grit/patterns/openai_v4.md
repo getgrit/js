@@ -11,7 +11,6 @@ engine marzano(0.1)
 language js
 
 // Rewrite the constructor
-
 pattern change_constructor() {
     `new $constructor($params)` where {
         $constructor <: `OpenAIApi` => `OpenAI`,
