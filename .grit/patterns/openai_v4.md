@@ -30,11 +30,15 @@ pattern change_constructor() {
 
 pattern change_chat_completion() {
     or {
-        member_expression($object, $property) where {
-            $object <: js"openai",
-            $property <: js"createChatCompletion" => js"chat.completions.create"
-        },
-        js"chatCompletion.data.choices" => js"chatCompletion.choices"
+        js"$chatCompletion.data.choices" => js"$chatCompletion.choices" where {
+            $program <: contains variable_declarator($name, $value) where {
+                $name <: $chatCompletion,
+                $value <: contains member_expression($object, $property) where {
+                    $object <: js"openai",
+                    $property <: js"createChatCompletion" => js"chat.completions.create"
+                },
+            }
+        }
     }
 }
 
