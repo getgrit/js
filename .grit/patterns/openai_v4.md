@@ -29,26 +29,33 @@ pattern change_constructor() {
 }
 
 pattern change_chat_completion() {
-    or {
-        js"$chatCompletion.data.choices" => js"$chatCompletion.choices" where {
-            $program <: contains variable_declarator($name, $value) where {
-                $name <: $chatCompletion,
-                $value <: contains member_expression($object, $property) where {
-                    $object <: js"openai",
-                    $property <: js"createChatCompletion" => js"chat.completions.create"
-                },
-            }
+    js"$chatCompletion.data.choices" => js"$chatCompletion.choices" where {
+        $program <: contains variable_declarator($name, $value) where {
+            $name <: $chatCompletion,
+            $value <: contains member_expression($object, $property) where {
+                $object <: js"openai",
+                $property <: js"createChatCompletion" => js"chat.completions.create"
+            },
         }
+    }
+}
+
+pattern match_create_completion() {
+    member_expression($object, $property) where {
+        $object <: js"openai",
+        $property <: js"createCompletion" => js"completions.create"
     }
 }
 
 pattern change_completion() {
     or {
-        member_expression($object, $property) where {
-            $object <: js"openai",
-            $property <: js"createCompletion" => js"completions.create"
+        js"$completion.data.choices" => js"$completion.choices" where {
+            $program <: contains variable_declarator($name, $value) where {
+                $name <: $completion,
+                $value <: contains match_create_completion()
+            }
         },
-        js"completion.data.choices" => js"completion.choices"
+        match_create_completion()
     }
 }
 
