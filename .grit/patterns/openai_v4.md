@@ -28,9 +28,20 @@ pattern change_constructor() {
     }
 }
 
+pattern openai_named($var) {
+    variable_declarator(name=$var, $value) where {
+        $value <: contains `new $constructor($_)` where {
+            $constructor <: js"OpenAIApi"
+        }
+    }
+}
+
 pattern match_create_chat_completion() {
     member_expression($object, $property) where {
-        $object <: js"openai",
+        or {
+            $object <: js"openai",
+            $program <: contains openai_named($object),
+        },
         $property <: js"createChatCompletion" => js"chat.completions.create"
     }
 }
@@ -49,7 +60,10 @@ pattern change_chat_completion() {
 
 pattern match_create_completion() {
     member_expression($object, $property) where {
-        $object <: js"openai",
+        or {
+            $object <: js"openai",
+            $program <: contains openai_named($object),
+        },
         $property <: js"createCompletion" => js"completions.create"
     }
 }
@@ -69,7 +83,10 @@ pattern change_completion() {
 pattern change_transcription() {
     call_expression($function, $arguments) where {
         $function <: member_expression($object, $property) where {
-            $object <: js"openai",
+            or {
+                $object <: js"openai",
+                $program <: contains openai_named($object),
+            },
             $property <: js"createTranscription" => js"audio.transcriptions.create"
         },
         $arguments <: [$stream, $model, ...] => js"{ model: $model, file: $stream }"
