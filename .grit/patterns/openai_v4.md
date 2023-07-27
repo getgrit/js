@@ -196,6 +196,37 @@ const completion = await openai.completions.create({
 console.log(completion.choices[0].text);
 ```
 
+## Creating a completion with openai alias
+
+```js
+import { myConfig, OpenAIApi } from 'openai';
+
+const myConfig = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const beach = new OpenAIApi(myConfig);
+
+const completion = await myOpenAi.createCompletion({
+  model: "text-davinci-003",
+  prompt: "This story begins",
+  max_tokens: 30,
+});
+```
+
+```ts
+import OpenAI from 'openai';
+
+const beach = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const completion = await myOpenAi.completions.create({
+  model: "text-davinci-003",
+  prompt: "This story begins",
+  max_tokens: 30,
+});
+```
+
 ## Creating a transcription (whisper)
 
 ```js
