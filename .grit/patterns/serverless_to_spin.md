@@ -10,12 +10,12 @@ tags: #js, #migration, #serverless, #fermyon, #alpha
 engine marzano(0.1)
 language js
 
-pattern fix_response() {
+pattern spin_fix_response() {
      object($properties) where {
         $properties <: contains bubble {
             pair($key, $value) where {
                 $key <: "body",
-                $value => `encoder.encode($value).buffer` where {
+                $value <: $old => js"encoder.encode($old).buffer" where {
                     $program => js"const encoder = new TextEncoder('utf-8');\n\n$program"
                   }
             }
@@ -35,7 +35,7 @@ or {
 //     \`export const $_ = ($event) => { $response };\` => \`export async function handleRequest($event) { $response }\`,
 //     export_statement($declaration) where $declaration <: contains object() as $response where {$response <: contains \`status\`, $response <: contains \`body\`}
 } where {
-    $body <: maybe contains `return $response` where $response <: fix_response(),
+    $body <: maybe contains `return $response` where $response <: spin_fix_response(),
     $args <: [$event],
     $event => `request`,
     $body <: contains $event => `request`
