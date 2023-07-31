@@ -1,11 +1,10 @@
 ---
-title: Pattern Name
+title: Convert AWS Lambda Functions to Fermyon Spin
 ---
-# {{ page.title }}
 
-Pattern Description
+This pattern converts a serverless function to a spin function designed to run on [Fermyon](https://www.fermyon.com/).
 
-tags: #JS
+tags: #js, #migration, #serverless, #fermyon, #alpha
 
 ```grit
 engine marzano(0.1)
@@ -16,7 +15,9 @@ pattern fix_response() {
         $properties <: contains bubble {
             pair($key, $value) where {
                 $key <: "body",
-                $value <: maybe js"JSON.stringify($data)" => `encoder.encode($data).buffer` where { $program => js"const encoder = new TextEncoder('utf-8');\n\n$program"}
+                $value => `encoder.encode($value).buffer` where {
+                    $program => js"const encoder = new TextEncoder('utf-8');\n\n$program"
+                  }
             }
         },
         $properties <: contains bubble {
@@ -55,25 +56,28 @@ module.exports.handler = async (event) => {
         input: event,
       },
       null,
-      2
+      2,
     ),
   };
 };
 ```
+
 ```js
 const encoder = new TextEncoder('utf-8');
 
 export async function handleRequest(request) {
-    return {
+  return {
     status: 200,
-    body: encoder.encode({
-        message: 'Go Serverless v3.0! Your function executed successfully!',
-        input: request,
-      },
-      null,
-      2).buffer,
+    body: encoder.encode(
+      JSON.stringify(
+        {
+          message: 'Go Serverless v3.0! Your function executed successfully!',
+          input: request,
+        },
+        null,
+        2,
+      ),
+    ).buffer,
   };
-};
+}
 ```
-
-
