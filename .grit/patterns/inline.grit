@@ -1,0 +1,64 @@
+engine marzano(0.1)
+language js
+
+pattern fix_once() {
+    jsx_opening_element(name=js"ButtonBase", $attribute) where {
+        $attribute <: maybe contains {js"className={$cls}" where {
+            $cls <: js"$_.$class",
+            $program <: contains js"$class: $styles" where {
+                $nested = [],
+                $inlined = [],
+                $styles <: object($properties),
+                $properties <: some bubble($nested, $inlined) js"$key: $value" as $prop where {
+                    if ($key <: includes "&") {
+                        $nested += $prop
+                    } else {
+                        $inlined += $prop
+                    }
+                },
+                $inlined_style = join(list=$inlined, separator=","),
+                if ($nested <: []) {
+                    $new_class = js"",
+                    $new_styles = .
+                } else {
+                    $new_class = js" className={$cls}",
+                    $old = join(list=$nested, separator=","),
+                    $new_styles = js"$class: grit_important({$old})"
+                }
+            } => js"$new_styles",
+            $attribute <: contains js"style={{$merge_with}}" => js"style={{$inlined_style, $merge_with,}}"
+        } => js"$new_class"},
+    }
+}
+
+pattern grit_un_nest() {
+    js"grit_important($stuff)" where {
+        $stuff <: object($properties),
+        $properties <: some js"$key: $value" where {
+            $value <: bubble($add_props) object(properties=$nested_props) where {
+                $add_props = [],
+                $nested_props <: some bubble($add_props) { pair($key, value=object(properties=$inner_props)) where {
+                    $add_props += $inner_props
+                } => . },
+                $new_props = join(list=$add_props, separator=","),
+                $nested_props => js"$nested_props $new_props"
+            }
+        },
+        $properties => js"$properties"
+    }
+}
+
+pattern make_important() {
+    js"grit_important($stuff)" where {
+        $stuff <: maybe contains bubble or {
+            or {number(), js"true", js"false"} as $og => js"'$og !important'",
+            pair(value=string(fragment=$fragment => js"$fragment !important"))
+        },
+    } => js"$stuff"
+}
+
+sequential {
+    contains fix_once(),
+    contains grit_un_nest(),
+    maybe contains make_important()
+}
