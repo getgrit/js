@@ -15,8 +15,8 @@ jobs:
 
     strategy:
       matrix:
-        runner: [nscloud-ubuntu-22.04-amd64-4x16]
-        node-version: [16.16, 18.x, 20.x]
+        runner: [nscloud-ubuntu-22.04-amd64-4x16, macos-latest]
+        node-version: [18.x]
 
     steps:
       - uses: actions/checkout@v2
