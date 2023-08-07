@@ -112,12 +112,12 @@ pattern change_completion_try_catch() {
     }
 }
 
-program($statements) where $statements <: and {
-    maybe contains bubble change_constructor(),
-    maybe contains bubble change_chat_completion(),
-    maybe contains bubble change_completion(),
-    maybe contains bubble change_transcription(),
-    maybe contains bubble change_completion_try_catch()
+bubble or {
+    bubble change_constructor(),
+    bubble change_chat_completion(),
+    bubble change_completion(),
+    bubble change_transcription(),
+    bubble change_completion_try_catch()
 }
 ```
 
