@@ -144,16 +144,16 @@ const openai = new OpenAI({
 
 ```js
 const chatCompletion = await openai.createChatCompletion({
-  model: "gpt-3.5-turbo",
-  messages: [{role: "user", content: "Hello world"}],
+  model: 'gpt-3.5-turbo',
+  messages: [{ role: 'user', content: 'Hello world' }],
 });
 console.log(chatCompletion.data.choices[0].message);
 ```
 
 ```ts
 const chatCompletion = await openai.chat.completions.create({
-  model: "gpt-3.5-turbo",
-  messages: [{role: "user", content: "Hello world"}],
+  model: 'gpt-3.5-turbo',
+  messages: [{ role: 'user', content: 'Hello world' }],
 });
 console.log(chatCompletion.choices[0].message);
 ```
@@ -162,16 +162,16 @@ console.log(chatCompletion.choices[0].message);
 
 ```js
 const mango = await openai.createChatCompletion({
-  model: "gpt-3.5-turbo",
-  messages: [{role: "user", content: "Hello world"}],
+  model: 'gpt-3.5-turbo',
+  messages: [{ role: 'user', content: 'Hello world' }],
 });
 console.log(mango.data.choices[0].message);
 ```
 
 ```ts
 const mango = await openai.chat.completions.create({
-  model: "gpt-3.5-turbo",
-  messages: [{role: "user", content: "Hello world"}],
+  model: 'gpt-3.5-turbo',
+  messages: [{ role: 'user', content: 'Hello world' }],
 });
 console.log(mango.choices[0].message);
 ```
@@ -180,8 +180,8 @@ console.log(mango.choices[0].message);
 
 ```js
 const completion = await openai.createCompletion({
-  model: "text-davinci-003",
-  prompt: "This story begins",
+  model: 'text-davinci-003',
+  prompt: 'This story begins',
   max_tokens: 30,
 });
 console.log(completion.data.choices[0].text);
@@ -189,8 +189,8 @@ console.log(completion.data.choices[0].text);
 
 ```ts
 const completion = await openai.completions.create({
-  model: "text-davinci-003",
-  prompt: "This story begins",
+  model: 'text-davinci-003',
+  prompt: 'This story begins',
   max_tokens: 30,
 });
 console.log(completion.choices[0].text);
@@ -207,8 +207,8 @@ const myConfig = new Configuration({
 const beach = new OpenAIApi(myConfig);
 
 const completion = await myOpenAi.createCompletion({
-  model: "text-davinci-003",
-  prompt: "This story begins",
+  model: 'text-davinci-003',
+  prompt: 'This story begins',
   max_tokens: 30,
 });
 ```
@@ -221,8 +221,8 @@ const beach = new OpenAI({
 });
 
 const completion = await myOpenAi.completions.create({
-  model: "text-davinci-003",
-  prompt: "This story begins",
+  model: 'text-davinci-003',
+  prompt: 'This story begins',
   max_tokens: 30,
 });
 ```
@@ -230,10 +230,7 @@ const completion = await myOpenAi.completions.create({
 ## Creating a transcription (whisper)
 
 ```js
-const response = await openai.createTranscription(
-  fs.createReadStream("audio.mp3"),
-  "whisper-1"
-);
+const response = await openai.createTranscription(fs.createReadStream('audio.mp3'), 'whisper-1');
 ```
 
 ```ts
@@ -265,12 +262,35 @@ try {
   const completion = await openai.completions.create({});
 } catch (error) {
   if (error instanceof OpenAI.APIError) {
-    console.log(error.status);  // e.g. 401
+    console.log(error.status); // e.g. 401
     console.log(error.message); // e.g. The authentication token you passed was invalid...
-    console.log(error.code);  // e.g. 'invalid_api_key'
-    console.log(error.type);  // e.g. 'invalid_request_error'
+    console.log(error.code); // e.g. 'invalid_api_key'
+    console.log(error.type); // e.g. 'invalid_request_error'
   } else {
     console.log(error);
   }
 }
+```
+
+## Does not match an sample without OpenAI
+
+```
+var increment = function (i) {
+  return i + 1;
+};
+
+var remember = function (me) {
+  this.you = me;
+};
+
+var sumToValue = function (x, y) {
+  function Value(v) {
+    this.value = v;
+  }
+  return new Value(x + y);
+};
+
+var times = (x, y) => {
+  return x * y;
+};
 ```
