@@ -115,6 +115,84 @@ pattern change_completion_try_catch() {
     }
 }
 
+pattern change_imports() {
+    // TODO tried and failed to replace with "and" or use "maybe or"?
+    // TODO we ideally want extra type guards so it only changes things that were imported from 'openai'.
+    //   e.g. "Model" is a very dangerous thing to be changing, i have disabled for this reason.
+    // TODO maybe try using AST nodes, but i found too many edge cases - 
+    //   e.g. type_annotation(type="ChatCompletionRequestMessage") => `: foo`
+    any {
+        or {
+            `import $_ from "openai"` => `import OpenAI from "openai"`,
+            `import {$_} from "openai"`
+        } => `import OpenAI from "openai"`,
+        or {
+              // interfaces
+            `ChatCompletionRequestMessage` => `OpenAI.Chat.CreateChatCompletionRequestMessage`,
+            // `ChatCompletionResponseMessage` => `OpenAI`,
+            // `CreateAnswerRequest` => `OpenAI`,
+            // `CreateAnswerResponse` => `OpenAI`,
+            // `CreateAnswerResponseSelectedDocumentsInner` => `OpenAI`,
+            `CreateChatCompletionRequest` => `OpenAI.Chat.CompletionCreateParamsNonStreaming`,
+            // `CreateChatCompletionResponse` => `OpenAI`,
+            // `CreateChatCompletionResponseChoicesInner` => `OpenAI`,
+            // `CreateClassificationRequest` => `OpenAI`,
+            // `CreateClassificationResponse` => `OpenAI`,
+            // `CreateClassificationResponseSelectedExamplesInner` => `OpenAI`,
+            `CreateCompletionRequest` => `OpenAI.CompletionCreateParamsNonStreaming`,
+            // `CreateCompletionResponse` => `OpenAI`,
+            // `CreateCompletionResponseChoicesInner` => `OpenAI`,
+            // `CreateCompletionResponseChoicesInnerLogprobs` => `OpenAI`,
+            `CreateCompletionResponseUsage` => `OpenAI.Completion.Usage`,
+            `CreateEditRequest` => `OpenAI.EditCreateParams`,
+            // `CreateEditResponse` => `OpenAI`,
+            `CreateEmbeddingRequest` => `OpenAI.EmbeddingCreateParams`,
+            // `CreateEmbeddingResponse` => `OpenAI`,
+            // `CreateEmbeddingResponseDataInner` => `OpenAI`,
+            `CreateEmbeddingResponseUsage` => `OpenAI.Embedding.Usage`,
+            `CreateFineTuneRequest` => `OpenAI.FineTuneCreateParams`,
+            `CreateImageRequest` => `OpenAI.Images.ImageGenerateParams`,
+            `CreateModerationRequest` => `OpenAI.ModerationCreateParams`,
+            // `CreateModerationResponse` => `OpenAI`,
+            // `CreateModerationResponseResultsInner` => `OpenAI`,
+            `CreateModerationResponseResultsInnerCategories` => `OpenAI.Moderation.Categories`,
+            `CreateModerationResponseResultsInnerCategoryScores` => `OpenAI.Moderation.CategoryScores`,
+            // `CreateSearchRequest` => `OpenAI`,
+            // `CreateSearchResponse` => `OpenAI`,
+            // `CreateSearchResponseDataInner` => `OpenAI`,
+            // `CreateTranscriptionResponse` => `OpenAI`,
+            // `CreateTranslationResponse` => `OpenAI`,
+            `DeleteFileResponse` => `OpenAI.FileDeleted`,
+            `DeleteModelResponse` => `OpenAI.ModelDeleted`,
+            // `Engine` => `OpenAI`,
+            `FineTune` => `OpenAI.FineTune`,
+            `FineTuneEvent` => `OpenAI.FineTune`,
+            `ImagesResponse` => `OpenAI.ImagesResponse`,
+            // `ImagesResponseDataInner` => `OpenAI`,
+            // `ListEnginesResponse` => `OpenAI`,
+            // `ListFilesResponse` => `OpenAI`,
+            // `ListFineTuneEventsResponse` => `OpenAI`,
+            // `ListFineTunesResponse` => `OpenAI`,
+            // `ListModelsResponse` => `OpenAI`,
+            // `Model` => `OpenAI.Model`,
+            `OpenAIFile` => `OpenAI.FileObject`,
+            
+            // types
+            `ChatCompletionRequestMessageRoleEnum` => `'system' | 'user' | 'assistant' | 'function'`,
+            `ChatCompletionResponseMessageRoleEnum` => `'system' | 'user' | 'assistant' | 'function'`,
+            `CreateAnswerRequestStop` => `Array<string> | string`,
+            `CreateChatCompletionRequestStop` => `Array<string> | string`,
+            `CreateCompletionRequestPrompt` => `Array<any> | Array<number> | Array<string> | string`,
+            `CreateCompletionRequestStop` => `Array<string> | string`,
+            `CreateEmbeddingRequestInput` => `Array<any> | Array<number> | Array<string> | string`,
+            `CreateImageRequestSizeEnum` => `'256x256' | '512x512' | '1024x1024'`,
+            `CreateImageRequestResponseFormatEnum` => `'url' | 'b64_json'`,
+            `CreateModerationRequestInput` => `Array<string> | string`,
+        }
+    }
+}
+
+
 file(body = program($statements)) where $statements <: and {
   or { includes "openai", includes "createCompletion", includes "OpenAIAPI", includes "createTranscription" },
   any {
@@ -122,7 +200,8 @@ file(body = program($statements)) where $statements <: and {
     contains bubble change_chat_completion(),
     contains bubble change_completion(),
     contains bubble change_transcription(),
-    contains bubble change_completion_try_catch()
+    contains bubble change_completion_try_catch(),
+    contains bubble change_imports()
   }
 }
 ```
