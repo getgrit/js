@@ -177,17 +177,17 @@ pattern change_imports() {
             // `Model` => `OpenAI.Model`,
             `OpenAIFile` => `OpenAI.FileObject`,
             
-            // types
-            `ChatCompletionRequestMessageRoleEnum` => `'system' | 'user' | 'assistant' | 'function'`,
-            `ChatCompletionResponseMessageRoleEnum` => `'system' | 'user' | 'assistant' | 'function'`,
-            `CreateAnswerRequestStop` => `Array<string> | string`,
-            `CreateChatCompletionRequestStop` => `Array<string> | string`,
-            `CreateCompletionRequestPrompt` => `Array<any> | Array<number> | Array<string> | string`,
-            `CreateCompletionRequestStop` => `Array<string> | string`,
-            `CreateEmbeddingRequestInput` => `Array<any> | Array<number> | Array<string> | string`,
-            `CreateImageRequestSizeEnum` => `'256x256' | '512x512' | '1024x1024'`,
-            `CreateImageRequestResponseFormatEnum` => `'url' | 'b64_json'`,
-            `CreateModerationRequestInput` => `Array<string> | string`,
+            // types - we actually don't want these because they can interact weirdly with the parser
+            // `ChatCompletionRequestMessageRoleEnum` => `'system' | 'user' | 'assistant' | 'function'`,
+            // `ChatCompletionResponseMessageRoleEnum` => `'system' | 'user' | 'assistant' | 'function'`,
+            // `CreateAnswerRequestStop` => `Array<string> | string`,
+            // `CreateChatCompletionRequestStop` => `Array<string> | string`,
+            // `CreateCompletionRequestPrompt` => `Array<any> | Array<number> | Array<string> | string`,
+            // `CreateCompletionRequestStop` => `Array<string> | string`,
+            // `CreateEmbeddingRequestInput` => `Array<any> | Array<number> | Array<string> | string`,
+            // `CreateImageRequestSizeEnum` => `'256x256' | '512x512' | '1024x1024'`,
+            // `CreateImageRequestResponseFormatEnum` => `'url' | 'b64_json'`,
+            // `CreateModerationRequestInput` => `Array<string> | string`,
         }
     }
 }
