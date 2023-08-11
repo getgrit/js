@@ -160,7 +160,7 @@ const openai = new OpenAIApi(myConfig);
 ```
 
 ```ts
-const OpenAIApi = require('openai');
+const OpenAI = require('openai');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
