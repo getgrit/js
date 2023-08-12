@@ -149,7 +149,7 @@ pattern change_imports() {
             `DeleteFileResponse` => `OpenAI.FileDeleted`,
             `DeleteModelResponse` => `OpenAI.ModelDeleted`,
             `FineTune` => `OpenAI.FineTune`,
-            `FineTuneEvent` => `OpenAI.FineTune`,
+            `FineTuneEvent` => `OpenAI.FineTuneEvent`,
             `ImagesResponse` => `OpenAI.ImagesResponse`,
             `OpenAIFile` => `OpenAI.FileObject`,
         }
