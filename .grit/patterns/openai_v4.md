@@ -116,13 +116,10 @@ pattern change_completion_try_catch() {
 }
 
 pattern change_imports() {
-    any {
-        or {
-            `import $_ from "openai"`,
-            `import {$_} from "openai"`
-        } => `import OpenAI from "openai"`,
-        
-    }
+  or {
+      `import $_ from "openai"`,
+      `import {$_} from "openai"`
+  } => `import OpenAI from "openai"`,
 }
 
 pattern fix_types() {
