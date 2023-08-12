@@ -116,29 +116,17 @@ pattern change_completion_try_catch() {
 }
 
 pattern change_imports() {
-    // TODO tried and failed to replace with "and" or use "maybe or"?
-    // TODO we ideally want extra type guards so it only changes things that were imported from 'openai'.
-    //   e.g. "Model" is a very dangerous thing to be changing, i have disabled for this reason.
-    // TODO maybe try using AST nodes, but i found too many edge cases - 
-    //   e.g. type_annotation(type="ChatCompletionRequestMessage") => `: foo`
     any {
         or {
             `import $_ from "openai"` => `import OpenAI from "openai"`,
             `import {$_} from "openai"`
         } => `import OpenAI from "openai"`,
         or {
-              // interfaces
             `ChatCompletionRequestMessage` => `OpenAI.Chat.CreateChatCompletionRequestMessage`,
             `ChatCompletionResponseMessage` => `OpenAI.Chat.Completions.ChatCompletionMessage`,
-            // `CreateAnswerRequest` => `OpenAI`,
-            // `CreateAnswerResponse` => `OpenAI`,
-            // `CreateAnswerResponseSelectedDocumentsInner` => `OpenAI`,
             `CreateChatCompletionRequest` => `OpenAI.Chat.CompletionCreateParamsNonStreaming`,
             `CreateChatCompletionResponse` => `OpenAI.Chat.Completions.ChatCompletion`,
             `CreateChatCompletionResponseChoicesInner` => `OpenAI.Chat.ChatCompletion.Choice`,
-            // `CreateClassificationRequest` => `OpenAI`,
-            // `CreateClassificationResponse` => `OpenAI`,
-            // `CreateClassificationResponseSelectedExamplesInner` => `OpenAI`,
             `CreateCompletionRequest` => `OpenAI.CompletionCreateParamsNonStreaming`,
             `CreateCompletionResponse` => `OpenAI.Completion`,
             `CreateCompletionResponseChoicesInner` => `OpenAI.CompletionChoice`,
@@ -154,40 +142,16 @@ pattern change_imports() {
             `CreateImageRequest` => `OpenAI.Images.ImageGenerateParams`,
             `CreateModerationRequest` => `OpenAI.ModerationCreateParams`,
             `CreateModerationResponse` => `OpenAI.Moderation`,
-            // `CreateModerationResponseResultsInner` => `OpenAI`,
             `CreateModerationResponseResultsInnerCategories` => `OpenAI.Moderation.Categories`,
             `CreateModerationResponseResultsInnerCategoryScores` => `OpenAI.Moderation.CategoryScores`,
-            // `CreateSearchRequest` => `OpenAI`,
-            // `CreateSearchResponse` => `OpenAI`,
-            // `CreateSearchResponseDataInner` => `OpenAI`,
             `CreateTranscriptionResponse` => `OpenAI.Audio.Transcription`,
             `CreateTranslationResponse` => `OpenAI.Audio.Translation`,
             `DeleteFileResponse` => `OpenAI.FileDeleted`,
             `DeleteModelResponse` => `OpenAI.ModelDeleted`,
-            // `Engine` => `OpenAI`,
             `FineTune` => `OpenAI.FineTune`,
             `FineTuneEvent` => `OpenAI.FineTune`,
             `ImagesResponse` => `OpenAI.ImagesResponse`,
-            // `ImagesResponseDataInner` => `OpenAI`,
-            // `ListEnginesResponse` => `OpenAI`,
-            // `ListFilesResponse` => `OpenAI`,
-            // `ListFineTuneEventsResponse` => `OpenAI`,
-            // `ListFineTunesResponse` => `OpenAI`,
-            // `ListModelsResponse` => `OpenAI`,
-            // `Model` => `OpenAI.Model`,
             `OpenAIFile` => `OpenAI.FileObject`,
-            
-            // types - we actually don't want these because they can interact weirdly with the parser
-            // `ChatCompletionRequestMessageRoleEnum` => `'system' | 'user' | 'assistant' | 'function'`,
-            // `ChatCompletionResponseMessageRoleEnum` => `'system' | 'user' | 'assistant' | 'function'`,
-            // `CreateAnswerRequestStop` => `Array<string> | string`,
-            // `CreateChatCompletionRequestStop` => `Array<string> | string`,
-            // `CreateCompletionRequestPrompt` => `Array<any> | Array<number> | Array<string> | string`,
-            // `CreateCompletionRequestStop` => `Array<string> | string`,
-            // `CreateEmbeddingRequestInput` => `Array<any> | Array<number> | Array<string> | string`,
-            // `CreateImageRequestSizeEnum` => `'256x256' | '512x512' | '1024x1024'`,
-            // `CreateImageRequestResponseFormatEnum` => `'url' | 'b64_json'`,
-            // `CreateModerationRequestInput` => `Array<string> | string`,
         }
     }
 }
