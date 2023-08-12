@@ -21,6 +21,13 @@ pattern change_constructor() {
             `var $config = new Configuration($details)`
         } => .,
         $params => `$details`,
+        $program <: contains or {
+            `import $old from $src`,
+            `$old = require($src)`
+        } where {
+            $src <: `"openai"`,
+            $old => `OpenAI`
+        }
     }
 }
 
