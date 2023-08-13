@@ -21,7 +21,7 @@ pattern change_constructor() {
             `var $config = new Configuration($details)`
         } => .,
         $params => `$details`,
-        $program <: contains bubble change_imports(),
+        $program <: contains change_imports(),
     }
 }
 
