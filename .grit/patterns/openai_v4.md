@@ -136,7 +136,7 @@ pattern fix_types() {
         `CreateEmbeddingRequest` => `OpenAI.EmbeddingCreateParams`,
         `CreateEmbeddingResponse` => `OpenAI.CreateEmbeddingResponse`,
         `CreateEmbeddingResponseDataInner` => `OpenAI.Embedding`,
-        `CreateEmbeddingResponseUsage` => `OpenAI.CreateEmbeddingResponse`,
+        `CreateEmbeddingResponseUsage` => `OpenAI.CreateEmbeddingResponse.Usage`,
         `CreateFineTuneRequest` => `OpenAI.FineTuneCreateParams`,
         `CreateImageRequest` => `OpenAI.Images.ImageGenerateParams`,
         `CreateModerationRequest` => `OpenAI.ModerationCreateParams`,
