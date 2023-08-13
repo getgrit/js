@@ -21,13 +21,7 @@ pattern change_constructor() {
             `var $config = new Configuration($details)`
         } => .,
         $params => `$details`,
-        $program <: contains or {
-            `import $old from $src`,
-            `$old = require($src)`
-        } where {
-            $src <: `"openai"`,
-            $old => `OpenAI`
-        }
+        $program <: contains bubble change_imports(),
     }
 }
 
@@ -116,10 +110,13 @@ pattern change_completion_try_catch() {
 }
 
 pattern change_imports() {
-  or {
-      `import $_ from "openai"`,
-      `import {$_} from "openai"`
-  } => `import OpenAI from "openai"`,
+    or {
+        `import $old from $src`,
+        `$old = require($src)`
+    } where {
+        $src <: `"openai"`,
+        $old => `OpenAI`
+    }
 }
 
 pattern fix_types() {
