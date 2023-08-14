@@ -31,7 +31,8 @@ sequential {
       $statements <: bubble($body, $program) and {
         maybe adjust_imports(),
         add_more_imports(use_ref_from=`"~/hooks/myhooks"`),
-      }
+      },
+      $statements <: maybe contains fix_export(),
     }
 }
 ```

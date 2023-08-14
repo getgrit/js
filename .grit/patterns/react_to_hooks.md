@@ -30,7 +30,8 @@ sequential {
       $statements <: bubble($body, $program) and {
         maybe adjust_imports(),
         add_more_imports(),
-      }
+      },
+      $statements <: maybe contains fix_export(),
     }
 }
 ```
@@ -778,4 +779,62 @@ const MyComponent = () => {
  * Comment on a static variable
  */
 MyComponent.someVariable = undefined;
+```
+
+## Handles an inline export
+
+```js
+import { Component } from 'react';
+
+export class MyComponent extends Component {
+  constructor(props: Props) {
+    this.state = {
+      secret: 5,
+    };
+  }
+
+  render() {
+    return <></>;
+  }
+}
+```
+
+```ts
+import { useState } from 'react';
+
+export const MyComponent = () => {
+  const [secret, setSecret] = useState(5);
+
+  return <></>;
+};
+```
+
+## Handles an inline default export
+
+```js
+import { Component } from 'react';
+
+export default class MyComponent extends Component {
+  constructor(props: Props) {
+    this.state = {
+      secret: 5,
+    };
+  }
+
+  render() {
+    return <></>;
+  }
+}
+```
+
+```ts
+import { useState } from 'react';
+
+const MyComponent = () => {
+  const [secret, setSecret] = useState(5);
+
+  return <></>;
+};
+
+export default MyComponent;
 ```

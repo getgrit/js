@@ -389,10 +389,6 @@ export const $original_name = observer($base_name);`,
             $the_const = `const $class_name$const_type_annotation = $the_function;`
         },
 
-        if ($class <: within export_statement()) {
-            $the_const = `export $the_const`
-        },
-
         $static_statements = join(list = $static_statements, $separator),
         $class => `$the_const\n\n$static_statements\n`
     }
@@ -548,4 +544,8 @@ pattern second_step($handler_callback_suffix) {
             }
         }
     }
+}
+
+pattern fix_export() {
+    js"export default const $name = $component" => js"const $name = $component\n\nexport default $name;"
 }
