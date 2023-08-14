@@ -95,9 +95,9 @@ pattern remove_import($from) {
     }
 }
 
-pattern replace_import($from, $new) {
+pattern replace_import($old, $new) {
     $name where {
-        $name <: remove_import($from),
+        $name <: remove_import(from=$old),
         $name <: ensure_import_from(source=$new)
     }
 }
