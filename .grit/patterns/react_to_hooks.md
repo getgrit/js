@@ -30,8 +30,7 @@ sequential {
       $statements <: bubble($body, $program) and {
         maybe adjust_imports(),
         add_more_imports(),
-      },
-      $statements <: maybe contains fix_export(),
+      }
     }
 }
 ```

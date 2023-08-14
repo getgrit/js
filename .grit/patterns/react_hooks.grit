@@ -523,26 +523,29 @@ pattern gather_accesses($hoisted_states, $hoisted_refs, $use_memos) {
 
 // Rewrite accesses to state, refs, and memos
 pattern second_step($handler_callback_suffix) {
-    maybe and {
-        $hoisted_states = [],
-        $hoisted_refs = [],
-        $use_memos = [],
-        $hoisted_states += `props`,
-        program($statements) where {
-            and {
-                $statements <: maybe gather_accesses($hoisted_states, $hoisted_refs, $use_memos),
-                $statements <: some or {
-                    export_statement(
-                        decorator = contains `@observer` => .,
-                        declaration = lexical_declaration(declarations = contains rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos, $handler_callback_suffix))
-                    ),
-                    export_statement(
-                        declaration = lexical_declaration(declarations = contains rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos, $handler_callback_suffix))
-                    ),
-                    lexical_declaration(declarations = contains rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos, $handler_callback_suffix))
+    and {
+        maybe and {
+            $hoisted_states = [],
+            $hoisted_refs = [],
+            $use_memos = [],
+            $hoisted_states += `props`,
+            program($statements) where {
+                and {
+                    $statements <: maybe gather_accesses($hoisted_states, $hoisted_refs, $use_memos),
+                    $statements <: some or {
+                        export_statement(
+                            decorator = contains `@observer` => .,
+                            declaration = lexical_declaration(declarations = contains rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos, $handler_callback_suffix))
+                        ),
+                        export_statement(
+                            declaration = lexical_declaration(declarations = contains rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos, $handler_callback_suffix))
+                        ),
+                        lexical_declaration(declarations = contains rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos, $handler_callback_suffix))
+                    }
                 }
             }
-        }
+        },
+        maybe contains fix_export(),
     }
 }
 
