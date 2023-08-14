@@ -17,9 +17,7 @@ and {
           $v4 <: ensure_import_from($source),
       },
       `orderBy` as $orderBy where {
-          $old = `"underscore"`,
-          $new = `"lodash"`,
-          $orderBy <: replace_import($old, $new)
+          $orderBy <: replace_import(old=`"underscore"`, new=`"lodash"`)
       },
       `fetch` as $fetch where {
           $from = `node-fetch`,
@@ -56,7 +54,6 @@ fetch();
 import { orderBy } from 'lodash';
 import { v4 } from 'uuid';
 
-import { orderBy } from "underscore";
 import fetch from 'elsewhere';
 
 import { more } from 'node-fetch';
