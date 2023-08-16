@@ -550,8 +550,11 @@ pattern second_step($handler_callback_suffix) {
 }
 
 pattern fix_export() {
-    js"export default const $name = $component" as $default_export where { 
-        $default_export <: contains "export default",
-        $default_export => js"const $name = $component\n\nexport default $name;"
+    $default_export as $default_export where { 
+        $default_export <: r"(?s)(export default const)(.+?)=.+"($target, $name) where {
+            $target => js"const",
+            $export = trim(string=$name, trim_chars=" "),
+            $default_export => js"$default_export\n\nexport default $export;"
+        }
     }
 }
