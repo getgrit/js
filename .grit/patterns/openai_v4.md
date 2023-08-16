@@ -77,6 +77,18 @@ pattern change_completion() {
     }
 }
 
+pattern change_file() {
+    call_expression($function, $arguments) where {
+        $function <: member_expression($object, $property) where {
+            or {
+                $object <: js"openai",
+                $program <: contains openai_named($object),
+            },
+            $property <: js"downloadFile" => js"files.retrieveContent"
+        },
+    }
+}
+
 pattern change_transcription() {
     call_expression($function, $arguments) where {
         $function <: member_expression($object, $property) where {
@@ -164,6 +176,7 @@ file(body = program($statements)) where $statements <: and {
     contains change_chat_completion(),
     contains change_completion(),
     contains change_transcription(),
+    contains change_file(),
     contains change_completion_try_catch(),
     contains change_imports(),
     contains fix_types()
