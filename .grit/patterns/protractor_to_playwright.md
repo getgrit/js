@@ -43,6 +43,7 @@ pattern test_function() {
             js"fdescribe",
             js"it",
             js"fit",
+            member_expression(object="browser", property="wait"),
         }
     }
 }
@@ -231,7 +232,7 @@ pattern main_playwright_migration() {
 
 pattern fix_await() {
     file($body) where {
-        $body <: contains js"@playwright/test",
+        $body <: contains "@playwright/test",
         $body <: contains bubble expression_statement() as $exp where {
           $exp <: or {
             things_to_await(),
@@ -367,5 +368,13 @@ async function attributeNotToMatch(selector, attr, text, { timeout } = {}) {
     },
     { timeout: utils.getTimeout(timeout) },
   );
+}
+```
+
+## Does not modify unrelated files
+
+```javascript
+function () {
+    todoList.get(2).element(by.css('input')).click();
 }
 ```
