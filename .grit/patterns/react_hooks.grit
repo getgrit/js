@@ -545,11 +545,11 @@ pattern second_step($handler_callback_suffix) {
                 }
             }
         },
-        maybe contains fix_export(),
+        maybe contains fix_react_default_export(),
     }
 }
 
-pattern fix_export() {
+pattern fix_react_default_export() {
     $default_export as $default_export where { 
         $default_export <: r"(?s)(export default const)(.+?)=.+"($target, $name) where {
             $target => js"const",
