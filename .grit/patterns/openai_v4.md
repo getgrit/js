@@ -311,6 +311,18 @@ const response = await openai.audio.transcriptions.create({
 });
 ```
 
+## File handling
+
+```js
+const myFile = await openai.downloadFile('my-file', options);
+console.log(myFile);
+```
+
+```ts
+const myFile = await openai.files.retrieveContent('my-file', options);
+console.log(myFile);
+```
+
 ## Error handling
 
 ```js
