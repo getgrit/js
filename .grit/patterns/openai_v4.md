@@ -146,13 +146,57 @@ pattern change_completion_try_catch() {
     }
 }
 
-pattern change_imports() {
+pattern openai_v4_exports() {
     or {
-        `import $old from $src`,
-        `$old = require($src)`
-    } where {
-        $src <: `"openai"`,
-        $old => `OpenAI`
+        "ClientOptions",
+        "OpenAI",
+        "toFile",
+        "fileFromPath",
+        "APIError",
+        "APIConnectionError",
+        "APIConnectionTimeoutError",
+        "APIUserAbortError",
+        "NotFoundError",
+        "ConflictError",
+        "RateLimitError",
+        "BadRequestError",
+        "AuthenticationError",
+        "InternalServerError",
+        "PermissionDeniedError",
+        "UnprocessableEntityError",
+    }
+}
+
+pattern change_imports() {
+    $name where {
+        $name <: not openai_v4_exports(),
+        $program <: contains bubble($name) {
+            or {
+                `import $old from $src` where {
+                    $src <: `"openai"`,
+                    $old <: or {
+                        import_clause(name = named_imports($imports)) where {
+                            if ($imports <: not contains $import_name where $import_name <: openai_v4_exports()) {
+                                $old => js"OpenAI",
+                            } else {
+                                $imports <: some $name => .,
+                                $old => js"OpenAI, $old",
+                            }
+                        }
+                    },
+                },
+                `$old = require($src)` as $require where {
+                    $old <: object_pattern($properties) where {
+                        if ($properties <: not contains $import_name where $import_name <: openai_v4_exports()) {
+                            $old => js"OpenAI",
+                        } else {
+                            $properties <: some $name => .,
+                            $require => `OpenAI = require($src);\nconst $require`
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
