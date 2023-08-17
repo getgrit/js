@@ -14,14 +14,19 @@ language js
 pattern change_constructor() {
     `new $constructor($params)` where {
         $constructor <: `OpenAIApi` => `OpenAI`,
-        $params <: [$config],
-        $program <: contains or {
-            `const $config = new Configuration($details)`,
-            `let $config = new Configuration($details)`,
-            `var $config = new Configuration($details)`
-        } => .,
+        or {
+          $params <: contains `new Configuration($details)`,
+          and {
+            $params <: [$config],
+            $program <: contains or {
+                `const $config = new Configuration($details)`,
+                `let $config = new Configuration($details)`,
+                `var $config = new Configuration($details)`
+            } => .,
+          }
+        },
         $params => `$details`,
-        $program <: contains change_imports(),
+        $program <: maybe contains change_imports(),
     }
 }
 
