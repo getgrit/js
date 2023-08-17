@@ -168,35 +168,34 @@ pattern openai_v4_exports() {
 }
 
 pattern change_imports() {
-    $name where {
-        $name <: not openai_v4_exports(),
-        $program <: contains bubble($name) {
-            or {
-                `import $old from $src` where {
-                    $src <: `"openai"`,
-                    $old <: or {
-                        import_clause(name = named_imports($imports)) where {
-                            if ($imports <: not contains $import_name where $import_name <: openai_v4_exports()) {
-                                $old => js"OpenAI",
-                            } else {
-                                $imports <: some $name => .,
-                                if ($old <: not contains js"OpenAI") {
-                                    $old => js"OpenAI, $old",
-                                }
-                            }
+    or {
+        `import $old from $src` where {
+            $src <: `"openai"`,
+            $old <: or {
+                import_clause(name = named_imports($imports)) where {
+                    if ($imports <: not contains $import_name where $import_name <: openai_v4_exports()) {
+                        $old => js"OpenAI",
+                    } else {
+                        $imports <: some bubble $name => . where {
+                          $name <: not openai_v4_exports(),
+                        },
+                        if ($old <: not contains js"OpenAI") {
+                            $old => js"OpenAI, $old",
                         }
+                    }
+                }
+            },
+        },
+        `$old = require($src)` as $require where {
+            $old <: object_pattern($properties) where {
+                if ($properties <: not contains $import_name where $import_name <: openai_v4_exports()) {
+                    $old => js"OpenAI",
+                } else {
+                    $properties <: some bubble $name => . where {
+                      $name <: not openai_v4_exports(),
                     },
-                },
-                `$old = require($src)` as $require where {
-                    $old <: object_pattern($properties) where {
-                        if ($properties <: not contains $import_name where $import_name <: openai_v4_exports()) {
-                            $old => js"OpenAI",
-                        } else {
-                            $properties <: some $name => .,
-                            if ($program <: not contains `OpenAI = require($src)`) {
-                                $require => `OpenAI = require($src);\nconst $require`
-                            }
-                        }
+                    if ($program <: not contains `OpenAI = require($src)`) {
+                        $require => `OpenAI = require($src);\nconst $require`
                     }
                 }
             }
