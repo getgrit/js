@@ -180,7 +180,9 @@ pattern change_imports() {
                                 $old => js"OpenAI",
                             } else {
                                 $imports <: some $name => .,
-                                $old => js"OpenAI, $old",
+                                if ($old <: not contains js"OpenAI") {
+                                    $old => js"OpenAI, $old",
+                                }
                             }
                         }
                     },
@@ -191,7 +193,9 @@ pattern change_imports() {
                             $old => js"OpenAI",
                         } else {
                             $properties <: some $name => .,
-                            $require => `OpenAI = require($src);\nconst $require`
+                            if ($program <: not contains `OpenAI = require($src)`) {
+                                $require => `OpenAI = require($src);\nconst $require`
+                            }
                         }
                     }
                 }
@@ -513,6 +517,37 @@ const fineTune: FineTune = 4;
 
 ```ts
 import {
+  ChatCompletionRequestMessage,
+  CreateChatCompletionRequest,
+  CreateChatCompletionResponse,
+  toFile,
+} from 'openai';
+
+// imported, so should change
+const messages: ChatCompletionRequestMessage = 1;
+const request: CreateChatCompletionRequest = 2;
+const response: CreateChatCompletionResponse = 3;
+
+// should not be changed because not imported from 'openai'
+const fineTune: FineTune = 4;
+```
+
+```ts
+import OpenAI, { toFile } from 'openai';
+
+// imported, so should change
+const messages: OpenAI.Chat.CreateChatCompletionRequestMessage = 1;
+const request: OpenAI.Chat.CompletionCreateParamsNonStreaming = 2;
+const response: OpenAI.Chat.Completions.ChatCompletion = 3;
+
+// should not be changed because not imported from 'openai'
+const fineTune: FineTune = 4;
+```
+
+## Does not double import OpenAI
+
+```ts
+import OpenAI, {
   ChatCompletionRequestMessage,
   CreateChatCompletionRequest,
   CreateChatCompletionResponse,
