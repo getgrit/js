@@ -232,8 +232,12 @@ pattern fix_types() {
         `FineTuneEvent` => `OpenAI.FineTuneEvent`,
         `ImagesResponse` => `OpenAI.ImagesResponse`,
         `OpenAIFile` => `OpenAI.FileObject`,
-    } as $thing where {
-        $thing <: imported_from(from=`"openai"`)
+    } as $thing where or {
+        $thing <: imported_from(from=`"openai"`),
+        $program <: contains `$old = require($from)` where {
+            $from <: `"openai"`,
+            $old <: contains $thing,
+        },
     }
 }
 
@@ -248,7 +252,12 @@ file(body = program($statements)) where $statements <: and {
     contains openai_misc_renames(),
     contains change_completion_try_catch(),
     contains change_imports(),
-    contains fix_types()
+    contains fix_types() until or {
+        import_statement(),
+        variable_declarator($value) where {
+            $value <: call_expression(function="require")
+        }
+    },
   }
 }
 ```
@@ -490,6 +499,70 @@ const fineTune: FineTune = 4;
 
 ```ts
 import OpenAI from 'openai';
+
+// imported, so should change
+const messages: OpenAI.Chat.CreateChatCompletionRequestMessage = 1;
+const request: OpenAI.Chat.CompletionCreateParamsNonStreaming = 2;
+const response: OpenAI.Chat.Completions.ChatCompletion = 3;
+
+// should not be changed because not imported from 'openai'
+const fineTune: FineTune = 4;
+```
+
+## Preserves v4 OpenAI ESM imports
+
+```ts
+import {
+  ChatCompletionRequestMessage,
+  CreateChatCompletionRequest,
+  CreateChatCompletionResponse,
+  toFile,
+} from 'openai';
+
+// imported, so should change
+const messages: ChatCompletionRequestMessage = 1;
+const request: CreateChatCompletionRequest = 2;
+const response: CreateChatCompletionResponse = 3;
+
+// should not be changed because not imported from 'openai'
+const fineTune: FineTune = 4;
+```
+
+```ts
+import OpenAI, { toFile } from 'openai';
+
+// imported, so should change
+const messages: OpenAI.Chat.CreateChatCompletionRequestMessage = 1;
+const request: OpenAI.Chat.CompletionCreateParamsNonStreaming = 2;
+const response: OpenAI.Chat.Completions.ChatCompletion = 3;
+
+// should not be changed because not imported from 'openai'
+const fineTune: FineTune = 4;
+```
+
+## Preserves v4 OpenAI CommonJS imports
+
+```ts
+const {
+  ChatCompletionRequestMessage,
+  CreateChatCompletionRequest,
+  CreateChatCompletionResponse,
+  Configuration,
+  toFile,
+} = require('openai');
+
+// imported, so should change
+const messages: ChatCompletionRequestMessage = 1;
+const request: CreateChatCompletionRequest = 2;
+const response: CreateChatCompletionResponse = 3;
+
+// should not be changed because not imported from 'openai'
+const fineTune: FineTune = 4;
+```
+
+```ts
+const OpenAI = require('openai');
+const { toFile } = require('openai');
 
 // imported, so should change
 const messages: OpenAI.Chat.CreateChatCompletionRequestMessage = 1;
