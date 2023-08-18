@@ -21,7 +21,7 @@ pattern change_constructor() {
             $program <: contains or {
                 `const $config = new Configuration($details)`,
                 `let $config = new Configuration($details)`,
-                `var $config = new Configuration($details)`
+                `var $config = new Configuration($details)`,
                 `$config = new Configuration($details)`,
             } => .,
           }
@@ -237,8 +237,8 @@ pattern fix_types() {
         `ImagesResponse` => `OpenAI.ImagesResponse`,
         `OpenAIFile` => `OpenAI.FileObject`,
         `ChatCompletionRequestMessageFunctionCall` => `OpenAI.Chat.ChatCompletionMessage.FunctionCall`,
-        `ChatCompletionFunctions` => `OpenAI.Chat.CompletionCreateParams.Function`
-        `ConfigurationParameters` => `ClientOptions`
+        `ChatCompletionFunctions` => `OpenAI.Chat.CompletionCreateParams.Function`,
+        `ConfigurationParameters` => `ClientOptions`,
         `OpenAIApi` => `OpenAI`,
     } as $thing where or {
         $thing <: imported_from(from=`"openai"`),
