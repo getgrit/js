@@ -9,12 +9,11 @@ tags: #js, #migration, #serverless, #fermyon, #alpha
 ```grit
 engine marzano(0.1)
 language js
-engine marzano(0.1)
-language js
 
 predicate insert_statement($statement) {
     $program <: or {
-        contains `"use strict"` as $old => `$old\n\n$statement`
+        contains `"use strict"` as $old => `$old\n\n$statement`,
+        $program => js"$statement\n\n$program"
     }
 }
 
@@ -79,7 +78,7 @@ pattern spin_main_fix_request() {
 
 sequential {
     contains spin_main_fix_handler(),
-    contains spin_main_fix_request()
+    maybe contains spin_main_fix_request()
 }
 ```
 
