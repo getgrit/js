@@ -43,8 +43,8 @@ pattern spin_fix_response() {
     }
 }
 
-pattern spin_fix_request($request) {
-    `$request.$prop` => `JSON.parse(decoder.decode($request)).$prop` where {
+pattern spin_fix_request($event) {
+    `$event.request.$prop` => `JSON.parse(decoder.decode($event.body)).$prop` where {
         insert_statement(statement=js"const decoder = new TextDecoder('utf-8')")
     }
 }
@@ -71,7 +71,7 @@ pattern spin_main_fix_handler() {
 
 pattern spin_main_fix_request() {
     `function handleRequest($request) { $body }` where {
-        $body <: contains spin_fix_request(request=`request`)
+        $body <: contains spin_fix_request(event=`request`)
     }
 }
 
