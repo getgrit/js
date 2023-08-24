@@ -17,10 +17,6 @@ predicate insert_statement($statement) {
     }
 }
 
-pattern encode() {
-    $old => js"encoder.encode($old).buffer"
-}
-
 pattern spin_fix_response() {
      or {
          object($properties) where {
@@ -37,7 +33,12 @@ pattern spin_fix_response() {
                 }
             },
         },
-        object() as $obj where { $obj <: encode() }
+        object() as $obj where {
+          $obj => js"{
+            status: 200,
+            body: encoder.encode($obj).buffer
+          }"
+        }
     } where {
         insert_statement(statement=js"const encoder = new TextEncoder('utf-8');")
     }
@@ -160,7 +161,6 @@ const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) +
 
 export async function handleRequest(request) {
   const upperLimit = JSON.parse(decoder.decode(request.body)).intent.slots.UpperLimit.value || 100;
-
   const number = getRandomInt(0, upperLimit);
   const response = {
     status: 200,
