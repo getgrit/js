@@ -119,3 +119,62 @@ export async function handleRequest(request) {
   };
 }
 ```
+
+## With inputs
+
+This example is based on [serverless example](https://github.com/custodian-sample-org/serverless-examples/blob/v3/aws-node-alexa-skill/handler.js).
+
+```
+'use strict';
+
+// Returns a random integer between min (inclusive) and max (inclusive)
+const getRandomInt = (min, max) => Math.floor(Math.random() * ((max - min) + 1)) + min;
+
+module.exports.luckyNumber = (event, context, callback) => {
+  const upperLimit = event.request.intent.slots.UpperLimit.value || 100;
+  const number = getRandomInt(0, upperLimit);
+  const response = {
+    version: '1.0',
+    response: {
+      outputSpeech: {
+        type: 'PlainText',
+        text: `Your lucky number is ${number}`,
+      },
+      shouldEndSession: false,
+    },
+  };
+
+  callback(null, response);
+};
+```
+
+```
+"use strict";
+
+const decoder = new TextDecoder("utf-8");
+
+const encoder = new TextEncoder("utf-8");
+
+// Returns a random integer between min (inclusive) and max (inclusive)
+const getRandomInt = (min, max) =>
+  Math.floor(Math.random() * (max - min + 1)) + min;
+
+export async function handleRequest(request) {
+  const upperLimit =
+    JSON.parse(decoder.decode(request)).request.intent.slots.UpperLimit.value ||
+    100;
+  const number = getRandomInt(0, upperLimit);
+  const response = encoder.encode({
+    version: "1.0",
+    response: {
+      outputSpeech: {
+        type: "PlainText",
+        text: `Your lucky number is ${number}`,
+      },
+      shouldEndSession: false,
+    },
+  }).buffer;
+
+  return response;
+}
+```
