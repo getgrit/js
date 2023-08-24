@@ -148,32 +148,33 @@ module.exports.luckyNumber = (event, context, callback) => {
 };
 ```
 
-```
-"use strict";
+```js
+'use strict';
 
-const decoder = new TextDecoder("utf-8");
+const decoder = new TextDecoder('utf-8');
 
-const encoder = new TextEncoder("utf-8");
+const encoder = new TextEncoder('utf-8');
 
 // Returns a random integer between min (inclusive) and max (inclusive)
-const getRandomInt = (min, max) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
+const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 export async function handleRequest(request) {
-  const upperLimit =
-    JSON.parse(decoder.decode(request)).request.intent.slots.UpperLimit.value ||
-    100;
+  const upperLimit = JSON.parse(decoder.decode(request.body)).intent.slots.UpperLimit.value || 100;
+
   const number = getRandomInt(0, upperLimit);
-  const response = encoder.encode({
-    version: "1.0",
-    response: {
-      outputSpeech: {
-        type: "PlainText",
-        text: `Your lucky number is ${number}`,
+  const response = {
+    status: 200,
+    body: encoder.encode({
+      version: '1.0',
+      response: {
+        outputSpeech: {
+          type: 'PlainText',
+          text: `Your lucky number is ${number}`,
+        },
+        shouldEndSession: false,
       },
-      shouldEndSession: false,
-    },
-  }).buffer;
+    }).buffer,
+  };
 
   return response;
 }
