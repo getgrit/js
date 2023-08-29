@@ -611,3 +611,19 @@ const response: OpenAI.Chat.Completions.ChatCompletion = 3;
 // should not be changed because not imported from 'openai'
 const fineTune: FineTune = 4;
 ```
+
+## Handle rename within v4
+
+This handles https://github.com/openai/openai-node/pull/266/files
+
+```ts
+import OpenAI, { toFile } from 'openai';
+
+const myCompletion: OpenAI.Chat.CompletionCreateParams = 1;
+```
+
+```ts
+import OpenAI, { toFile } from 'openai';
+
+const myCompletion: OpenAI.Chat.ChatCompletionCreateParams = 1;
+```
