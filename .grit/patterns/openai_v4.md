@@ -208,7 +208,7 @@ pattern fix_types() {
     or {
         `ChatCompletionRequestMessage` => `OpenAI.Chat.CreateChatCompletionRequestMessage`,
         `ChatCompletionResponseMessage` => `OpenAI.Chat.Completions.ChatCompletionMessage`,
-        `CreateChatCompletionRequest` => `OpenAI.Chat.CompletionCreateParamsNonStreaming`,
+        `CreateChatCompletionRequest` => `OpenAI.Chat.ChatCompletionCreateParamsNonStreaming`,
         `CreateChatCompletionResponse` => `OpenAI.Chat.Completions.ChatCompletion`,
         `CreateChatCompletionResponseChoicesInner` => `OpenAI.Chat.ChatCompletion.Choice`,
         `CreateCompletionRequest` => `OpenAI.CompletionCreateParamsNonStreaming`,
@@ -237,7 +237,7 @@ pattern fix_types() {
         `ImagesResponse` => `OpenAI.ImagesResponse`,
         `OpenAIFile` => `OpenAI.FileObject`,
         `ChatCompletionRequestMessageFunctionCall` => `OpenAI.Chat.ChatCompletionMessage.FunctionCall`,
-        `ChatCompletionFunctions` => `OpenAI.Chat.CompletionCreateParams.Function`,
+        `ChatCompletionFunctions` => `OpenAI.Chat.ChatCompletionMessageParam.Function`,
         `ConfigurationParameters` => `ClientOptions`,
         `OpenAIApi` => `OpenAI`,
     } as $thing where or {
@@ -522,7 +522,7 @@ import OpenAI from 'openai';
 
 // imported, so should change
 const messages: OpenAI.Chat.CreateChatCompletionRequestMessage = 1;
-const request: OpenAI.Chat.CompletionCreateParamsNonStreaming = 2;
+const request: OpenAI.Chat.ChatCompletionCreateParamsNonStreaming = 2;
 const response: OpenAI.Chat.Completions.ChatCompletion = 3;
 
 // should not be changed because not imported from 'openai'
@@ -553,7 +553,7 @@ import OpenAI, { toFile } from 'openai';
 
 // imported, so should change
 const messages: OpenAI.Chat.CreateChatCompletionRequestMessage = 1;
-const request: OpenAI.Chat.CompletionCreateParamsNonStreaming = 2;
+const request: OpenAI.Chat.ChatCompletionCreateParamsNonStreaming = 2;
 const response: OpenAI.Chat.Completions.ChatCompletion = 3;
 
 // should not be changed because not imported from 'openai'
@@ -584,7 +584,7 @@ import OpenAI, { toFile } from 'openai';
 
 // imported, so should change
 const messages: OpenAI.Chat.CreateChatCompletionRequestMessage = 1;
-const request: OpenAI.Chat.CompletionCreateParamsNonStreaming = 2;
+const request: OpenAI.Chat.ChatCompletionCreateParamsNonStreaming = 2;
 const response: OpenAI.Chat.Completions.ChatCompletion = 3;
 
 // should not be changed because not imported from 'openai'
@@ -617,7 +617,7 @@ const { toFile } = require('openai');
 
 // imported, so should change
 const messages: OpenAI.Chat.CreateChatCompletionRequestMessage = 1;
-const request: OpenAI.Chat.CompletionCreateParamsNonStreaming = 2;
+const request: OpenAI.Chat.ChatCompletionCreateParamsNonStreaming = 2;
 const response: OpenAI.Chat.Completions.ChatCompletion = 3;
 
 // should not be changed because not imported from 'openai'
