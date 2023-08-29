@@ -249,6 +249,17 @@ pattern fix_types() {
     }
 }
 
+pattern openai_change_v4_names() {
+  `OpenAI.Chat.$old` where {
+    $old <: or {
+      `CompletionCreateParams` => `ChatCompletionCreateParams`,
+      `CompletionCreateParamsStreaming` => `ChatCompletionCreateParamsStreaming`,
+      `CompletionCreateParamsNonStreaming` => `ChatCompletionCreateParamsNonStreaming`,
+      `CreateChatCompletionRequestMessage` => `ChatCompletionCreateMessageParam`,
+    }
+  }
+}
+
 
 file(body = program($statements)) where $statements <: and {
   or { includes "openai", includes "createCompletion", includes "OpenAIAPI", includes "createTranscription" },
@@ -260,6 +271,7 @@ file(body = program($statements)) where $statements <: and {
     contains openai_misc_renames(),
     contains change_completion_try_catch(),
     contains change_imports(),
+    contains openai_change_v4_names(),
     contains fix_types() until or {
         import_statement(),
         variable_declarator($value) where {
