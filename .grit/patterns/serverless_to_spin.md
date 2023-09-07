@@ -6,7 +6,7 @@ This pattern converts a serverless function to a spin function designed to run o
 
 tags: #js, #migration, #serverless, #fermyon, #alpha
 
-````grit
+```grit
 engine marzano(0.1)
 language js
 
@@ -103,7 +103,8 @@ sequential {
     contains spin_main_fix_handler(),
     maybe contains spin_main_fix_request(),
     maybe contains spin_remove_lambda()
-}```
+}
+```
 
 ## Converts a basic Serverless component
 
@@ -121,7 +122,7 @@ module.exports.handler = async (event) => {
     ),
   };
 };
-````
+```
 
 ```js
 const encoder = new TextEncoder('utf-8');
