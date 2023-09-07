@@ -167,7 +167,7 @@ export const hello = async (event: APIGatewayProxyEvent): Promise<APIGatewayProx
 ```ts
 import { HttpRequest, HttpResponse } from '@fermyon/spin-sdk';
 
-export const handleRequest = async (event: HttpRequest): Promise<HttpResponse> => {
+export async function handleRequest(request: HttpRequest): Promise<HttpResponse> {
   return {
     statusCode: 200,
     body: JSON.stringify(
@@ -179,7 +179,7 @@ export const handleRequest = async (event: HttpRequest): Promise<HttpResponse> =
       2,
     ),
   };
-};
+}
 ```
 
 ## Converts a handler with inputs
