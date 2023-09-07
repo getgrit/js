@@ -167,6 +167,8 @@ export const hello = async (event: APIGatewayProxyEvent): Promise<APIGatewayProx
 ```ts
 import { HttpRequest, HttpResponse } from '@fermyon/spin-sdk';
 
+const encoder = new TextEncoder('utf-8');
+
 export async function handleRequest(request: HttpRequest): Promise<HttpResponse> {
   return {
     status: 200,
