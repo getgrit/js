@@ -6,7 +6,7 @@ This pattern converts a serverless function to a spin function designed to run o
 
 tags: #js, #migration, #serverless, #fermyon, #alpha
 
-```grit
+````grit
 engine marzano(0.1)
 language js
 
@@ -50,10 +50,19 @@ pattern spin_fix_request($event) {
     }
 }
 
+predicate spin_uses_ts() {
+    $program <: contains type_annotation()
+}
+
 pattern spin_main_fix_handler() {
-  js"module.exports.$_ = ($args) => { $body }" as $func where {
+  or {
+      js"module.exports.$_ = ($args) => { $body }",
+      js"export const $_ = ($args) => {$body }"
+    } as $func where {
         $request = `request`,
-        $args <: or { [$event], [$event, $context, $callback] },
+        $args <: or { [$event_arg], [$event_arg, $context, $callback] },
+        $event_arg <: contains identifier() as $event,
+        $body <: maybe contains $event => `request`,
         $body <: contains or {
             `return $response`,
             `callback(null, $response)` => `return $response`
@@ -64,10 +73,24 @@ pattern spin_main_fix_handler() {
             }
         },
         $event => `request`,
-        $body <: contains $event => `request`
-    } => js"export async function handleRequest($event) {
+        if (spin_uses_ts()) {
+            $req_type = `HttpRequest`,
+            $req_type <: ensure_import_from(source=`"@fermyon/spin-sdk"`),
+            $res_type = `HttpResponse`,
+            $res_type <: ensure_import_from(source=`"@fermyon/spin-sdk"`),
+            $new = js"export async function handleRequest($event: $req_type): Promise<$res_type> {
         $body
-    }"
+    }",
+        } else {
+            $new = js"export async function handleRequest($event) {
+        $body
+    }",
+        }
+    } => $new
+}
+
+pattern spin_remove_lambda() {
+    `import $_ from "aws-lambda"` => .
 }
 
 pattern spin_main_fix_request() {
@@ -76,12 +99,11 @@ pattern spin_main_fix_request() {
     }
 }
 
-
 sequential {
     contains spin_main_fix_handler(),
-    maybe contains spin_main_fix_request()
-}
-```
+    maybe contains spin_main_fix_request(),
+    maybe contains spin_remove_lambda()
+}```
 
 ## Converts a basic Serverless component
 
@@ -99,7 +121,7 @@ module.exports.handler = async (event) => {
     ),
   };
 };
-```
+````
 
 ```js
 const encoder = new TextEncoder('utf-8');
@@ -119,6 +141,44 @@ export async function handleRequest(request) {
     ).buffer,
   };
 }
+```
+
+## Converts a TypeScript handler
+
+```ts
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+
+export const hello = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  return {
+    statusCode: 200,
+    body: JSON.stringify(
+      {
+        message: 'Go Serverless v3.0! Your function executed successfully!',
+        input: event,
+      },
+      null,
+      2,
+    ),
+  };
+};
+```
+
+```ts
+import { HttpRequest, HttpResponse } from '@fermyon/spin-sdk';
+
+export const handleRequest = async (event: HttpRequest): Promise<HttpResponse> => {
+  return {
+    statusCode: 200,
+    body: JSON.stringify(
+      {
+        message: 'Go Serverless v3.0! Your function executed successfully!',
+        input: event,
+      },
+      null,
+      2,
+    ),
+  };
+};
 ```
 
 ## Converts a handler with inputs
