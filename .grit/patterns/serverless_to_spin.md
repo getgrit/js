@@ -12,6 +12,7 @@ language js
 
 predicate insert_statement($statement) {
     $program <: or {
+        contains `export $_` as $old => `$statement\n\n$old`,
         contains `"use strict"` as $old => `$old\n\n$statement`,
         $program => js"$statement\n\n$program"
     }
@@ -39,8 +40,6 @@ pattern spin_fix_response() {
             body: encoder.encode($obj).buffer
           }"
         }
-    } where {
-        insert_statement(statement=js"const encoder = new TextEncoder('utf-8');")
     }
 }
 
@@ -99,10 +98,17 @@ pattern spin_main_fix_request() {
     }
 }
 
+pattern spin_add_encoder() {
+    `encoder.encode` where {
+        insert_statement(statement=js"const encoder = new TextEncoder('utf-8');")
+    }
+}
+
 sequential {
     contains spin_main_fix_handler(),
     maybe contains spin_main_fix_request(),
-    maybe contains spin_remove_lambda()
+    maybe contains spin_add_encoder(),
+    maybe contains spin_remove_lambda(),
 }
 ```
 
@@ -217,12 +223,12 @@ module.exports.luckyNumber = (event, context, callback) => {
 ```js
 'use strict';
 
+// Returns a random integer between min (inclusive) and max (inclusive)
+const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
 const decoder = new TextDecoder('utf-8');
 
 const encoder = new TextEncoder('utf-8');
-
-// Returns a random integer between min (inclusive) and max (inclusive)
-const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 export async function handleRequest(request) {
   const upperLimit = JSON.parse(decoder.decode(request.body)).intent.slots.UpperLimit.value || 100;
