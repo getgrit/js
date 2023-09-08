@@ -42,25 +42,28 @@ pattern convert_config() {
 }
 
 pattern change_constructors() {
-    `const $props = new Mux($params)` => `const mux = new Mux($params)` where and {
-        $params <: or {
-            [$tokenId, $tokenSecret, $config] where {
-                $config <: convert_config() as $parsed_config where {
-                    $params => `{
-                        tokenId: $tokenId,
-                        tokenSecret: $tokenSecret,
-                        $parsed_config
-                    }`
-                }
+    or {
+        `const { $props } = new Mux($params)` => `const mux = new Mux($params)` where and {
+            $params <: or {
+                [$tokenId, $tokenSecret, $config] where {
+                    $config <: convert_config() as $parsed_config where {
+                        $params => `{
+                            tokenId: $tokenId,
+                            tokenSecret: $tokenSecret,
+                            $parsed_config
+                        }`
+                    }
+                },
+                [$tokenId, $tokenSecret] => `{
+                    tokenId: $tokenId,
+                    tokenSecret: $tokenSecret,
+                }`,
+                convert_config() as $config => $config,
             },
-            [$tokenId, $tokenSecret] => `{
-                tokenId: $tokenId,
-                tokenSecret: $tokenSecret,
-            }`,
-            convert_config() as $config => $config,
-            . => .
         },
-    },
+        `const { $props } = new Mux()` => `const mux = new Mux()`,
+    }
+
 }
 
 pattern change_destructured_property_call() {
@@ -80,7 +83,7 @@ pattern change_destructured_property_call() {
 }
 
 sequential {
-    es6_imports(),
+    maybe es6_imports(),
     maybe change_destructured_property_call(),
     maybe change_constructors(),
 }
@@ -178,4 +181,18 @@ const upload = await mux.video.uploads.create({
 const breakdown = await mux.data.metrics.breakdown('aggregate_startup_time', {
   group_by: 'browser',
 });
+```
+
+# No import fixes
+
+```js
+import Mux from '@mux/mux-node';
+
+const { Video, Data } = new Mux();
+```
+
+```ts
+import Mux from '@mux/mux-node';
+
+const mux = new Mux();
 ```
