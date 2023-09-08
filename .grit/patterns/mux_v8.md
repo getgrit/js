@@ -77,8 +77,29 @@ pattern change_destructured_property_call() {
                 $low_field = lowercase(string = $field),
                 $prop => `$low_prop`,
                 $field => `$low_field`,
+                $prop <: maybe `Video` where or {
+                    $field <: `Assets`,
+                    $field <: `DeliveryUsage`,
+                    $field <: `LiveStreams`,
+                    $field <: `PlaybackIDs`,
+                    $field <: `PlaybackRestrictions`,
+                    $field <: `Spaces`,
+                    $field <: `TranscriptionVocabularies`,
+                    $field <: `Uploads`,
+                } where {
+                    $action <: `get` where {
+                        $action => `retrieve`,
+                    }
+                }
             }
         }
+    }
+}
+
+pattern replace_verify_headers() {
+    or {
+        `Mux.Webhooks.verifyHeader($body, $headers['mux-signature'], $secret)` => `Mux.Webhooks.prototype.verifySignature(Buffer.isBuffer($body) ? $body.toString('utf8') : $body, $headers, $secret)`,
+        `Mux.Webhooks.verifyHeader($body, $headers['mux-signature'] as $_, $secret)` => `Mux.Webhooks.prototype.verifySignature(Buffer.isBuffer($body) ? $body.toString('utf8') : $body, $headers, $secret)`,
     }
 }
 
@@ -86,6 +107,7 @@ sequential {
     maybe es6_imports(),
     maybe change_destructured_property_call(),
     maybe change_constructors(),
+    maybe replace_verify_headers(),
 }
 
 ```
@@ -186,13 +208,39 @@ const breakdown = await mux.data.metrics.breakdown('aggregate_startup_time', {
 # No import fixes
 
 ```js
-import Mux from '@mux/mux-node';
-
 const { Video, Data } = new Mux();
 ```
 
 ```ts
-import Mux from '@mux/mux-node';
-
 const mux = new Mux();
+```
+
+# Fix assets get
+
+```js
+const { Video, Data } = new Mux();
+
+const asset = await Video.Assets.get(req.query.id as string);
+const upload = await Video.Uploads.get(req.query.id as string);
+```
+
+```ts
+const mux = new Mux();
+
+const asset = await mux.video.assets.retrieve(req.query.id as string);
+const upload = await mux.video.uploads.retrieve(req.query.id as string);
+```
+
+# Replace verifyHeader with verifySignature
+
+```ts
+Mux.Webhooks.verifyHeader(rawBody, req.headers['mux-signature'] as string, webhookSignatureSecret);
+```
+
+```ts
+Mux.Webhooks.prototype.verifySignature(
+  Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody,
+  req.headers,
+  webhookSignatureSecret,
+);
 ```
