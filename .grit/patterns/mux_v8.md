@@ -66,6 +66,13 @@ pattern change_constructors() {
 
 }
 
+pattern as_lower_camel_case($formatted) {
+    r"([A-Z])([a-zA-Z]*)"($first_char, $rest) where {
+        $first_char = lowercase(string = $first_char),
+        $formatted = join(list = [$first_char, $rest], separator = ""),
+    }
+}
+
 pattern change_destructured_property_call() {
     `$prop.$field.$action` => `mux.$prop.$field.$action` where {
         $program <: contains or {
@@ -73,10 +80,13 @@ pattern change_destructured_property_call() {
             `const { $props } = new Mux($_)`
         } where {
             $props <: contains $prop where {
-                $low_prop = lowercase(string = $prop),
-                $low_field = lowercase(string = $field),
-                $prop => `$low_prop`,
-                $field => `$low_field`,
+                $formatted = ``,
+                $prop <: as_lower_camel_case($formatted) where {
+                    $prop => `$formatted`
+                },
+                $field <: as_lower_camel_case($formatted) where {
+                    $field => `$formatted`
+                },
                 $prop <: maybe `Video` where or {
                     $field <: `Assets`,
                     $field <: `DeliveryUsage`,
@@ -188,6 +198,8 @@ const upload = await Video.Uploads.create({
 const breakdown = await Data.Metrics.breakdown('aggregate_startup_time', {
   group_by: 'browser',
 });
+
+const usage = await Video.LiveStreams.create({});
 ```
 
 ```ts
@@ -203,6 +215,8 @@ const upload = await mux.video.uploads.create({
 const breakdown = await mux.data.metrics.breakdown('aggregate_startup_time', {
   group_by: 'browser',
 });
+
+const usage = await mux.video.liveStreams.create({});
 ```
 
 # No import fixes
