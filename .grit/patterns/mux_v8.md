@@ -13,8 +13,8 @@ language js
 pattern convert_config() {
     object($properties) => $properties where {
         $properties <: contains bubble pair($key, $value) where or {
-            $key <: `baseUrl` => js"'baseURL'",
-            $key <: `platform` => js"'fetch'" where {
+            $key <: `baseUrl` => `baseURL`,
+            $key <: `platform` => `fetch` where {
                 $name = raw``,
                 $version = raw``,
                 $value <: contains bubble($name, $version) pair($key, $value) where or {
@@ -42,28 +42,27 @@ pattern convert_config() {
 }
 
 pattern change_constructors() {
-    or {
-        `const { $props } = new Mux($params)` => `const mux = new Mux($params)` where and {
-            $params <: or {
-                [$tokenId, $tokenSecret, $config] where {
-                    $config <: convert_config() as $parsed_config where {
-                        $params => `{
-                            tokenId: $tokenId,
-                            tokenSecret: $tokenSecret,
-                            $parsed_config
-                        }`
-                    }
-                },
-                [$tokenId, $tokenSecret] => `{
-                    tokenId: $tokenId,
-                    tokenSecret: $tokenSecret,
-                }`,
-                convert_config() as $config => $config,
+    `$destruct = new Mux($params)` where {
+        $destruct <: contains `{ $props }` => `mux`,
+        $props <: maybe some change_destructured_property_call(),
+        $params <: or {
+            [$tokenId, $tokenSecret, $config] where {
+                $config <: convert_config() as $parsed_config where {
+                    $params => `{
+                        tokenId: $tokenId,
+                        tokenSecret: $tokenSecret,
+                        $parsed_config
+                    }`
+                }
             },
+            [$tokenId, $tokenSecret] => `{
+                tokenId: $tokenId,
+                tokenSecret: $tokenSecret,
+            }`,
+            convert_config() as $config => $config,
+            . => .,
         },
-        `const { $props } = new Mux()` => `const mux = new Mux()`,
-    }
-
+    },
 }
 
 pattern as_lower_camel_case($formatted) {
@@ -74,32 +73,27 @@ pattern as_lower_camel_case($formatted) {
 }
 
 pattern change_destructured_property_call() {
-    `$prop.$field.$action` => `mux.$prop.$field.$action` where {
-        $program <: contains or {
-            `const { $props } = new Mux()`,
-            `const { $props } = new Mux($_)`
-        } where {
-            $props <: contains $prop where {
-                $formatted = ``,
-                $prop <: as_lower_camel_case($formatted) where {
-                    $prop => `$formatted`
-                },
-                $field <: as_lower_camel_case($formatted) where {
-                    $field => `$formatted`
-                },
-                $prop <: maybe `Video` where or {
-                    $field <: `Assets`,
-                    $field <: `DeliveryUsage`,
-                    $field <: `LiveStreams`,
-                    $field <: `PlaybackIDs`,
-                    $field <: `PlaybackRestrictions`,
-                    $field <: `Spaces`,
-                    $field <: `TranscriptionVocabularies`,
-                    $field <: `Uploads`,
-                } where {
-                    $action <: `get` where {
-                        $action => `retrieve`,
-                    }
+    $prop where {
+        $program <: contains bubble($prop) `$prop.$field.$action` => `mux.$prop.$field.$action` where {
+            $formatted = ``,
+            $prop <: as_lower_camel_case($formatted) where {
+                $prop => `$formatted`
+            },
+            $field <: as_lower_camel_case($formatted) where {
+                $field => `$formatted`
+            },
+            $prop <: maybe `Video` where or {
+                $field <: `Assets`,
+                $field <: `DeliveryUsage`,
+                $field <: `LiveStreams`,
+                $field <: `PlaybackIDs`,
+                $field <: `PlaybackRestrictions`,
+                $field <: `Spaces`,
+                $field <: `TranscriptionVocabularies`,
+                $field <: `Uploads`,
+            } where {
+                $action <: `get` where {
+                    $action => `retrieve`,
                 }
             }
         }
@@ -115,7 +109,6 @@ pattern replace_verify_headers() {
 
 sequential {
     maybe es6_imports(),
-    maybe change_destructured_property_call(),
     maybe change_constructors(),
     maybe replace_verify_headers(),
 }
