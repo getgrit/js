@@ -74,7 +74,10 @@ pattern as_lower_camel_case($formatted) {
 
 pattern change_destructured_property_call() {
     $prop where {
-        $program <: contains bubble($prop) `$prop.$field.$action` => `mux.$prop.$field.$action` where {
+        $program <: contains bubble($prop) or {
+            `$prop.$field.$action($arg)` => `mux.$prop.$field.$action($arg)`,
+            `$prop.$field.$action($arg, $opt)` => `mux.$prop.$field.$action($arg, $opt)`,
+        } where {
             $formatted = ``,
             $prop <: as_lower_camel_case($formatted) where {
                 $prop => `$formatted`
@@ -95,7 +98,25 @@ pattern change_destructured_property_call() {
                 $action <: `get` where {
                     $action => `retrieve`,
                 }
-            }
+            },
+            $prop <: maybe `Video` where {
+                $field <: or {
+                    `Assets`,
+                    `LiveStreams`,
+                    `Uploads`
+                } where {
+                    $arg <: $data where {
+                        $data <: maybe contains `new_asset_settings: $new_asset_settings` where {
+                            $new_asset_settings <: contains `playback_policy: $playback_policy` where {
+                                $playback_policy <: string(fragment=$_) => `[$playback_policy]`,
+                            }
+                        },
+                        $data <: maybe contains `playback_policy: $playback_policy` where {
+                            $playback_policy <: string(fragment=$_) => `[$playback_policy]`,
+                        },
+                    }
+                },
+            },
         }
     }
 }
@@ -188,6 +209,8 @@ const upload = await Video.Uploads.create({
   cors_origin: '*',
 });
 
+const assets = await Video.Assets.create({ playback_policy: 'public' }, {});
+
 const breakdown = await Data.Metrics.breakdown('aggregate_startup_time', {
   group_by: 'browser',
 });
@@ -201,9 +224,11 @@ import Mux from '@mux/mux-node';
 const mux = new Mux();
 
 const upload = await mux.video.uploads.create({
-  new_asset_settings: { playback_policy: 'public' },
+  new_asset_settings: { playback_policy: ['public'] },
   cors_origin: '*',
 });
+
+const assets = await mux.video.assets.create({ playback_policy: ['public'] }, {});
 
 const breakdown = await mux.data.metrics.breakdown('aggregate_startup_time', {
   group_by: 'browser',
