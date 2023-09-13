@@ -78,14 +78,14 @@ pattern change_destructured_property_call() {
             `$prop.$field.$action($arg)` => `mux.$prop.$field.$action($arg)`,
             `$prop.$field.$action($arg, $opt)` => `mux.$prop.$field.$action($arg, $opt)`,
         } where {
-            $formatted = ``,
             $prop <: as_lower_camel_case($formatted) where {
                 $prop => `$formatted`
             },
             $field <: as_lower_camel_case($formatted) where {
                 $field => `$formatted`
             },
-            $prop <: maybe `Video` where or {
+            $prop <: maybe `Video` where {
+              or {
                 $field <: `Assets`,
                 $field <: `DeliveryUsage`,
                 $field <: `LiveStreams`,
@@ -94,10 +94,8 @@ pattern change_destructured_property_call() {
                 $field <: `Spaces`,
                 $field <: `TranscriptionVocabularies`,
                 $field <: `Uploads`,
-            } where {
-                $action <: `get` where {
-                    $action => `retrieve`,
-                }
+              },
+              $action <: `get` => `retrieve`
             },
             $prop <: maybe `Video` where {
                 $field <: or {
@@ -107,13 +105,11 @@ pattern change_destructured_property_call() {
                 } where {
                     $arg <: $data where {
                         $data <: maybe contains `new_asset_settings: $new_asset_settings` where {
-                            $new_asset_settings <: contains `playback_policy: $playback_policy` where {
-                                $playback_policy <: string(fragment=$_) => `[$playback_policy]`,
-                            }
-                        },
-                        $data <: maybe contains `playback_policy: $playback_policy` where {
+                            $new_asset_settings <: contains `playback_policy: $playback_policy`,
                             $playback_policy <: string(fragment=$_) => `[$playback_policy]`,
                         },
+                        $data <: contains `playback_policy: $playback_policy`,
+                        $playback_policy <: string(fragment=$_) => `[$playback_policy]`,
                     }
                 },
             },
