@@ -17,17 +17,9 @@ pattern convert_config() {
             $key <: `platform` => `fetch` where {
                 $name = raw``,
                 $version = raw``,
-                $value <: contains bubble($name, $version) pair($key, $value) where or {
-                    $key <: `name` where {
-                        $value <: maybe string(fragment = $val) where {
-                            $name = $val
-                        }
-                    },
-                    $key <: `version` where {
-                        $value <: maybe string(fragment = $val) where  {
-                            $version = $val
-                        }
-                    }
+                $value <: contains bubble($name, $version) or {
+                   pair(key=`name`, value=string(fragment=$val)) where { $name = $val },
+                   pair(key=`version`, value=string(fragment=$val)) where { $version = $val }
                 },
                 $value => `(url, opts) => {
                     let opts = opts ?? { headers: {} };
@@ -125,7 +117,6 @@ pattern replace_verify_headers() {
 }
 
 sequential {
-    maybe es6_imports(),
     maybe change_constructors(),
     maybe replace_verify_headers(),
 }
@@ -159,7 +150,7 @@ const { Video, Data } = new Mux(accessToken, secret, {
 ```
 
 ```ts
-import Mux from '@mux/mux-node';
+const Mux = require('@mux/mux-node');
 
 const mux = new Mux({
   baseURL: 'test.com',
@@ -196,7 +187,7 @@ const mux = new Mux({
 # Replace destructured properties with field access
 
 ```js
-const Mux = require('@mux/mux-node');
+import Mux from '@mux/mux-node';
 
 const { Video, Data } = new Mux();
 
@@ -243,7 +234,7 @@ const { Video, Data } = new Mux();
 const mux = new Mux();
 ```
 
-# Fix assets get
+# Renamed `.get` to `.retrieve`
 
 ```js
 const { Video, Data } = new Mux();
