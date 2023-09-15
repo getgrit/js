@@ -7,7 +7,7 @@ export async function execute(options: grit.WorkflowOptions) {
       Given an expression using Moment.js, replace it with the date-fns equivalent.`,
       principles: ['Use the twMerge library to conditionally combine classes.'],
       model: 'slow',
-      query: 'js"moment($_).$_"',
+      query: 'engine marzano(0.1)\nlanguage js\njs"moment($_).$_"',
       examples: [
         {
           input: `let text = moment(timestamp).fromNow();`,
