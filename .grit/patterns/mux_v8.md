@@ -112,9 +112,16 @@ pattern change_destructured_property_call() {
 pattern replace_verify_headers() {
   $mux = `mux`,
   or {
-    `Mux.Webhooks.verifyHeader($body, $headers['mux-signature'], $secret)` => `$mux.webhooks.verifyHeader(Buffer.isBuffer($body) ? $body.toString('utf8') : $body, $headers, $secret)`,
-    `Mux.Webhooks.verifyHeader($body, $headers['mux-signature'] as $_, $secret)` => `$mux.webhooks.verifyHeader(Buffer.isBuffer($body) ? $body.toString('utf8') : $body, $headers, $secret)`,
-  }
+    `Mux.Webhooks.verifyHeader($body, $headers['mux-signature'], $secret)`,
+    `Mux.Webhooks.verifyHeader($body, $headers['mux-signature'] as $_, $secret)`
+  } where {
+    // If there is no Mux instance in the file, we need to create one
+    if ($program <: contains `$mux = $_`) {
+      $prefix = .
+    } else {
+      $prefix = `const $mux = new Mux()\n`,
+    }
+  } => `$prefix$mux.webhooks.verifyHeader(Buffer.isBuffer($body) ? $body.toString('utf8') : $body, $headers, $secret)`
 }
 
 sequential {
@@ -258,7 +265,8 @@ Mux.Webhooks.verifyHeader(rawBody, req.headers['mux-signature'] as string, webho
 ```
 
 ```ts
-Mux.Webhooks.prototype.verifySignature(
+const mux = new Mux();
+mux.webhooks.verifyHeader(
   Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody,
   req.headers,
   webhookSignatureSecret,
