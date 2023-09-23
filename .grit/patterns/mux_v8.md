@@ -263,3 +263,39 @@ Mux.Webhooks.prototype.verifySignature(
   webhookSignatureSecret,
 );
 ```
+
+## Verify webhooks with existing Mux instance
+
+If there is an existing Mux instance in the file, the webhook verifier should use it.
+
+```js
+const Mux = require('@mux/mux-node');
+
+const { Video, Data } = new Mux({
+  baseUrl: 'test.com',
+});
+
+export const verifyWebhookSignature = (rawBody: string | Buffer, req: NextApiRequest) => {
+  if (webhookSignatureSecret) {
+    Mux.Webhooks.verifyHeader(rawBody, req.headers['mux-signature'] as string, webhookSignatureSecret);
+  }
+};
+```
+
+```ts
+const Mux = require('@mux/mux-node');
+
+const mux = new Mux({
+  baseURL: 'test.com',
+});
+
+export const verifyWebhookSignature = (rawBody: string | Buffer, req: NextApiRequest) => {
+  if (webhookSignatureSecret) {
+    mux.webhooks.verifyHeader(
+      Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody,
+      req.headers,
+      webhookSignatureSecret,
+    );
+  }
+};
+```
