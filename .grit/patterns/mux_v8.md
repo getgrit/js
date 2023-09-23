@@ -110,10 +110,11 @@ pattern change_destructured_property_call() {
 }
 
 pattern replace_verify_headers() {
-    or {
-        `Mux.Webhooks.verifyHeader($body, $headers['mux-signature'], $secret)` => `Mux.Webhooks.prototype.verifySignature(Buffer.isBuffer($body) ? $body.toString('utf8') : $body, $headers, $secret)`,
-        `Mux.Webhooks.verifyHeader($body, $headers['mux-signature'] as $_, $secret)` => `Mux.Webhooks.prototype.verifySignature(Buffer.isBuffer($body) ? $body.toString('utf8') : $body, $headers, $secret)`,
-    }
+  $mux = `mux`,
+  or {
+    `Mux.Webhooks.verifyHeader($body, $headers['mux-signature'], $secret)` => `$mux.webhooks.verifyHeader(Buffer.isBuffer($body) ? $body.toString('utf8') : $body, $headers, $secret)`,
+    `Mux.Webhooks.verifyHeader($body, $headers['mux-signature'] as $_, $secret)` => `$mux.webhooks.verifyHeader(Buffer.isBuffer($body) ? $body.toString('utf8') : $body, $headers, $secret)`,
+  }
 }
 
 sequential {
