@@ -8,11 +8,9 @@ tags: #react, #migration, #complex
 engine marzano(0.1)
 language js
 
-// Most of the logic for this pattern is in mui4_to_mui5.grit
-// https://github.com/getgrit/js/blob/main/.grit/patterns/mui4_to_mui5.grit
-
-`createTheme({ palette: { type: $arg } })` => `createTheme({ palette: { mode: $arg } })` where {
-  $arg <: within `palette: { $_ }`
+`createTheme($theme)` where {
+  $theme <: contains `palette: { $palette }`,
+  $palette <: contains `type: $arg` => `mode: $arg`
 }
 ```
 
@@ -24,4 +22,63 @@ const theme = createTheme({ palette: { type: 'dark' } });
 
 ```ts
 const theme = createTheme({ palette: { mode: 'dark' } });
+```
+
+
+```js
+const theme = createTheme({ palette: { type: 'light' } });
+```
+
+```ts
+const theme = createTheme({ palette: { mode: 'light' } });
+```
+
+
+```js
+const theme = createTheme({ palette: { } });
+```
+
+```ts
+const theme = createTheme({ palette: { } });
+```
+
+
+```js
+const theme = createTheme({ palette: { type: 'dark', color: 'black' } });
+```
+
+```ts
+const theme = createTheme({ palette: { mode: 'dark', color: 'black' } });
+```
+
+```js
+const theme = createTheme({ palette: { type: '', color: 'black' } });
+```
+
+```ts
+const theme = createTheme({ palette: { mode: '', color: 'black' } });
+```
+
+```js
+const theme = createTheme({ palette: { type: '', color: 'black' } });
+```
+
+```ts
+const theme = createTheme({ palette: { mode: '', color: 'black' } });
+```
+
+```js
+const theme = createTheme({ color: 'black', palette: { } });
+```
+
+```ts
+const theme = createTheme({ color: 'black', palette: { }});
+```
+
+```js
+const theme = createTheme({ color: 'black', palette: { type: 'dark' } });
+```
+
+```ts
+const theme = createTheme({ color: 'black', palette: { mode: 'dark' } });
 ```
