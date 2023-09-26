@@ -55,16 +55,30 @@ pattern process_one_source($p, $all_imports) {
     }
 }
 
+pattern last_import($last) {
+    or { 
+        `import $im_name from '$im_source';`,
+        r"^#!(.*)"($shebang) } as $curr where {
+        $last = $curr
+    },
+}
+
 pattern insert_imports() {
     $p where {
         $all_imports = [],
         $GLOBAL_IMPORTED_SOURCES <: some process_one_source($p, $all_imports),
         if ($all_imports <: not []) {
-            $p => `$all_imports\n$p`
+            $last = "",
+            $p <: maybe contains bubble($last) last_import($last),
+            if ($last <: not .) {
+                $last => `$last\n$all_imports`,
+            } else {
+                $p => `$all_imports\n$p`
+            }
         } else {
             true
         }
-    }
+    },
 }
 
 pattern after_each_file_handle_imports() {
