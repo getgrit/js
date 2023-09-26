@@ -50,12 +50,12 @@ fetch();
 ```
 
 ```js
-import { orderBy } from 'lodash';
-import { v4 } from 'uuid';
-
 import fetch from 'elsewhere';
 
 import { more } from 'node-fetch';
+import { orderBy } from 'lodash';
+import { v4 } from 'uuid';
+
 
 console.log(orderBy([1, 2, 3]));
 
