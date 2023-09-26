@@ -14,7 +14,7 @@ language js
 }
 ```
 
-## Rename type to mode for palette > MUI v4 to MUI v5
+## Rename type to mode for palette
 
 ```js
 const theme = createTheme({ palette: { type: 'dark' } });
