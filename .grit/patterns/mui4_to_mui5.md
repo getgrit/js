@@ -14,7 +14,7 @@ language js
 }
 ```
 
-## Replace Rename theme.palette.type in MUI v4 to MUI v5
+## Rename type to mode for palette > MUI v4 to MUI v5
 
 ```js
 const theme = createTheme({ palette: { type: 'dark' } });
@@ -24,6 +24,7 @@ const theme = createTheme({ palette: { type: 'dark' } });
 const theme = createTheme({ palette: { mode: 'dark' } });
 ```
 
+## Test when mode value is light > MUI v4 to MUI v5
 
 ```js
 const theme = createTheme({ palette: { type: 'light' } });
@@ -33,7 +34,7 @@ const theme = createTheme({ palette: { type: 'light' } });
 const theme = createTheme({ palette: { mode: 'light' } });
 ```
 
-
+## Test when palette object is empty > MUI v4 to MUI v5
 ```js
 const theme = createTheme({ palette: { } });
 ```
@@ -42,7 +43,7 @@ const theme = createTheme({ palette: { } });
 const theme = createTheme({ palette: { } });
 ```
 
-
+## Test when palette object has multiple properties > MUI v4 to MUI v5
 ```js
 const theme = createTheme({ palette: { type: 'dark', color: 'black' } });
 ```
@@ -51,6 +52,7 @@ const theme = createTheme({ palette: { type: 'dark', color: 'black' } });
 const theme = createTheme({ palette: { mode: 'dark', color: 'black' } });
 ```
 
+## Test when palette object mode is  valid and has multiple properties > MUI v4 to MUI v5
 ```js
 const theme = createTheme({ palette: { type: '', color: 'black' } });
 ```
@@ -59,22 +61,7 @@ const theme = createTheme({ palette: { type: '', color: 'black' } });
 const theme = createTheme({ palette: { mode: '', color: 'black' } });
 ```
 
-```js
-const theme = createTheme({ palette: { type: '', color: 'black' } });
-```
-
-```ts
-const theme = createTheme({ palette: { mode: '', color: 'black' } });
-```
-
-```js
-const theme = createTheme({ color: 'black', palette: { } });
-```
-
-```ts
-const theme = createTheme({ color: 'black', palette: { }});
-```
-
+## Test when theme object multiple properties > MUI v4 to MUI v5
 ```js
 const theme = createTheme({ color: 'black', palette: { type: 'dark' } });
 ```
