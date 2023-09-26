@@ -1,4 +1,4 @@
-## title: Convert Rename theme.palette.type In MUI v4 To MUI v5
+## title: Upgrade MUI v4 to MUI v5
 
 This pattern Rename theme.palette.type in MUI v4 to MUI v5
 
