@@ -53,7 +53,7 @@ const theme = createTheme({ palette: { type: 'dark', color: 'black' } });
 const theme = createTheme({ palette: { mode: 'dark', color: 'black' } });
 ```
 
-## Test when palette object mode is  valid and has multiple properties > MUI v4 to MUI v5
+## Test when palette object mode is valid and has multiple properties > MUI v4 to MUI v5
 ```js
 const theme = createTheme({ palette: { type: '', color: 'black' } });
 ```
@@ -62,7 +62,7 @@ const theme = createTheme({ palette: { type: '', color: 'black' } });
 const theme = createTheme({ palette: { mode: '', color: 'black' } });
 ```
 
-## Test when theme object multiple properties > MUI v4 to MUI v5
+## Test when theme object has multiple properties > MUI v4 to MUI v5
 ```js
 const theme = createTheme({ color: 'black', palette: { type: 'dark' } });
 ```
