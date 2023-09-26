@@ -79,7 +79,7 @@ pattern insert_imports() {
         } else {
             true
         }
-    },
+    }
 }
 
 pattern after_each_file_handle_imports() {
