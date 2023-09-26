@@ -71,7 +71,8 @@ pattern insert_imports() {
             $last = "",
             $p <: maybe contains bubble($last) last_import($last),
             if ($last <: not .) {
-                $last => `$last\n$all_imports`,
+                $p <: contains $first where { $first <: after $last },
+                $first => `$all_imports\n\n$first`,
             } else {
                 $p => `$all_imports\n$p`
             }
