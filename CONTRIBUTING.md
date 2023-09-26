@@ -12,9 +12,13 @@ To propose changes, fork this repository and open a pull request.
 
 ## Adding a new pattern
 
-All patterns require at least one sample validating the functionality. As a result, the best way to develop a GritQL pattern is often by starting with before and after sample(s) of the code to be transformed. You can iterate in the [GritQL studio](https://app.grit.io/studio) to develop your pattern.
+All patterns require at least one sample validating the functionality. As a result, the best way to develop a
+GritQL pattern is often by starting with before and after sample(s) of the code to be transformed. You can
+iterate in the [GritQL studio](https://app.grit.io/studio) to develop your pattern.
 
-Once you have a pattern, you can add it to the repository by creating a new `.md` file in the `.grit/patterns` directory. The file name should be the snake-cased name of the pattern. Keep the file name short and descriptive, and add a concise description as well as any relevant tags. All PRs must contain at least
+Once you have a pattern, you can add it to the repository by creating a new `.md` file in the `.grit/patterns`
+directory. The file name should be the snake-cased name of the pattern. Keep the file name short and
+descriptive, and add a concise description as well as any relevant tags. All PRs must contain at least
 one sample of before/after code with a descriptive name.
 
 ## Testing
