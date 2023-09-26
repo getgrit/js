@@ -55,24 +55,21 @@ pattern process_one_source($p, $all_imports) {
     }
 }
 
-pattern last_import($last) {
-    or { 
-        `import $im_name from '$im_source';`,
-        r"^#!(.*)"($shebang) } as $curr where {
-        $last = $curr
-    },
+pattern get_shebang($shebang) {
+    r"^#!(.*)"($sb) as $curr where {
+        $shebang = $curr
+    }
 }
 
 pattern insert_imports() {
     $p where {
         $all_imports = [],
+        $shebang = "",
         $GLOBAL_IMPORTED_SOURCES <: some process_one_source($p, $all_imports),
         if ($all_imports <: not []) {
-            $last = "",
-            $p <: maybe contains bubble($last) last_import($last),
-            if ($last <: not .) {
-                $p <: contains $first where { $first <: after $last },
-                $first => `$all_imports\n\n$first`,
+            $p <: maybe contains bubble($shebang) get_shebang($shebang),
+            if ($shebang <: not .) {
+                $shebang => `$shebang\n$all_imports`,
             } else {
                 $p => `$all_imports\n$p`
             }
