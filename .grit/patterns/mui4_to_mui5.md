@@ -162,7 +162,7 @@ import { ThemeProvider, styles } from '@mui/material/styles';
 import { ThemeProvider, styles } from '@mui/material/styles';
 ```
 
-## Test when no package is imported MUIv5 `@mui/styles`: MUIv4 > MUIv5
+## Test when no package is imported from `@mui/material/styles`: MUIv4 > MUIv5
 
 ```js
 import {} from '@mui/material/styles';
