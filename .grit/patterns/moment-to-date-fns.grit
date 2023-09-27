@@ -3,8 +3,8 @@ language js
 // A call to `add`/`sub` method of a `momentjs` date object.
 pattern moment_arith($date, $method, $count, $pat) {
   `$date.$method($count, $pat)` as $arith_exp where {
-    or { $method <: "add", $method <: "sub" },
-    if ($method <: "add") {
+    $method <: or { `add`, `sub` },
+    if ($method <: `add`) {
       $method <: ensure_import_from(source=`"date-fns/add"`),
     } else {
       $method <: ensure_import_from(source=`"date-fns/sub"`),
@@ -218,7 +218,7 @@ pattern rewrite_moment_getters_and_setters() {
 pattern rewrite_moment_queries() {
   or {
     `$date_a.$compare($date_b)` where {
-      or { $compare <: "isBefore", $compare <: "isAfter"  }
+      $compare <: or { `isBefore`, `isAfter` }
     } => `datefns.$compare($date_a, $date_b)`,
 
     `$date_a.$compare($date_b)` where {
