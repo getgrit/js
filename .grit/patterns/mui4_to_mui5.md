@@ -125,7 +125,6 @@ const theme = createTheme({ color: 'black', palette: { mode: 'dark' } });
 ```
 
 
-
 ## Test when ThemeProvider is imported from `@mui/styles`: MUIv4 > MUIv5
 
 ```js
