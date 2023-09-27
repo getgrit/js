@@ -6,10 +6,14 @@ This migration handles some of the cases not covered in the [official codemod](h
 
 - Changes `ThemeProvider` import from `@mui/styles` to `@mui/material/styles`
 
-- Changes default theme.palette.info colors from `cyan` to `lightBlue`
+
 - Changes default theme.palette.info colors from `cyan[300]` to `lightBlue[500]`
 - Changes default theme.palette.info colors from `cyan[500]` to `lightBlue[700]`
 - Changes default theme.palette.info colors from `cyan[700]` to `lightBlue[900]`
+
+- Changes default theme.palette.success colors from `green[300]` to `green[500]`
+- Changes default theme.palette.success colors from `green[500]` to `green[700]`
+- Changes default theme.palette.success colors from `green[700]` to `green[900]`
 
 tags: #react, #migration, #complex, #alpha, #hidden #mui
 
@@ -17,20 +21,20 @@ tags: #react, #migration, #complex, #alpha, #hidden #mui
 engine marzano(0.1)
 language js
 
-pattern rename_palette_type ($x) {
+pattern rename_palette_type () {
   `createTheme($theme)` where {
     $theme <: contains `palette: { $palette }`,
     $palette <: contains `type: $arg` => `mode: $arg`
   }
 }
 
-pattern replace_theme_provider_import ($x) {
+pattern replace_theme_provider_import () {
    `ThemeProvider` as $target where {
     $target <: replace_import(old= `'@mui/styles'`, new=`'@mui/material/styles'`),
   }
 }
 
-pattern upgrade_info_palette ($x) {
+pattern upgrade_info_palette () {
     `main: $color[$value]` where {
           $color <: r"cyan" => `lightBlue`,
       or {
@@ -41,14 +45,26 @@ pattern upgrade_info_palette ($x) {
   }
 }
 
+pattern upgrade_success_palette () {
+  `main: $color[$value]` where {
+      $color <: r"green" => `green`,
+    or {
+      $value <: `300` => `500`,
+      $value <: `500` => `800`,
+      $value <: `700` => `900`
+    }
+  }
+}
+
 or {
   rename_palette_type(),
   replace_theme_provider_import(),
-  upgrade_info_palette()
+  upgrade_info_palette(),
+  upgrade_success_palette()
 }
 ```
 
-## Rename palette type property to mode for palette
+## Rename palette type property to mode for palette > MUI v4 to MUI v5
 
 ```js
 const theme = createTheme({ palette: { type: 'dark' } });
@@ -88,7 +104,7 @@ const theme = createTheme({ palette: { type: 'dark', color: 'black' } });
 const theme = createTheme({ palette: { mode: 'dark', color: 'black' } });
 ```
 
-## Test when palette object mode is valid and has multiple properties > MUI v4 to MUI v5
+## Test when palette type is empty and has multiple properties > MUI v4 to MUI v5
 
 ```js
 const theme = createTheme({ palette: { type: '', color: 'black' } });
@@ -217,3 +233,67 @@ main: cyan[];
 
 ```ts
 main: cyan[];
+```
+
+
+
+
+## Test when palette success color is `green[300]`: MUIv4 > MUIv5
+
+```js
+main: green[300];
+```
+
+```ts
+main: green[500];
+```
+
+## Test when palette success color is `green[500]`: MUIv4 > MUIv5
+
+```js
+main: green[500];
+```
+
+```ts
+main: green[800];
+```
+
+## Test when palette success color is `green[700]`: MUIv4 > MUIv5
+
+```js
+main: green[700];
+```
+
+```ts
+main: green[900];
+```
+
+## Test when palette success color is `green[0]`: MUIv4 > MUIv5
+
+```js
+main: green[0];
+```
+
+```ts
+main: green[0];
+```
+
+## Test when palette success color is `green[710]`: MUIv4 > MUIv5
+
+```js
+main: green[710];
+```
+
+```ts
+main: green[710];
+```
+
+## Test when palette success color is empty: `green[]`; MUIv4 > MUIv5
+
+```js
+main: green[];
+```
+
+```ts
+main: green[];
+```
