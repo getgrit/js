@@ -110,8 +110,6 @@ const theme = createTheme({ color: 'black', palette: { mode: 'dark' } });
 
 
 
-**#Test cases for migrating ThemeProvider imports**
-
 ## Test when ThemeProvider is imported from `@mui/styles`: MUIv4 > MUIv5
 
 ```js
@@ -160,8 +158,6 @@ import {} from '@mui/material/styles';
 ```
 
 
-
-**#Test cases for updating info palette color**
 
 ## Test when palette info color is `cyan[300]`: MUIv4 > MUIv5
 
