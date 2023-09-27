@@ -1,6 +1,4 @@
----
-title: Upgrade MUI v4 to MUI v5
----
+# Upgrade MUI v4 to MUI v5
 
 This migration handles some of the cases not covered in the [official codemod](https://mui.com/material-ui/migration/migration-v4/):
 
@@ -13,7 +11,7 @@ This migration handles some of the cases not covered in the [official codemod](h
 - Changes default theme.palette.info colors from `cyan[500]` to `lightBlue[700]`
 - Changes default theme.palette.info colors from `cyan[700]` to `lightBlue[900]`
 
-tags: #react, #migration, #complex #mui
+tags: #react, #migration, #complex, #alpha, #hidden #mui
 
 ```grit
 engine marzano(0.1)
