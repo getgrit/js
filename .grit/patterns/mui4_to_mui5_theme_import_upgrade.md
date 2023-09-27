@@ -4,7 +4,7 @@ title: Upgrade MUI Theme Provider from v4 to v5
 
 This migration handles the importing of Theme Provider from `@mui/styles` to `@mui/material/styles` as specified in the MUI documentation for switching from v4 to v5.
 
-- Changes import from `@mui/styles` to `@mui/material/styles`
+- Changes ThemeProvider import from `@mui/styles` to `@mui/material/styles`
 
 tags: #react, #migration, #complex #mui
 
