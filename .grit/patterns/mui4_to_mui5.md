@@ -17,6 +17,7 @@ This migration handles some of the cases not covered in the [official codemod](h
 
 tags: #react, #migration, #complex, #alpha, #hidden #mui
 
+
 ```grit
 engine marzano(0.1)
 language js
@@ -115,7 +116,6 @@ const theme = createTheme({ palette: { mode: '', color: 'black' } });
 ```
 
 ## Test when theme object has multiple properties > MUI v4 to MUI v5
-
 ```js
 const theme = createTheme({ color: 'black', palette: { type: 'dark' } });
 ```
