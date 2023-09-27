@@ -145,7 +145,7 @@ pattern rewrite_moment_getters_and_setters() {
       // d.milliseconds() -> duration.milliseconds;
       moment_set_or_get($duration_or_date, $accessor, $accessor_fn, $arg) where {
         $arg <: .
-      } => `(x => (x instanceof Date) ? datefns.$accessor_fn(x) : x.$accessor)($duration_or_date)`,
+      } => `((x => (x instanceof Date) ? datefns.$accessor_fn(x) : x.$accessor)($duration_or_date))`,
 
       // re-write set calls when caller is an identifier
       moment_set_or_get(duration_or_date=$d, $accessor, $accessor_fn, $arg) where {
@@ -274,21 +274,19 @@ pattern rewrite_duration_ctors() {
   } => `({ $literal_unit: $count })`,
 }
 
-pattern add_helpers_to_file() {
-  `$prog` where { $prog <: program() } => `$prog`
-}
-
 pattern rewrite_const_to_let() {
     moment_const_decl($declaration, $declarators) where { $declaration => `let $declarators` }
 }
 
-pattern moment_exp_to_datefns_exp() {
+pattern rewrite_moment_imports() {
   or {
-    add_helpers_to_file(),
-    // replace imports
     `const $id = require("moment")` => `const datefns = require("date-fns")`,
     `import $_ from "moment"` => `import datefns from "date-fns"`,
-    
+  }
+}
+
+pattern moment_exp_to_datefns_exp() {
+  or {
     // TODO: back-track the origin of an identifier and mutate the declaration on-demand.
     moment_const_decl($declaration, $declarators) where { $declaration => `let $declarators` },
 
@@ -342,13 +340,19 @@ pattern moment_exp_to_datefns_exp() {
     rewrite_duration_ctors(),
 
     // convert all specific getters/setters to date-fns equivalent
+    // TODO: Using a helper, convert `.get`/`.set` calls where the argument isn't a literal.
+    // e.g: `moment().get(alert())`.
     rewrite_moment_getters_and_setters(),  
   }
 }
 
 sequential {
+  // Replace moment-js imports with date-fns
+  rewrite_moment_imports(),
+  // Re-write all `const` declarations to `let`.
   rewrite_const_to_let(),
-  // convert all `date.add(...)` to `date = date.add(...)`
+  // convert all `date.add(...)` to `date = date.add(...)`, etc.
   moment_arith_lhs_identifier($date, $method, $count, $pat) as $arith_exp => `$date = $arith_exp`,
+  // Rewrite all moment-js expressions to equivalent date-fns expressions
   moment_exp_to_datefns_exp()
 }
