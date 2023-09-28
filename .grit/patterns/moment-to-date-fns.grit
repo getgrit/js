@@ -94,7 +94,7 @@ pattern rewrite_moment_arithmetic() {
   or {
     // add/subtract: convert all momentjs arithmetic operations to date-fns operations.
     // eg: today.add(oneday) => add(today, oneday)
-    moment_arith($date, $method, $count, $pat) => `$method($date, { $pat: $count })` where {
+    moment_arith($date, $method, $count, $pat) where {
       $pat <: or {
         year() => `years`,
         quarter() => `quarters`,
@@ -104,11 +104,15 @@ pattern rewrite_moment_arithmetic() {
         hour() => `hours`,
         minute() => `minutes`,
         second() => `seconds`,
+      },
+      $out = `$method($date, { $pat: $count })`,
+      if ($date <: identifier()) {
+        $out = `($date = $method($date, { $pat: $count }))`
       }
-    },
+    } => `$out`,
 
     moment_arith($date, $method, $count, $pat) where {
-      $pat <: string(fragment=$frag where { $frag <: r"\b(?:ms|milliseconds?)\b"})
+      $pat <: string(fragment=$frag where { $frag <: r"\b(?:ms|milliseconds?)\b"}),
     } => `$method($date, { seconds: $count / 1000 })`,
 
     `$date_a.diff($date_b, $literal_unit)` where { $literal_unit <: string() }  => `datefns.differenceIn$literal_unit($date_a, $date_b)` where {
@@ -181,20 +185,24 @@ pattern rewrite_moment_getters_and_setters() {
       // There are no setters for the number of ISO Weeks in an year.
       `$date.$method()` where { $method <: or { `weeksInYear`, `isoWeeksInYear` } } => `datefns.getISOWeeksInYear($date)`,
 
+      // TODO: support `.get(x)` calls when `x` isn't a literal.
       `$date.get($unit)` where {
-        $unit <: string(fragment=$getter),
-        $getter <: or {
+        $unit <: string(fragment=$norm_unit),
+        $norm_unit <: or {
           // units in a momentjs getter are case insensitive and allow plural forms
-          r"(?i)years?"  => `getYear`,
-          r"(?i)months?"  => `getMonth`,
-          r"(?i)dates?"  => `getDate`,
-          r"(?i)hours?"  => `getHours`,
-          r"(?i)minutes?"  => `getMinutes`,
-          r"(?i)seconds?"  => `getSeconds`,
-          r"(?i)milliseconds?"  => `getMilliseconds`,
-        }
-    } => `datefns.$getter($date)`,
+          r"(?i)years?"  => `years`,
+          r"(?i)months?"  => `months`,
+          r"(?i)dates?"  => `date`,
+          r"(?i)hours?"  => `hours`,
+          r"(?i)minutes?"  => `minutes`,
+          r"(?i)seconds?"  => `seconds`,
+          r"(?i)milliseconds?"  => `milliseconds`,
+        },
+        $capitalized_unit = capitalize(string=$norm_unit),
+        $date_get_fn = `datefns.get$capitalized_unit`,
+    } => `((d => (d instanceof Date) ? $date_get_fn(d) : (d.$norm_unit ?? 0))($date))`,
 
+    // TODO: support `x.set(unit, val)` calls when `unit` isn't a literal.
     `$date.set($unit, $value)` where {
       $unit <: string(fragment=$setter),
       $setter <: or {
@@ -213,6 +221,25 @@ pattern rewrite_moment_getters_and_setters() {
       }
     } => `$out`,
   }
+}
+
+pattern rewrite_duration_set_and_get() {
+  `$duration.$getter()` where {
+    $getter <: or {
+      `asMilliseconds` => `toMilliseconds`,
+      `asSeconds` => `toSeconds`,
+      `asMinutes` => `toMinutes`,
+      `asHours` => `toHours`,
+      `asDays` => `toDays`,
+      `asWeeks` => `toWeeks`,
+      `asMonths` => `toMonths`,
+      `asYears` => `toYears`,
+    }
+  } => `durationfns.$getter($duration)`,
+}
+
+pattern rewrite_misc_methods() {
+  `$d.toJSON()` => `dateOrDuration2JSON($d)` 
 }
 
 pattern rewrite_moment_queries() {
@@ -242,36 +269,40 @@ pattern rewrite_moment_distance() {
 }
 
 pattern rewrite_duration_ctors() {
-  // NOTE: date-fns only provides a `Duration` object ([docs](https://date-fns.org/v2.30.0/docs/Duration)).
-  // Curiously, it does not provide any helpers to manipulate these duration objects.
-  // For that, we use a third party package called [duration-fns](https://www.npmjs.com/package/duration-fns).
-  `$duration_ctor($count, $literal_unit)` where {
-    // could be moment.duration(...) (default import) or duration(..)
-    or {
-      `$duration_ctor` <: `$_.duration`,
-      `$duration_ctor` <: `duration`,
-    },
-    // TODO: handle the case where the unit is not a literal (or a compile time constant).
-    $literal_unit <: or {
-      year() => `years`,
-      month() => `months`,
-      week() => `weeks`,
-      day() => `days`,
-      hour() => `hours`,
-      minute() => `minutes`,
-      second() => `seconds`,
-      millisecond() => `milliseconds`
-    },
-    // $durationfns = "durationfns",
-    // $durationfns <: ensure_import_from(source=`"duration-fns"`),
+  or {
+    // NOTE: date-fns only provides a `Duration` object ([docs](https://date-fns.org/v2.30.0/docs/Duration)).
+    // Curiously, it does not provide any helpers to manipulate these duration objects.
+    // For that, we use a third party package called [duration-fns](https://www.npmjs.com/package/duration-fns).
+    `$duration_ctor($count, $literal_unit)` where {
+      // could be moment.duration(...) (default import) or duration(..)
+      $duration_ctor <: or { `$_.duration`, `duration` },
+      // TODO: handle the case where the unit is not a literal (or a compile time constant).
+      $literal_unit <: or {
+        year() => `years`,
+        month() => `months`,
+        week() => `weeks`,
+        day() => `days`,
+        hour() => `hours`,
+        minute() => `minutes`,
+        second() => `seconds`,
+        millisecond() => `milliseconds`
+      },
+      // $durationfns = "durationfns",
+      // $durationfns <: ensure_import_from(source=`"duration-fns"`),
 
-    // A duration in `date-fns` is a mapping from time units to values (e.g: { years: 1 }).
-    // NOTE: This is an implementation detail, and is not documented in the library itself,
-    // but date-fns does not expose any way to construct a duration by fiat.
-    // Complementary libraries like `duration-fns` also rely on this internal representation, though.
-    // So we should be good here.
-    // ([source](https://github.com/date-fns/date-fns/blob/817ce9fda6dc11336923f80b45d34bf7c5a57886/src/types.ts#L58))
-  } => `({ $literal_unit: $count })`,
+      // A duration in `date-fns` is a mapping from time units to values (e.g: { years: 1 }).
+      // NOTE: This is an implementation detail, and is not documented in the library itself,
+      // but date-fns does not expose any way to construct a duration by fiat.
+      // Complementary libraries like `duration-fns` also rely on this internal representation, though.
+      // So we should be good here.
+      // ([source](https://github.com/date-fns/date-fns/blob/817ce9fda6dc11336923f80b45d34bf7c5a57886/src/types.ts#L58))
+    } => `({ $literal_unit: $count })`,
+
+    `$duration_ctor($empty)` where {
+      $duration_ctor <: or { `$_.duration`, `duration` },
+      $empty <: . // no arguments
+    } => `({})`
+  }
 }
 
 pattern rewrite_const_to_let() {
@@ -280,8 +311,9 @@ pattern rewrite_const_to_let() {
 
 pattern rewrite_moment_imports() {
   or {
-    `const $id = require("moment")` => `const datefns = require("date-fns")`,
-    `import $_ from "moment"` => `import datefns from "date-fns"`,
+    `const $id = require("moment")` => `const datefns = require("date-fns");\nconst durationfns = require("duration-fns")`,
+    // TODO: only add a default import of `duration-fns` if neccessary.
+    `import $_ from "moment"` => `import datefns from "date-fns";\n import durationfns from "duration-fns";`,
   }
 }
 
@@ -342,17 +374,30 @@ pattern moment_exp_to_datefns_exp() {
     // convert all specific getters/setters to date-fns equivalent
     // TODO: Using a helper, convert `.get`/`.set` calls where the argument isn't a literal.
     // e.g: `moment().get(alert())`.
-    rewrite_moment_getters_and_setters(),  
+    rewrite_moment_getters_and_setters(),
+    rewrite_duration_set_and_get(),
+
+    // rewrite util functions that do not belong to any specific category.
+    rewrite_misc_methods(),
   }
 }
 
-sequential {
-  // Replace moment-js imports with date-fns
-  rewrite_moment_imports(),
-  // Re-write all `const` declarations to `let`.
-  rewrite_const_to_let(),
-  // convert all `date.add(...)` to `date = date.add(...)`, etc.
-  moment_arith_lhs_identifier($date, $method, $count, $pat) as $arith_exp => `$date = $arith_exp`,
-  // Rewrite all moment-js expressions to equivalent date-fns expressions
-  moment_exp_to_datefns_exp()
+pattern add_helper_functions() {
+  program() as $prog where {
+    // If the program contains a call to `.toJSON`, add our own helper.
+    
+    $func = `function dateOrDuration2JSON(d) {
+  if (d instanceof Date) {
+    return datefns.formatISO(d);
+  } else if (durationfns.UNITS.some((unit) => Object.hasOwnProperty.call(d, unit))) {
+    return durationfns.toJSON(d)
+  }
+
+  return d.toJSON()
+}`,
+    $out = `$prog`,
+    if ($prog <: contains `dateOrDuration2JSON($_)`) {
+      $out = `$prog\n/* Helper function inserted by Grit: */\n$func`
+    } 
+  } => `$out`
 }
