@@ -77,3 +77,25 @@ date = datefns.setWeek(date, datefns.startOfWeek(date))
 date = datefns.setSeconds(date, datefns.endOfSecond(date))
 date = datefns.setYear(date, datefns.endOfYear(date))
 ```
+
+## Constructing and serializing durations (JSON)
+
+```js
+const duration = moment.duration(10, "d")
+duration.toJSON()
+```
+
+```ts
+let duration = ({ days: 10 })
+dateOrDuration2JSON(duration)
+/* Helper function inserted by Grit: */
+function dateOrDuration2JSON(d) {
+  if (d instanceof Date) {
+    return datefns.formatISO(d);
+  } else if (durationfns.UNITS.some((unit) => Object.hasOwnProperty.call(d, unit))) {
+    return durationfns.toJSON(d)
+  }
+
+  return d.toJSON()
+}
+```
