@@ -65,15 +65,6 @@ pattern moment_limit_to_max_or_min($date, $arg, $methodName) {
   }
 }
 
-pattern moment_set_or_get($duration_or_date, $accessor, $accessor_fn, $arg) {
-   `$duration_or_date.$accessor($arg)` where {
-    $accessor <: r"(year|month|week|day|hour|minute|second|millisecond)s?"($unit),
-    $capitalized_unit = capitalize(string=$unit),
-    $accessor_fn = join(list=["get", $capitalized_unit, "s"], separator=""),
-    $accessor = join(list=[$unit, "s"], separator="")
-  } => `(x => (x instanceof Date) ? datefns.$accessor_fn(x) : (x.$accessor ?? 0))($duration_or_date)`,
-}
-
 // Helper patterns to match format specifiers for different time units in moment js:
 pattern year() { string(fragment=r"\b(?:y|years?)\b") }
 pattern month() { string(fragment=r"\b(?:M|months?)\b") }
@@ -89,11 +80,59 @@ pattern regex_year() { r"\b(?:(?i)y|years?)\b" }
 pattern regex_month() { r"\b(?:M|(?i)months?)\b" }
 pattern regex_week() { r"\b(?:(?i)w|weeks?)\b" }
 pattern regex_date() { r"\b(?:(?i)d|dates?)\b"  }
-pattern regex_day() { r"\b(?:(?i)d|day?)\b"  }
+pattern regex_day() { r"\b(?:(?i)d|days?)\b"  }
 pattern regex_hour() { r"\b(?:(?i)h|hours?)\b" }
 pattern regex_minute() { r"\b(?:(?i)m|minutes?)\b" }
 pattern regex_second() { r"\b(?:(?i)s|seconds?)\b" }
 pattern regex_ms() { r"\b(?:(?i)ms|milliseconds?)\b" }
+
+pattern moment_set_or_get() {
+  `$d.$accessor($arg)` as $exp where {
+    $accessor <: r"(year|month|week|day|hour|minute|second|millisecond)s?"($unit),
+    $duration_accessor = join(list=[$unit, "s"], separator=""),
+    if ($unit <: or { "hour", "minute", "second", "millisecond" } ) {
+      $unit = $duration_accessor
+    },
+    $cap_unit = capitalize(string=$unit),
+    $getfn = `get$cap_unit`,
+    $setfn = `set$cap_unit`,
+    $out = ``,
+    if ($arg <: .) {
+      // getter call
+      if ($d <: identifier()) {
+        $out = `(($d instanceof Date) ? datefns.$getfn($d) : ($d.$duration_accessor ?? 0))`,
+        if ($exp <: should_follow_semi()) {
+          $out = `;\n$out`
+        }
+      } else {
+        $out = `(d => (d instanceof Date) ? datefns.$getfn(d) : (d.$duration_accessor ?? 0))($d)`
+      }
+    } else {
+      // setter call
+      if ($d <: identifier()) {
+        if ($arg <: or { literal(), identifier() } ) {
+          $out = `(($d instanceof Date) ? ($d = $d.$setfn($arg)) : ($d.$duration_accessor = $arg))`
+        } else {
+          // the argument might be an expression with side effects, and hence must be evaluated only once using an IIFE
+          $out = `((() => ($d instanceof Date) ? ($d = $d.$setfn(val)) : ($d.$duration_accessor = val))(val))`
+        }
+      } else {
+        $comment = `/* TODO: moment-js objects are mutable - feed this value through appropriately */`,
+        $out = `(((d, val) => (d instanceof Date) ? d.$setfn(val) : (d.$duration_accessor = val))($d, $arg))`,
+        if ($out <: should_follow_semi()) {
+          $out = `$comment\n$out`
+        } else {
+          $out = `$comment $out`
+        }
+       
+      },
+
+      if ($out <: should_follow_semi()) {
+        $out = `;\n$out`
+      }
+    }
+  } => `$out`,
+}
 
 // convert a moment.js unit specifier to its normal form ("y" -> "year")
 pattern normalize_unit_specifier() {
@@ -190,20 +229,7 @@ pattern rewrite_moment_getters_and_setters() {
     // d.millisecond() -> datefns.getMilliseconds(date);
     // case: when `d` is `Duration`.
     // d.milliseconds() -> duration.milliseconds;
-    moment_set_or_get($duration_or_date, $accessor, $accessor_fn, $arg) where {
-      $arg <: .
-    } => `((x => (x instanceof Date) ? datefns.$accessor_fn(x) : (x.$accessor ?? 0))($duration_or_date))`,
-
-    moment_set_or_get(duration_or_date=$d, $accessor, $accessor_fn, $arg) as $exp where {
-      $arg <: [$_], // one argument
-      $out = `/* TODO: date-fns objects are immutable - feed this value back through properly */ (d => ((d instanceof Date) ? datefns.$accessor_fn(d) : (d.$accessor ?? 0)))($d)`,
-      if ($d <: identifier()) {
-        $out = `($d = (($d instanceof Date) ? datefns.$accessor_fn($d) : ($d.$accessor ?? 0)))`,
-        if ($exp <: should_follow_semi()) {
-          $out = `;\n$out`
-        }
-      }
-    } => `$out`,
+    moment_set_or_get(),
 
     `$date.$func($arg)` as $exp where {
       $func <: or {

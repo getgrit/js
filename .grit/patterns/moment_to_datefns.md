@@ -1,4 +1,4 @@
----
+--
 title: Migrate from moment.js to date-fns
 ---
 
@@ -82,7 +82,7 @@ let then = (new Date("2001-01-02"))
 const unit = Math.random() > 0.5 ? "d" : "y"
 
 now = datefns.add({ [normalizeMomentJSUnit(unit) + 's']: 10 })
-now = datefns.sub({ [normalizeMomentJSUnit(unit) + 's']: ((x => (x instanceof Date) ? datefns.getDays(x) : (x.days ?? 0))(then)) })
+now = datefns.sub({ [normalizeMomentJSUnit(unit) + 's']: (then instanceof Date) ? datefns.getDay(then) : (then.days ?? 0) })
 function normalizeMomentJSUnit(fmt) {
   const unitRegexs = [
     [/\b(?:y|years?)\b/, 'year'],
@@ -158,21 +158,26 @@ b.seconds() === new Date().getSeconds();
 
 moment().date(10)
 
-function f() { return moment() }
+function f() {
+  return moment()
+}
+f().days(a.days())
 ```
 
-<!-- f().days(a.days()) -->
 
 ```ts
 let a = new Date()
 let b = new Date();
-(a = (a instanceof Date ? datefns.getSeconds(a) : (a.seconds ?? 0))).valueOf() === new Date().setSeconds(30);
-((x => x instanceof Date ? datefns.getSeconds(x) : (x.seconds ?? 0))(b)) === new Date().getSeconds()
+(a instanceof Date ? (a = a.setSeconds(30)) : (a.seconds = 30)).valueOf() === new Date().setSeconds(30);
+(b instanceof Date ? datefns.getSeconds(b) : (b.seconds ?? 0)) === new Date().getSeconds()
 
 /*TODO: date-fns objects are immutable, feed this value back through properly*/
 datefns.setMonth(new Date(), 10)
 
-function f() { return new Date() }
+function f() {
+  return new Date()
+}
+/* TODO: moment-js objects are mutable - feed this value through appropriately */
+((d, val) => (d instanceof Date ? d.setDay(val) : (d.days = val)))(f(), (a instanceof Date ? datefns.getDay(a) : (a.days ?? 0)))
 ```
 
-<!-- datefns.setDays(f(), ((d) => d instanceof Date ? datefns.getDays(d) : (d.days ?? 0))(a)) -->
