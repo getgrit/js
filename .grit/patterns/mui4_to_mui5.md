@@ -18,6 +18,8 @@ This migration handles some of the cases not covered in the [official codemod](h
 - Changes default theme.palette.warning color from `orange[500]` to `'#ED6C02'`
 - Changes default theme.palette.warning color from `orange[700]` to `orange[900]`
 
+- Restructures component definition
+
 tags: #react, #migration, #complex, #alpha, #hidden, #mui
 
 ```grit
@@ -82,13 +84,21 @@ pattern upgrade_warning_palette_500 () {
   }
 }
 
+pattern restructure_component_definition() {
+  `createTheme({$themeBody})` where {
+    $themeBody <: contains `props: {$propsValue}` => `components: { $propsValue }`,
+    $propsValue <: contains `$component: {$props}` => `$component : defaultProps {$props}`,
+  }
+}
+
 or {
   rename_palette_type(),
   replace_theme_provider_import(),
   upgrade_info_palette(),
   upgrade_success_palette(),
   upgrade_warning_palette(),
-  upgrade_warning_palette_500()
+  upgrade_warning_palette_500(),
+  restructure_component_definition()
 }
 ```
 
@@ -575,4 +585,82 @@ object = {
     main: orange[300];
   }
 }
+```
+
+## Test when component definition is not valid
+
+```js
+const theme = createTheme({
+  props: {
+    MuiButton: {
+      disableRipple: true,
+    },
+  },
+});
+```
+
+```ts
+const theme = createTheme({
+  components: { MuiButton : defaultProps {disableRipple: true} },
+});
+```
+
+## Test component definition when createTheme has multiple properties
+
+```js
+const theme = createTheme({
+  style: {
+    white: true,
+  },
+  isDark: true,
+  props: {
+    MuiButton: {
+      disableRipple: true,
+    },
+  },
+});
+```
+
+```ts
+const theme = createTheme({
+  style: {
+    white: true,
+  },
+  isDark: true,
+  components: { MuiButton : defaultProps {disableRipple: true} },
+});
+```
+
+## Test component definition when props has multiple properties
+
+```js
+const theme = createTheme({
+  props: {
+    MuiButton: {
+      disableRipple: true,
+      dark: true,
+    },
+  },
+});
+```
+
+```ts
+const theme = createTheme({
+  components: { MuiButton : defaultProps {disableRipple: true,
+      dark: true} },
+});
+```
+
+## Test component definition when createTheme props is empty
+
+```js
+const theme = createTheme({
+  props: {},
+});
+```
+
+```ts
+const theme = createTheme({
+  props: {},
+});
 ```
