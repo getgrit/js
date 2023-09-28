@@ -64,7 +64,7 @@ pattern upgrade_success_palette () {
 }
 
 pattern upgrade_warning_palette () {
-  `main: $color[$value]` as $success where {
+  `$mode: $color[$value]` as $success where {
       $color <: r"orange" => `orange`,
       // must be within a style object
       $success <: within `style: {$_}`,
@@ -76,7 +76,7 @@ pattern upgrade_warning_palette () {
 }
 
 pattern upgrade_warning_palette_500 () {
-  `main: $color` as $target where {
+  `$mode: $color` as $target where {
     $target <: within `style: {$_}`,
     $color <: `orange[500]` => `'#ED6C02'`
   }
