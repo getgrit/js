@@ -13,6 +13,28 @@ pattern moment_arith($date, $method, $count, $specifier) {
   }
 }
 
+// Matches any statement that should end in a semi-colon to avoid possible ambiguity.
+// For example, in the following snippet:
+// ```
+// let a = foo()
+// (x => print(x))("hello")
+// ```
+// The second "statement" is actually a call expression that is chained to the `foo` call:
+// ```
+// let a = foo()(x => print(x))("hello")
+// ```
+// Hence, the first statement should end in a semi colon to avoid ambiguity.
+pattern statement_should_end_in_semi() {
+  or {
+    expression_statement(),
+    lexical_declaration()
+  }
+}
+
+pattern should_follow_semi() {
+  `$exp` where { $exp <: after statement_should_end_in_semi() }
+}
+
 // A call to `add/sub` where the caller (`this`) is an identifier. eg: foo.add(bar);
 pattern moment_arith_lhs_identifier($date, $method, $count, $specifier) {
   moment_arith($date, $method, $count, $specifier) where {
@@ -49,7 +71,7 @@ pattern moment_set_or_get($duration_or_date, $accessor, $accessor_fn, $arg) {
     $capitalized_unit = capitalize(string=$unit),
     $accessor_fn = join(list=["get", $capitalized_unit, "s"], separator=""),
     $accessor = join(list=[$unit, "s"], separator="")
-  } => `(x => (x instanceof Date) ? datefns.$accessor_fn(x) : x.$accessor)($duration_or_date)`,
+  } => `(x => (x instanceof Date) ? datefns.$accessor_fn(x) : (x.$accessor ?? 0))($duration_or_date)`,
 }
 
 // Helper patterns to match format specifiers for different time units in moment js:
@@ -134,7 +156,7 @@ pattern rewrite_moment_arithmetic() {
 
     moment_arith($date, $method, $count, $specifier) where {
       !$specifier <: string(),
-      $out = `datefns.$method({ [normalizeMomentJSUnit($specifier)]: $count })`,
+      $out = `datefns.$method({ [normalizeMomentJSUnit($specifier) + 's']: $count })`,
       if ($date <: identifier()) { $out = `$date = $out`},
       if ($date <: not within expression_statement($expression)) {
         $out = `($out)`
@@ -163,84 +185,97 @@ pattern rewrite_moment_arithmetic() {
 pattern rewrite_moment_getters_and_setters() {
   or {
     `$date.daysInMonth()` => `datefns.getDaysInMonth($date)`,
-      // case: when `d` is a `Moment`:
-      // d.milliseconds() -> datefns.getMilliseconds(date);
-      // d.millisecond() -> datefns.getMilliseconds(date);
-      // case: when `d` is `Duration`.
-      // d.milliseconds() -> duration.milliseconds;
-      moment_set_or_get($duration_or_date, $accessor, $accessor_fn, $arg) where {
-        $arg <: .
-      } => `((x => (x instanceof Date) ? datefns.$accessor_fn(x) : x.$accessor)($duration_or_date))`,
+    // case: when `d` is a `Moment`:
+    // d.milliseconds() -> datefns.getMilliseconds(date);
+    // d.millisecond() -> datefns.getMilliseconds(date);
+    // case: when `d` is `Duration`.
+    // d.milliseconds() -> duration.milliseconds;
+    moment_set_or_get($duration_or_date, $accessor, $accessor_fn, $arg) where {
+      $arg <: .
+    } => `((x => (x instanceof Date) ? datefns.$accessor_fn(x) : (x.$accessor ?? 0))($duration_or_date))`,
 
-      // re-write set calls when caller is an identifier
-      moment_set_or_get(duration_or_date=$d, $accessor, $accessor_fn, $arg) where {
-        $arg <: [$_], // at least 1 argument
-        $out = `/* TODO: date-fns objects are immutable - feed this value back through properly */ (d => ((d instanceof Date) ? datefns.$accessor_fn(d) : d.$accessor))($d)`,
-        if ($d <: identifier()) {
-          $out = `($d = (($d instanceof Date) ? datefns.$accessor_fn($d) : $d.$accessor))`
+    moment_set_or_get(duration_or_date=$d, $accessor, $accessor_fn, $arg) as $exp where {
+      $arg <: [$_], // one argument
+      $out = `/* TODO: date-fns objects are immutable - feed this value back through properly */ (d => ((d instanceof Date) ? datefns.$accessor_fn(d) : (d.$accessor ?? 0)))($d)`,
+      if ($d <: identifier()) {
+        $out = `($d = (($d instanceof Date) ? datefns.$accessor_fn($d) : ($d.$accessor ?? 0)))`,
+        if ($exp <: should_follow_semi()) {
+          $out = `;\n$out`
         }
-      } => `$out`,
-
-      `$date.$func($arg)` where {
-        $func <: or {
-          r"dates?" => `Month`,
-          r"(?:days?)|(?:weekdays?)" => `Day`,
-          `isoWeekday` => `ISODay`,
-          `dayOfYear` => `DayOfYear`,
-          `weekOfYear` => `WeekOfYear`,
-          r"isoWeeks?" => `ISOWeek`,
-          r"weeks?" => `Week`
-        },
-        $out = `/*TODO: date-fns objects are immutable, feed this value back through properly*/ datefns.set$func($date, $arg)`,
-
-        // no-args => it's a getter call
-        if ($arg <: .) {
-          $out = `datefns.get$func($date)`
-        } else if ($date <: identifier()) {
-          // Presence of arguments implies a setter call.
-          // Identifiers can be re-assigned to.
-          $out = `($date = datefns.set$func($date, $arg))`
-        }
-      }  => `$out`,
-
-      // There are no setters for the number of ISO Weeks in an year.
-      `$date.$method()` where { $method <: or { `weeksInYear`, `isoWeeksInYear` } } => `datefns.getISOWeeksInYear($date)`,
-
-      // TODO: support `.get(x)` calls when `x` isn't a literal.
-      `$date.get($unit)` where {
-        $unit <: string(fragment=$norm_unit),
-        $norm_unit <: or {
-          // units in a momentjs getter are case insensitive and allow plural forms
-          r"(?i)years?"  => `years`,
-          r"(?i)months?"  => `months`,
-          r"(?i)dates?"  => `date`,
-          r"(?i)hours?"  => `hours`,
-          r"(?i)minutes?"  => `minutes`,
-          r"(?i)seconds?"  => `seconds`,
-          r"(?i)milliseconds?"  => `milliseconds`,
-        },
-        $capitalized_unit = capitalize(string=$norm_unit),
-        $date_get_fn = `datefns.get$capitalized_unit`,
-    } => `((d => (d instanceof Date) ? $date_get_fn(d) : (d.$norm_unit ?? 0))($date))`,
-
-    // TODO: support `x.set(unit, val)` calls when `unit` isn't a literal.
-    `$date.set($unit, $value)` where {
-      $unit <: string(fragment=$setter),
-      $setter <: or {
-        // units in a momentjs getter are case insensitive and allow plural forms
-        r"(?i)years?"  => `setYear`,
-        r"(?i)months?"  => `setMonth`,
-        r"(?i)dates?"  => `setDate`,
-        r"(?i)hours?"  => `setHours`,
-        r"(?i)minutes?"  => `setMinutes`,
-        r"(?i)seconds?"  => `setSeconds`,
-        r"(?i)milliseconds?"  => `setMilliseconds`,
-      },
-      $out = `/* TODO: date-fns objects are immutable, propagate this value appropriately */ datefns.$setter($date, $value)`,
-      if ($date <: identifier()) {
-        $out = `($date = datefns.$setter($date, $value))`
       }
     } => `$out`,
+
+    `$date.$func($arg)` as $exp where {
+      $func <: or {
+        r"dates?" => `Month`,
+        r"(?:days?)|(?:weekdays?)" => `Day`,
+        `isoWeekday` => `ISODay`,
+        `dayOfYear` => `DayOfYear`,
+        `weekOfYear` => `WeekOfYear`,
+        r"isoWeeks?" => `ISOWeek`,
+        r"weeks?" => `Week`
+      },
+
+      $comment = `/*TODO: date-fns objects are immutable, feed this value back through properly*/`,
+      $out = `datefns.set$func($date, $arg)`,
+
+      // no-args => it's a getter call
+      if ($arg <: .) {
+        $out = `datefns.get$func($date)`
+      } else if ($date <: identifier()) {
+        // Presence of arguments implies a setter call.
+        // Identifiers can be re-assigned to.
+        $out = `($date = datefns.set$func($date, $arg))`
+      } else if ($exp <: should_follow_semi()) {
+        $out = `$comment\n$out`
+      } else {
+        $out = `$comment $out`
+      }
+    }  => `$out`,
+
+    // There are no setters for the number of ISO Weeks in an year.
+    `$date.$method()` where { $method <: or { `weeksInYear`, `isoWeeksInYear` } } => `datefns.getISOWeeksInYear($date)`,
+
+    // TODO: support `.get(x)` calls when `x` isn't a literal.
+    `$date.get($unit)` where {
+      $unit <: string(fragment=$norm_unit),
+      $norm_unit <: or {
+        // units in a momentjs getter are case insensitive and allow plural forms
+        r"(?i)years?"  => `years`,
+        r"(?i)months?"  => `months`,
+        r"(?i)dates?"  => `date`,
+        r"(?i)hours?"  => `hours`,
+        r"(?i)minutes?"  => `minutes`,
+        r"(?i)seconds?"  => `seconds`,
+        r"(?i)milliseconds?"  => `milliseconds`,
+      },
+      $capitalized_unit = capitalize(string=$norm_unit),
+      $date_get_fn = `datefns.get$capitalized_unit`,
+  } => `((d => (d instanceof Date) ? $date_get_fn(d) : (d.$norm_unit ?? 0))($date))`,
+
+  // TODO: support `x.set(unit, val)` calls when `unit` isn't a literal.
+  `$date.set($unit, $value)` as $exp where {
+    $unit <: string(fragment=$setter),
+    $setter <: or {
+      // units in a momentjs getter are case insensitive and allow plural forms
+      r"(?i)years?"  => `setYear`,
+      r"(?i)months?"  => `setMonth`,
+      r"(?i)dates?"  => `setDate`,
+      r"(?i)hours?"  => `setHours`,
+      r"(?i)minutes?"  => `setMinutes`,
+      r"(?i)seconds?"  => `setSeconds`,
+      r"(?i)milliseconds?"  => `setMilliseconds`,
+    },
+    $comment = `/* TODO: date-fns objects are immutable, propagate this value appropriately */`,
+    $out = `datefns.$setter($date, $value)`,
+    if ($date <: identifier()) {
+      $out = `($date = datefns.$setter($date, $value))`
+    } else if ($exp <: should_follow_semi()) {
+      $out = `$comment\n$out`
+    } else {
+      $out = `$comment $out`
+    }
+  } => `$out`,
   }
 }
 
@@ -369,14 +404,18 @@ pattern moment_exp_to_datefns_exp() {
     `moment($str, $fmt)` => `datefns.parse($str, ($fmt).replace(/D/g, "d").replace(/Y/g, "y").replace(/h/g, "H").replace(/x/g, "T"), new Date())`,
     
     // construction
-    `moment($arg)` => `(new Date($arg))`,
+    `moment($arg)` as $exp where {
+      $out = `new Date($arg)`,
+      if ($exp <: after statement_should_end_in_semi()) {
+        $out = `($out)`
+      }
+    } => `$out`,
 
     // convert all .add/.sub calls to date-fns equivalent calls.
     rewrite_moment_arithmetic(),
 
     // start/end setters where the time unit is a literal (e.g: d.startOf("week"))
     moment_set_to_start_or_end_literal($date, $func_type, $unit) as $expression where {
-      $date <: identifier(),
       $unit_name = `Year`,
       $setter_fn = `setYear`,
 
@@ -402,26 +441,33 @@ pattern moment_exp_to_datefns_exp() {
 
       $setter = `datefns.$setter_fn`,
       $getter = `datefns.$func_type$unit_name`,
-      $out = `/* TODO: date-fns objects are immutable, propagate this value appropriately */ (d => $setter(d, $getter(d)))($date)`,
+      $comment = `/* TODO: date-fns objects are immutable, propagate this value appropriately */`,
+
+      $out = `((date => $setter(date, $getter(date)))($date))`,
       if ($date <: identifier()) {
         $out = `$date = $setter($date, $getter($date))`,
         if ($date <: not within expression_statement($expression)) {
-         $out = `($out)`
+          $out = `($out)`
         }
+      } else if ($expression <: should_follow_semi()) {
+        $out = `;\n$comment\n$out;`
       }
     } => `$out`,
 
     // date.max(other_date) -> (date = datefns.max(date, other_date))
-    moment_limit_to_max_or_min($date, $arg, $methodName) where { $date <: identifier() } => `$date = datefns.$methodName([$date, $arg])`,
+    moment_limit_to_max_or_min($date, $arg, $methodName) as $expression where {
+      $out = `datefns.$methodName([$date, $arg])`,
+      if ($date <: identifier()) {
+        $out = `$date = $out`,
+        if ($expression <: not should_follow_semi()) {
+          $out = `($out)`
+        }
+      }
+    } => `$out`,
 
     // distance to/from a given date.
     rewrite_moment_distance(),
     
-    // NOTE: `valueOf` is a prototype function for pretty much any JavaScript value.
-    // To ensure that our program behaves correctly, we first check if the caller is a `Date` object before
-    // dispatching to the datefns `getTime` function. An IIFE is used to avoid evaluating `$date` twice since
-    // the evaluation may have side effects.
-    `$date.valueOf()` => `(d => ((d instanceof Date) ? datefns.getTime(d) : d.valueOf())($date))`,
     `$date.unix()` => `datefns.getUnixTime($date)`,
     `$date.daysInMonth()` => `datefns.getDaysInMonth($date)`,
     `$date.toDate()` => `($date)`,
@@ -482,7 +528,7 @@ pattern add_helper_functions() {
     [$rx_begin(?:h|hours?)$rx_end, 'hour'],
     [$rx_begin(?:m|minutes?)$rx_end, 'minute'],
     [$rx_begin(?:s|seconds?)$rx_end, 'second'],
-    [$rx_begin(?:ms|milliseconds?)$rx_end, 'milliseconds'],
+    [$rx_begin(?:ms|millisecond?)$rx_end, 'millisecond'],
   ];
 
 

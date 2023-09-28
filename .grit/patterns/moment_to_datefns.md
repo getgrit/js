@@ -81,8 +81,8 @@ let now = (new Date())
 let then = (new Date("2001-01-02"))
 const unit = Math.random() > 0.5 ? "d" : "y"
 
-now = datefns.add({ [normalizeMomentJSUnit(unit)]: 10 })
-now = datefns.sub({ [normalizeMomentJSUnit(unit)]: ((x => (x instanceof Date) ? datefns.getDays(x) : x.days)(then)) })
+now = datefns.add({ [normalizeMomentJSUnit(unit) + 's']: 10 })
+now = datefns.sub({ [normalizeMomentJSUnit(unit) + 's']: ((x => (x instanceof Date) ? datefns.getDays(x) : (x.days ?? 0))(then)) })
 function normalizeMomentJSUnit(fmt) {
   const unitRegexs = [
     [/\b(?:y|years?)\b/, 'year'],
@@ -93,7 +93,7 @@ function normalizeMomentJSUnit(fmt) {
     [/\b(?:h|hours?)\b/, 'hour'],
     [/\b(?:m|minutes?)\b/, 'minute'],
     [/\b(?:s|seconds?)\b/, 'second'],
-    [/\b(?:ms|milliseconds?)\b/, 'milliseconds']
+    [/\b(?:ms|millisecond?)\b/, 'millisecond']
   ];
 
 
@@ -113,14 +113,17 @@ function normalizeMomentJSUnit(fmt) {
 date.startOf('week')
 date.startOf('w')
 date.endOf('seconds')
-date.endOf('y')
+moment().endOf('y')
+console.log(moment().startOf('s'))
 ```
 
 ```ts
 date = datefns.setWeek(date, datefns.startOfWeek(date))
 date = datefns.setWeek(date, datefns.startOfWeek(date))
-date = datefns.setSeconds(date, datefns.endOfSecond(date))
-date = datefns.setYear(date, datefns.endOfYear(date))
+date = datefns.setSeconds(date, datefns.endOfSecond(date));
+/* TODO: date-fns objects are immutable, propagate this value appropriately */
+((date) => datefns.setYear(date, datefns.endOfYear(date)))(new Date());
+console.log(((date) => datefns.setSeconds(date, datefns.startOfSecond(date)))(new Date()))
 ```
 
 ## Constructing and serializing durations (JSON)
@@ -144,3 +147,32 @@ function dateOrDuration2JSON(d) {
   return d.toJSON()
 }
 ```
+
+## Get + Set
+
+```js
+const a = moment()
+const b = moment()
+a.seconds(30).valueOf() === new Date().setSeconds(30);
+b.seconds() === new Date().getSeconds();
+
+moment().date(10)
+
+function f() { return moment() }
+```
+
+<!-- f().days(a.days()) -->
+
+```ts
+let a = new Date()
+let b = new Date();
+(a = (a instanceof Date ? datefns.getSeconds(a) : (a.seconds ?? 0))).valueOf() === new Date().setSeconds(30);
+((x => x instanceof Date ? datefns.getSeconds(x) : (x.seconds ?? 0))(b)) === new Date().getSeconds()
+
+/*TODO: date-fns objects are immutable, feed this value back through properly*/
+datefns.setMonth(new Date(), 10)
+
+function f() { return new Date() }
+```
+
+<!-- datefns.setDays(f(), ((d) => d instanceof Date ? datefns.getDays(d) : (d.days ?? 0))(a)) -->
