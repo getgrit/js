@@ -30,9 +30,9 @@ pattern moment_const_decl($declaration, $declarators) {
 
 // Matches calls like `moment.startOf('day')`, `moment.startOf('week')`
 pattern moment_set_to_start_or_end_literal($date, $func_type, $unit) {
-  `$date.$func_type($literal)` where {
-    or { $func_type <: `startOf`, $func_type <: `endOf` },
-    $literal <: string(fragment=$unit)
+  `$date.$func_type($specifier)` where {
+    $func_type <: or { `startOf`, `endOf` },
+    $specifier<: string(fragment=$unit)
   }
 }
 
@@ -53,39 +53,39 @@ pattern moment_set_or_get($duration_or_date, $accessor, $accessor_fn, $arg) {
 }
 
 // Helper patterns to match format specifiers for different time units in moment js:
-pattern year() {
-  `$string` where { $string <: string(fragment=r"\b(?:y|years?)\b") }
-}
+pattern year() { string(fragment=r"\b(?:y|years?)\b") }
+pattern month() { string(fragment=r"\b(?:M|months?)\b") }
+pattern quarter() { string(fragment=r"\b(?:q|quarters?)\b") }
+pattern week() { string(fragment=r"\b(?:w|weeks?)\b") }
+pattern day() { string(fragment=r"\b(?:d|days?)\b") }
+pattern hour() { string(fragment=r"\b(?:h|hours?)\b") }
+pattern minute() { string(fragment=r"\b(?:m|minutes?)\b") }
+pattern second() { string(fragment=r"\b(?:s|seconds?)\b") }
+pattern millisecond() { string(fragment=r"\b(?:ms|milliseconds?)\b") }
 
-pattern month() {
-  `$string` where { $string <: string(fragment=r"\b(?:M|months?)\b") }
-}
+pattern regex_year() { r"\b(?:(?i)y|years?)\b" }
+pattern regex_month() { r"\b(?:M|(?i)months?)\b" }
+pattern regex_week() { r"\b(?:(?i)w|weeks?)\b" }
+pattern regex_date() { r"\b(?:(?i)d|dates?)\b"  }
+pattern regex_day() { r"\b(?:(?i)d|day?)\b"  }
+pattern regex_hour() { r"\b(?:(?i)h|hours?)\b" }
+pattern regex_minute() { r"\b(?:(?i)m|minutes?)\b" }
+pattern regex_second() { r"\b(?:(?i)s|seconds?)\b" }
+pattern regex_ms() { r"\b(?:(?i)ms|milliseconds?)\b" }
 
-pattern quarter() {
-  `$string` where { $string <: string(fragment=r"\b(?:q|quarters?)\b") }
-}
-
-pattern week() {
-  `$string` where { $string <: string(fragment=r"\b(?:w|weeks?)\b") }
-}
-pattern day() {
-  `$string` where { $string <: string(fragment=r"\b(?:d|days?)\b") }
-}
-
-pattern hour() {
-  `$string` where { $string <: string(fragment=r"\b(?:h|hours?)\b") }
-}
-
-pattern minute() {
-  `$string` where { $string <: string(fragment=r"\b(?:m|minutes?)\b") }
-}
-
-pattern second() {
-  `$string` where { $string <: string(fragment=r"\b(?:s|seconds?)\b") }
-}
-
-pattern millisecond() {
-  `$string` where { $string <: string(fragment=r"\b(?:ms|milliseconds?)\b") }
+// convert a moment.js unit specifier to its normal form ("y" -> "year")
+pattern normalize_unit_specifier() {
+  or {
+    year() => `year`,
+    quarter() => `quarter`,
+    month() => `month`,
+    week() => `week`,
+    day() => `day`,
+    hour() => `hour`,
+    minute() => `minute`,
+    second() => `second`,
+    millisecond() => `millisecond`
+  }
 }
 
 // add/subtract: convert all momentjs arithmetic operations to date-fns operations.
@@ -94,7 +94,7 @@ pattern rewrite_moment_arithmetic() {
   or {
     // add/subtract: convert all momentjs arithmetic operations to date-fns operations.
     // eg: today.add(oneday) => add(today, oneday)
-    moment_arith($date, $method, $count, $pat) where {
+    moment_arith($date, $method, $count, $pat) as $expression where {
       $pat <: or {
         year() => `years`,
         quarter() => `quarters`,
@@ -105,15 +105,29 @@ pattern rewrite_moment_arithmetic() {
         minute() => `minutes`,
         second() => `seconds`,
       },
+
       $out = `$method($date, { $pat: $count })`,
+
       if ($date <: identifier()) {
-        $out = `($date = $method($date, { $pat: $count }))`
+        $out = `$date = $method($date, { $pat: $count })`
+      },
+      // If the arithmetic expression is not an expression statement,
+      // wrap it in `()`, as `=` has very low precedence.
+      if ($date <: not within expression_statement($expression)) {
+        $out = `($out)`
       }
     } => `$out`,
 
     moment_arith($date, $method, $count, $pat) where {
       $pat <: string(fragment=$frag where { $frag <: r"\b(?:ms|milliseconds?)\b"}),
-    } => `$method($date, { seconds: $count / 1000 })`,
+      $out = `$method($date, { seconds: $count / 1000 })`,
+      if ($date <: identifier()) {
+        $out = `$date = $out`
+      },
+      if ($date <: not within expression_statement($expression)) {
+        $out = `($out)`
+      }
+    } => `$out`,
 
     `$date_a.diff($date_b, $literal_unit)` where { $literal_unit <: string() }  => `datefns.differenceIn$literal_unit($date_a, $date_b)` where {
       $literal_unit <: or {
@@ -170,7 +184,7 @@ pattern rewrite_moment_getters_and_setters() {
           r"isoWeeks?" => `ISOWeek`,
           r"weeks?" => `Week`
         },
-        $out = `/*TODO: date-fns objects are immutable, feed this value back through properly */ datefns.set$func($date, $arg)`,
+        $out = `/*TODO: date-fns objects are immutable, feed this value back through properly*/ datefns.set$func($date, $arg)`,
 
         // no-args => it's a getter call
         if ($arg <: .) {
@@ -306,7 +320,7 @@ pattern rewrite_duration_ctors() {
 }
 
 pattern rewrite_const_to_let() {
-    moment_const_decl($declaration, $declarators) where { $declaration => `let $declarators` }
+  moment_const_decl($declaration, $declarators) where { $declaration => `let $declarators` }
 }
 
 pattern rewrite_moment_imports() {
@@ -342,11 +356,25 @@ pattern moment_exp_to_datefns_exp() {
     rewrite_moment_arithmetic(),
 
     // start/end setters where the time unit is a literal (e.g: d.startOf("week"))
-    moment_set_to_start_or_end_literal($date, $func_type, $unit) where {
+    moment_set_to_start_or_end_literal($date, $func_type, $unit) as $expression where {
       $date <: identifier(),
-      // week -> Week, second -> Second
-      $unit = capitalize(string=$unit)
-    } => `($date = datefns.$func_type$unit($date))`,
+      $unit <: or {
+        regex_month() => `Month`,
+        regex_week() => `Week`,
+        regex_day() => `Day`,
+        regex_hour() => `Hour`,
+        regex_minute() => `Minute`,
+        regex_second() => `Second`,
+        regex_ms() => `Millisecond`
+      },
+      $out = `/* TODO: date-fns objects are immutable, propagate this value appropriately */ datefns.$func_type$unit($date)`,
+      if ($date <: identifier()) {
+        $out = `$date = datefns.$func_type$unit($date)`,
+        if ($date <: not within expression_statement($expression)) {
+         $out = `($out)`
+        }
+      }
+    } => `$out`,
 
     // date.max(other_date) -> (date = datefns.max(date, other_date))
     moment_limit_to_max_or_min($date, $arg, $methodName) where { $date <: identifier() } => `$date = datefns.$methodName([$date, $arg])`,
