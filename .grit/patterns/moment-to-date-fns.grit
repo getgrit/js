@@ -1,21 +1,21 @@
 language js
 
 // A call to `add`/`sub` method of a `momentjs` date object.
-pattern moment_arith($date, $method, $count, $pat) {
-  `$date.$method($count, $pat)` as $arith_exp where {
-    $method <: or { `add`, `sub` },
+pattern moment_arith($date, $method, $count, $specifier) {
+  `$date.$method($count, $specifier)` as $arith_exp where {
+    $method <: or { `add`, `subtract` => `sub` },
     if ($method <: `add`) {
       $method <: ensure_import_from(source=`"date-fns/add"`),
     } else {
+      $method = `sub`,
       $method <: ensure_import_from(source=`"date-fns/sub"`),
-    },
-    $pat <: string()
+    }
   }
 }
 
 // A call to `add/sub` where the caller (`this`) is an identifier. eg: foo.add(bar);
-pattern moment_arith_lhs_identifier($date, $method, $count, $pat) {
-  moment_arith($date, $method, $count, $pat) where {
+pattern moment_arith_lhs_identifier($date, $method, $count, $specifier) {
+  moment_arith($date, $method, $count, $specifier) where {
     $date <: identifier()
   }
 }
@@ -94,22 +94,25 @@ pattern rewrite_moment_arithmetic() {
   or {
     // add/subtract: convert all momentjs arithmetic operations to date-fns operations.
     // eg: today.add(oneday) => add(today, oneday)
-    moment_arith($date, $method, $count, $pat) as $expression where {
-      $pat <: or {
-        year() => `years`,
-        quarter() => `quarters`,
-        month() => `months`,
-        week() => `weeks`,
-        day() => `days`,
-        hour() => `hours`,
-        minute() => `minutes`,
-        second() => `seconds`,
+    moment_arith($date, $method, $count, $specifier) as $expression where {
+      $specifier <: and {
+        string(),
+        or {
+          year() => `years`,
+          quarter() => `quarters`,
+          month() => `months`,
+          week() => `weeks`,
+          day() => `days`,
+          hour() => `hours`,
+          minute() => `minutes`,
+          second() => `seconds`,
+        }
       },
 
-      $out = `$method($date, { $pat: $count })`,
+      $out = `$method($date, { $specifier: $count })`,
 
       if ($date <: identifier()) {
-        $out = `$date = $method($date, { $pat: $count })`
+        $out = `$date = $method($date, { $specifier: $count })`
       },
       // If the arithmetic expression is not an expression statement,
       // wrap it in `()`, as `=` has very low precedence.
@@ -118,12 +121,21 @@ pattern rewrite_moment_arithmetic() {
       }
     } => `$out`,
 
-    moment_arith($date, $method, $count, $pat) where {
-      $pat <: string(fragment=$frag where { $frag <: r"\b(?:ms|milliseconds?)\b"}),
+    moment_arith($date, $method, $count, $specifier) where {
+      $specifier <: string(fragment=$frag where { $frag <: r"\b(?:ms|milliseconds?)\b"}),
       $out = `$method($date, { seconds: $count / 1000 })`,
       if ($date <: identifier()) {
         $out = `$date = $out`
       },
+      if ($date <: not within expression_statement($expression)) {
+        $out = `($out)`
+      }
+    } => `$out`,
+
+    moment_arith($date, $method, $count, $specifier) where {
+      !$specifier <: string(),
+      $out = `datefns.$method({ [normalizeMomentJSUnit($specifier)]: $count })`,
+      if ($date <: identifier()) { $out = `$date = $out`},
       if ($date <: not within expression_statement($expression)) {
         $out = `($out)`
       }
@@ -248,7 +260,11 @@ pattern rewrite_duration_set_and_get() {
 }
 
 pattern rewrite_misc_methods() {
-  `$d.toJSON()` => `dateOrDuration2JSON($d)` 
+  or {
+    `$d.toJSON()` => `dateOrDuration2JSON($d)`,
+    `$d.clone()` => `((d => (d instanceof Date) ? (new Date(d.getTime())) : structuredClone(d) )($d))`,
+    `$d.humanize()` => `datefns.formatDuration($d)`
+  }
 }
 
 pattern rewrite_moment_queries() {
@@ -296,8 +312,6 @@ pattern rewrite_duration_ctors() {
         second() => `seconds`,
         millisecond() => `milliseconds`
       },
-      // $durationfns = "durationfns",
-      // $durationfns <: ensure_import_from(source=`"duration-fns"`),
 
       // A duration in `date-fns` is a mapping from time units to values (e.g: { years: 1 }).
       // NOTE: This is an implementation detail, and is not documented in the library itself,
@@ -310,7 +324,17 @@ pattern rewrite_duration_ctors() {
     `$duration_ctor($empty)` where {
       $duration_ctor <: or { `$_.duration`, `duration` },
       $empty <: . // no arguments
-    } => `({})`
+    } => `({})`,
+
+    `$duration_ctor($args)` where {
+      $duration_ctor <: or { `$_.duration`, `duration` },
+      $out = `({})`,
+      if ($args <: [$arg]) { // one argument => string or object 
+        $out = `makeDuration($arg)`
+      } else if ($args <: [$count, $unit]) { // two args => value and unit
+        $out = `({ [normalizeMomentJSUnit($unit)]: $count })`
+      }
+    } => `$out`
   }
 }
 
@@ -423,9 +447,7 @@ pattern moment_exp_to_datefns_exp() {
 
 pattern add_helper_functions() {
   program() as $prog where {
-    // If the program contains a call to `.toJSON`, add our own helper.
-    
-    $func = `function dateOrDuration2JSON(d) {
+    $dateOrDurationToJSON = `function dateOrDuration2JSON(d) {
   if (d instanceof Date) {
     return datefns.formatISO(d);
   } else if (durationfns.UNITS.some((unit) => Object.hasOwnProperty.call(d, unit))) {
@@ -434,9 +456,55 @@ pattern add_helper_functions() {
 
   return d.toJSON()
 }`,
+  $makeDuration = `function makeDuration(duration) {
+  if (typeof duration === 'string') {
+    return durationfns.parse(duration)
+  } else if (typeof duration === 'number') {
+    return { milliseconds: duration }
+  } else if (typeof duration === 'object') {
+    return duration
+  }
+
+  throw new Error("Invalid argument to duration constructor: " + typeof duration)
+}`,
+
+  // Is there a better way to have blackslashes inside code snippets?
+  $rx_begin = "/\\b",
+  $rx_end = "\\b/",
+
+  $normalizeMomentJSUnit = `function normalizeMomentJSUnit(fmt) {
+  const unitRegexs = [
+    [$rx_begin(?:y|years?)$rx_end, 'year'],
+    [$rx_begin(?:q|quarters?)$rx_end, 'quarter'],
+    [$rx_begin(?:M|months?)$rx_end, 'month'],
+    [$rx_begin(?:w|weeks?)$rx_end, 'week'],
+    [$rx_begin(?:d|days?)$rx_end, 'day'],
+    [$rx_begin(?:h|hours?)$rx_end, 'hour'],
+    [$rx_begin(?:m|minutes?)$rx_end, 'minute'],
+    [$rx_begin(?:s|seconds?)$rx_end, 'second'],
+    [$rx_begin(?:ms|milliseconds?)$rx_end, 'milliseconds'],
+  ];
+
+
+  for (const [regex, normalized] of unitRegexs) {
+    if (regex.test(fmt)) {
+      return normalized;
+    }
+  }
+
+  return null;
+}`,
     $out = `$prog`,
     if ($prog <: contains `dateOrDuration2JSON($_)`) {
-      $out = `$prog\n/* Helper function inserted by Grit: */\n$func`
-    } 
+      $out = `$out\n/* Helper function inserted by Grit: */\n$dateOrDurationToJSON`
+    },
+    
+    if ($prog <: contains `makeDuration($_)`) {
+      $out = `$out\n/* Helper function inserted by Grit: */\n$makeDuration`
+    },
+
+    if ($prog <: contains `normalizeMomentJSUnit($_)`) {
+      $out = `$out\n$normalizeMomentJSUnit`
+    }
   } => `$out`
 }

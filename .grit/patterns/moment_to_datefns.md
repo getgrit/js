@@ -41,10 +41,10 @@ const now = moment()
 const then = moment("2001-01-01")
 
 now.add(10, "d")
-then.sub(12, "years")
-now.sub(10, "ms")
+then.subtract(12, "years")
+now.subtract(10, "ms")
 
-foo(now.sub(12, "month"))
+foo(now.subtract(12, "month"))
 ```
 
 ```ts
@@ -60,6 +60,51 @@ now = sub(now, { seconds: 10 / 1000 })
 
 
 foo((now = sub(now, { months: 12 })))
+```
+
+## Arithmetic operations wherer specifier is not a literal
+
+```js
+const now = moment()
+const then = moment("2001-01-02")
+const unit = Math.random() > 0.5 ? "d" : "y"
+
+now.add(10, unit)
+now.subtract(then.days(), unit)
+```
+
+```ts
+import { add } from "date-fns/add";
+import { sub } from "date-fns/sub";
+
+let now = (new Date())
+let then = (new Date("2001-01-02"))
+const unit = Math.random() > 0.5 ? "d" : "y"
+
+now = datefns.add({ [normalizeMomentJSUnit(unit)]: 10 })
+now = datefns.sub({ [normalizeMomentJSUnit(unit)]: ((x => (x instanceof Date) ? datefns.getDays(x) : x.days)(then)) })
+function normalizeMomentJSUnit(fmt) {
+  const unitRegexs = [
+    [/\b(?:y|years?)\b/, 'year'],
+    [/\b(?:q|quarters?)\b/, 'quarter'],
+    [/\b(?:M|months?)\b/, 'month'],
+    [/\b(?:w|weeks?)\b/, 'week'],
+    [/\b(?:d|days?)\b/, 'day'],
+    [/\b(?:h|hours?)\b/, 'hour'],
+    [/\b(?:m|minutes?)\b/, 'minute'],
+    [/\b(?:s|seconds?)\b/, 'second'],
+    [/\b(?:ms|milliseconds?)\b/, 'milliseconds']
+  ];
+
+
+  for (const [regex, normalized] of unitRegexs) {
+    if (regex.test(fmt)) {
+      return normalized;
+    }
+  }
+
+  return null;
+}
 ```
 
 ## startOf/endOf
