@@ -6,13 +6,17 @@ This migration handles some of the cases not covered in the [official codemod](h
 
 - Changes `ThemeProvider` import from `@mui/styles` to `@mui/material/styles`
 
-- Changes default theme.palette.info colors from `cyan[300]` to `lightBlue[500]`
-- Changes default theme.palette.info colors from `cyan[500]` to `lightBlue[700]`
-- Changes default theme.palette.info colors from `cyan[700]` to `lightBlue[900]`
+- Changes default theme.palette.info color from `cyan[300]` to `lightBlue[500]`
+- Changes default theme.palette.info color from `cyan[500]` to `lightBlue[700]`
+- Changes default theme.palette.info color from `cyan[700]` to `lightBlue[900]`
 
-- Changes default theme.palette.success colors from `green[300]` to `green[500]`
-- Changes default theme.palette.success colors from `green[500]` to `green[700]`
-- Changes default theme.palette.success colors from `green[700]` to `green[900]`
+- Changes default theme.palette.success color from `green[300]` to `green[500]`
+- Changes default theme.palette.success color from `green[500]` to `green[700]`
+- Changes default theme.palette.success color from `green[700]` to `green[900]`
+
+- Changes default theme.palette.warning color from `orange[300]` to `orange[500]`
+- Changes default theme.palette.warning color from `orange[500]` to `'#ED6C02'`
+- Changes default theme.palette.warning color from `orange[700]` to `orange[900]`
 
 tags: #react, #migration, #complex, #alpha, #hidden, #mui
 
@@ -34,7 +38,7 @@ pattern replace_theme_provider_import () {
 }
 
 pattern upgrade_info_palette () {
-  `main: $color[$value]` as $info where {
+  `$mode: $color[$value]` as $info where {
     $color <: r"cyan" => `lightBlue`,
     // must be within a style object
     $info <: within `style: {$_}`,
@@ -47,7 +51,7 @@ pattern upgrade_info_palette () {
 }
 
 pattern upgrade_success_palette () {
-  `main: $color[$value]` as $success where {
+  `$mode: $color[$value]` as $success where {
       $color <: r"green" => `green`,
       // must be within a style object
       $success <: within `style: {$_}`,
@@ -59,11 +63,32 @@ pattern upgrade_success_palette () {
   }
 }
 
+pattern upgrade_warning_palette () {
+  `main: $color[$value]` as $success where {
+      $color <: r"orange" => `orange`,
+      // must be within a style object
+      $success <: within `style: {$_}`,
+    or {
+      $value <: `300` => `500`,
+      $value <: `700` => `900`
+    }
+  }
+}
+
+pattern upgrade_warning_palette_500 () {
+  `main: $color` as $target where {
+    $target <: within `style: {$_}`,
+    $color <: `orange[500]` => `'#ED6C02'`
+  }
+}
+
 or {
   rename_palette_type(),
   replace_theme_provider_import(),
   upgrade_info_palette(),
-  upgrade_success_palette()
+  upgrade_success_palette(),
+  upgrade_warning_palette(),
+  upgrade_warning_palette_500()
 }
 ```
 
@@ -179,7 +204,7 @@ import {} from '@mui/material/styles';
 ```js
 object = {
   style: {
-    main: cyan[300];
+    light: cyan[300];
   }
 }
 ```
@@ -187,7 +212,7 @@ object = {
 ```ts
 object = {
   style: {
-    main: lightBlue[500];
+    light: lightBlue[500];
   }
 }
 ```
@@ -215,7 +240,7 @@ object = {
 ```js
 object = {
   style: {
-    main: cyan[700];
+    dark: cyan[700];
   }
 }
 ```
@@ -223,7 +248,7 @@ object = {
 ```ts
 object = {
   style: {
-    main: lightBlue[900];
+    dark: lightBlue[900];
   }
 }
 ```
@@ -305,7 +330,7 @@ object = {
 ```js
 object = {
   style: {
-    main: green[300];
+    light: green[300];
   }
 }
 ```
@@ -313,7 +338,7 @@ object = {
 ```ts
 object = {
   style: {
-    main: green[500];
+    light: green[500];
   }
 }
 ```
@@ -341,7 +366,7 @@ object = {
 ```js
 object = {
   style: {
-    main: green[700];
+    dark: green[700];
   }
 }
 ```
@@ -349,7 +374,7 @@ object = {
 ```ts
 object = {
   style: {
-    main: green[900];
+    dark: green[900];
   }
 }
 ```
@@ -422,6 +447,132 @@ object = {
 object = {
   config: {
     main: green[300];
+  }
+}
+```
+
+## Test when palette warning color is `orange[300]`
+
+```js
+object = {
+  style: {
+    light: orange[300];
+  }
+}
+```
+
+```ts
+object = {
+  style: {
+    light: orange[500];
+  }
+}
+```
+
+## Test when palette warning color is `orange[500]`
+
+```js
+object = {
+  style: {
+    main: orange[500];
+  }
+}
+```
+
+```ts
+object = {
+  style: {
+    main: '#ED6C02';
+  }
+}
+```
+
+## Test when palette warning color is `orange[700]`
+
+```js
+object = {
+  style: {
+    dark: orange[700];
+  }
+}
+```
+
+```ts
+object = {
+  style: {
+    dark: orange[900];
+  }
+}
+```
+
+## Test when palette warning color is `orange[0]`
+
+```js
+object = {
+  style: {
+    main: orange[0];
+  }
+}
+```
+
+```ts
+object = {
+  style: {
+    main: orange[0];
+  }
+}
+```
+
+## Test when palette warning color is `orange[710]`
+
+```js
+object = {
+  style: {
+    main: orange[710];
+  }
+}
+```
+
+```ts
+object = {
+  style: {
+    main: orange[710];
+  }
+}
+```
+
+## Test when palette warning color is empty: `orange[]`
+
+```js
+object = {
+  style: {
+    main: orange[];
+  }
+}
+```
+
+```ts
+object = {
+  style: {
+    main: orange[];
+  }
+}
+```
+
+## Test when palette warning color is not in a style object
+
+```js
+object = {
+  config: {
+    main: orange[300];
+  }
+}
+```
+
+```ts
+object = {
+  config: {
+    main: orange[300];
   }
 }
 ```
