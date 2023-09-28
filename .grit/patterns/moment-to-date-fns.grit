@@ -143,11 +143,6 @@ pattern rewrite_moment_arithmetic() {
       }
     },
 
-    `$date_a.diff($date_b, $unit)` where { 
-      !$unit <: string(),
-      $fn = `(unit) => `
-    } => ``,
-
     // When no unit is specified, `diff` returns difference in ms.
     `$date_a.diff($date_b)` where { $date_b <: [$_] /* exactly one argument */ } => `datefns.differenceInMilliseconds($date_a, $date_b)`,
   }
@@ -358,18 +353,34 @@ pattern moment_exp_to_datefns_exp() {
     // start/end setters where the time unit is a literal (e.g: d.startOf("week"))
     moment_set_to_start_or_end_literal($date, $func_type, $unit) as $expression where {
       $date <: identifier(),
-      $unit <: or {
-        regex_month() => `Month`,
-        regex_week() => `Week`,
-        regex_day() => `Day`,
-        regex_hour() => `Hour`,
-        regex_minute() => `Minute`,
-        regex_second() => `Second`,
-        regex_ms() => `Millisecond`
+      $unit_name = `Year`,
+      $setter_fn = `setYear`,
+
+      if ($unit <: regex_month()) {
+        $unit_name = `Month`,
+        $setter_fn = `setMonth`,
+      } else if ($unit <: regex_week()) {
+        $unit_name = `Week`,
+        $setter_fn = `setWeek`
+      } else if ($unit <: regex_day()) {
+        $unit_name = `Day`,
+        $setter_fn = `setDay`
+      } else if ($unit <: regex_hour()) {
+        $unit_name = `Hour`,
+        $setter_fn = `setHours`
+      } else if ($unit <: regex_minute()) {
+        $unit_name = `Minute`,
+        $setter_fn = `setMinutes`
+      } else if ($unit <: regex_second()) {
+        $unit_name = `Second`,
+        $setter_fn = `setSeconds`
       },
-      $out = `/* TODO: date-fns objects are immutable, propagate this value appropriately */ datefns.$func_type$unit($date)`,
+
+      $setter = `datefns.$setter_fn`,
+      $getter = `datefns.$func_type$unit_name`,
+      $out = `/* TODO: date-fns objects are immutable, propagate this value appropriately */ (d => $setter(d, $getter(d)))($date)`,
       if ($date <: identifier()) {
-        $out = `$date = datefns.$func_type$unit($date)`,
+        $out = `$date = $setter($date, $getter($date))`,
         if ($date <: not within expression_statement($expression)) {
          $out = `($out)`
         }
