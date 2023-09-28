@@ -231,31 +231,55 @@ object = {
 ## Test when palette info color is `cyan[0]`
 
 ```js
-main: cyan[0];
+object = {
+  style: {
+    main: cyan[0];
+  }
+}
 ```
 
 ```ts
-main: cyan[0];
+object = {
+  style: {
+    main: cyan[0];
+  }
+}
 ```
 
 ## Test when palette info color is `cyan[710]`
 
 ```js
-main: cyan[710];
+object = {
+  style: {
+    main: cyan[710];
+  }
+}
 ```
 
 ```ts
-main: cyan[710];
+object = {
+  style: {
+    main: cyan[710];
+  }
+}
 ```
 
 ## Test when palette info color is empty: `cyan[]`
 
 ```js
-main: cyan[];
+object = {
+  style: {
+    main: cyan[];
+  }
+}
 ```
 
 ```ts
-main: cyan[];
+object = {
+  style: {
+    main: cyan[];
+  }
+}
 ```
 
 ## Test when palette success color is `green[300]`
@@ -315,29 +339,53 @@ object = {
 ## Test when palette success color is `green[0]`
 
 ```js
-main: green[0];
+object = {
+  style: {
+    main: green[0];
+  }
+}
 ```
 
 ```ts
-main: green[0];
+object = {
+  style: {
+    main: green[0];
+  }
+}
 ```
 
 ## Test when palette success color is `green[710]`
 
 ```js
-main: green[710];
+object = {
+  style: {
+    main: green[710];
+  }
+}
 ```
 
 ```ts
-main: green[710];
+object = {
+  style: {
+    main: green[710];
+  }
+}
 ```
 
 ## Test when palette success color is empty: `green[]`
 
 ```js
-main: green[];
+object = {
+  style: {
+    main: green[];
+  }
+}
 ```
 
 ```ts
-main: green[];
+object = {
+  style: {
+    main: green[];
+  }
+}
 ```
