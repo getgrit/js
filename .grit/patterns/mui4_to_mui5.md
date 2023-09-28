@@ -282,6 +282,24 @@ object = {
 }
 ```
 
+## Test when palette info color is not in a style object
+
+```js
+object = {
+  config: {
+    main: cyan[300];
+  }
+}
+```
+
+```ts
+object = {
+  config: {
+    main: cyan[300];
+  }
+}
+```
+
 ## Test when palette success color is `green[300]`
 
 ```js
@@ -386,6 +404,24 @@ object = {
 object = {
   style: {
     main: green[];
+  }
+}
+```
+
+## Test when palette success color is not in a style object
+
+```js
+object = {
+  config: {
+    main: green[300];
+  }
+}
+```
+
+```ts
+object = {
+  config: {
+    main: green[300];
   }
 }
 ```
