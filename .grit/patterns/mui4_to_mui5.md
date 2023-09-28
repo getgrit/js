@@ -16,7 +16,6 @@ This migration handles some of the cases not covered in the [official codemod](h
 
 tags: #react, #migration, #complex, #alpha, #hidden, #mui
 
-
 ```grit
 engine marzano(0.1)
 language js
@@ -35,19 +34,23 @@ pattern replace_theme_provider_import () {
 }
 
 pattern upgrade_info_palette () {
-    `main: $color[$value]` where {
-          $color <: r"cyan" => `lightBlue`,
-      or {
-          $value <: `300` => `500`,
-          $value <: `500` => `700`,
-          $value <: `700` => `900`
-      }
+  `main: $color[$value]` as $info where {
+    $color <: r"cyan" => `lightBlue`,
+    // must be within a style object
+    $info <: within `style: {$_}`,
+    or {
+      $value <: `300` => `500`,
+      $value <: `500` => `700`,
+      $value <: `700` => `900`
+    }
   }
 }
 
 pattern upgrade_success_palette () {
-  `main: $color[$value]` where {
+  `main: $color[$value]` as $success where {
       $color <: r"green" => `green`,
+      // must be within a style object
+      $success <: within `style: {$_}`,
     or {
       $value <: `300` => `500`,
       $value <: `500` => `800`,
@@ -64,9 +67,7 @@ or {
 }
 ```
 
-
-
-## Rename palette type property to mode for palette 
+## Rename palette `type` property to `mode` for palette
 
 ```js
 const theme = createTheme({ palette: { type: 'dark' } });
@@ -76,7 +77,7 @@ const theme = createTheme({ palette: { type: 'dark' } });
 const theme = createTheme({ palette: { mode: 'dark' } });
 ```
 
-## Test when palette type value is light 
+## Test when palette `type` value is light
 
 ```js
 const theme = createTheme({ palette: { type: 'light' } });
@@ -86,7 +87,7 @@ const theme = createTheme({ palette: { type: 'light' } });
 const theme = createTheme({ palette: { mode: 'light' } });
 ```
 
-## Test when palette object is empty 
+## Test when palette object is empty
 
 ```js
 const theme = createTheme({ palette: {} });
@@ -96,7 +97,7 @@ const theme = createTheme({ palette: {} });
 const theme = createTheme({ palette: {} });
 ```
 
-## Test when palette object has multiple properties 
+## Test when palette object has multiple properties
 
 ```js
 const theme = createTheme({ palette: { type: 'dark', color: 'black' } });
@@ -106,7 +107,7 @@ const theme = createTheme({ palette: { type: 'dark', color: 'black' } });
 const theme = createTheme({ palette: { mode: 'dark', color: 'black' } });
 ```
 
-## Test when palette type is empty and has multiple properties 
+## Test when palette `type` is empty and palette has multiple properties
 
 ```js
 const theme = createTheme({ palette: { type: '', color: 'black' } });
@@ -116,7 +117,8 @@ const theme = createTheme({ palette: { type: '', color: 'black' } });
 const theme = createTheme({ palette: { mode: '', color: 'black' } });
 ```
 
-## Test when theme object has multiple properties 
+## Test when theme object has multiple properties
+
 ```js
 const theme = createTheme({ color: 'black', palette: { type: 'dark' } });
 ```
@@ -124,8 +126,6 @@ const theme = createTheme({ color: 'black', palette: { type: 'dark' } });
 ```ts
 const theme = createTheme({ color: 'black', palette: { mode: 'dark' } });
 ```
-
-
 
 ## Test when ThemeProvider is imported from `@mui/styles`
 
@@ -174,36 +174,58 @@ import {} from '@mui/material/styles';
 import {} from '@mui/material/styles';
 ```
 
-
-
 ## Test when palette info color is `cyan[300]`
 
 ```js
-main: cyan[300];
+object = {
+  style: {
+    main: cyan[300];
+  }
+}
 ```
 
 ```ts
-main: lightBlue[500];
+object = {
+  style: {
+    main: lightBlue[500];
+  }
+}
 ```
 
 ## Test when palette info color is `cyan[500]`
 
 ```js
-main: cyan[500];
+object = {
+  style: {
+    main: cyan[500];
+  }
+}
 ```
 
 ```ts
-main: lightBlue[700];
+object = {
+  style: {
+    main: lightBlue[700];
+  }
+}
 ```
 
 ## Test when palette info color is `cyan[700]`
 
 ```js
-main: cyan[700];
+object = {
+  style: {
+    main: cyan[700];
+  }
+}
 ```
 
 ```ts
-main: lightBlue[900];
+object = {
+  style: {
+    main: lightBlue[900];
+  }
+}
 ```
 
 ## Test when palette info color is `cyan[0]`
@@ -236,36 +258,58 @@ main: cyan[];
 main: cyan[];
 ```
 
-
-
 ## Test when palette success color is `green[300]`
 
 ```js
-main: green[300];
+object = {
+  style: {
+    main: green[300];
+  }
+}
 ```
 
 ```ts
-main: green[500];
+object = {
+  style: {
+    main: green[500];
+  }
+}
 ```
 
 ## Test when palette success color is `green[500]`
 
 ```js
-main: green[500];
+object = {
+  style: {
+    main: green[500];
+  }
+}
 ```
 
 ```ts
-main: green[800];
+object = {
+  style: {
+    main: green[800];
+  }
+}
 ```
 
 ## Test when palette success color is `green[700]`
 
 ```js
-main: green[700];
+object = {
+  style: {
+    main: green[700];
+  }
+}
 ```
 
 ```ts
-main: green[900];
+object = {
+  style: {
+    main: green[900];
+  }
+}
 ```
 
 ## Test when palette success color is `green[0]`
