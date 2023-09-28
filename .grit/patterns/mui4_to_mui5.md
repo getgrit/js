@@ -6,7 +6,6 @@ This migration handles some of the cases not covered in the [official codemod](h
 
 - Changes `ThemeProvider` import from `@mui/styles` to `@mui/material/styles`
 
-
 - Changes default theme.palette.info colors from `cyan[300]` to `lightBlue[500]`
 - Changes default theme.palette.info colors from `cyan[500]` to `lightBlue[700]`
 - Changes default theme.palette.info colors from `cyan[700]` to `lightBlue[900]`
@@ -15,7 +14,7 @@ This migration handles some of the cases not covered in the [official codemod](h
 - Changes default theme.palette.success colors from `green[500]` to `green[700]`
 - Changes default theme.palette.success colors from `green[700]` to `green[900]`
 
-tags: #react, #migration, #complex, #alpha, #hidden #mui
+tags: #react, #migration, #complex, #alpha, #hidden, #mui
 
 
 ```grit
@@ -65,7 +64,9 @@ or {
 }
 ```
 
-## Rename palette type property to mode for palette > MUI v4 to MUI v5
+
+
+## Rename palette type property to mode for palette 
 
 ```js
 const theme = createTheme({ palette: { type: 'dark' } });
@@ -75,7 +76,7 @@ const theme = createTheme({ palette: { type: 'dark' } });
 const theme = createTheme({ palette: { mode: 'dark' } });
 ```
 
-## Test when palette type value is light > MUI v4 to MUI v5
+## Test when palette type value is light 
 
 ```js
 const theme = createTheme({ palette: { type: 'light' } });
@@ -85,7 +86,7 @@ const theme = createTheme({ palette: { type: 'light' } });
 const theme = createTheme({ palette: { mode: 'light' } });
 ```
 
-## Test when palette object is empty > MUI v4 to MUI v5
+## Test when palette object is empty 
 
 ```js
 const theme = createTheme({ palette: {} });
@@ -95,7 +96,7 @@ const theme = createTheme({ palette: {} });
 const theme = createTheme({ palette: {} });
 ```
 
-## Test when palette object has multiple properties > MUI v4 to MUI v5
+## Test when palette object has multiple properties 
 
 ```js
 const theme = createTheme({ palette: { type: 'dark', color: 'black' } });
@@ -105,7 +106,7 @@ const theme = createTheme({ palette: { type: 'dark', color: 'black' } });
 const theme = createTheme({ palette: { mode: 'dark', color: 'black' } });
 ```
 
-## Test when palette type is empty and has multiple properties > MUI v4 to MUI v5
+## Test when palette type is empty and has multiple properties 
 
 ```js
 const theme = createTheme({ palette: { type: '', color: 'black' } });
@@ -115,7 +116,7 @@ const theme = createTheme({ palette: { type: '', color: 'black' } });
 const theme = createTheme({ palette: { mode: '', color: 'black' } });
 ```
 
-## Test when theme object has multiple properties > MUI v4 to MUI v5
+## Test when theme object has multiple properties 
 ```js
 const theme = createTheme({ color: 'black', palette: { type: 'dark' } });
 ```
@@ -125,7 +126,8 @@ const theme = createTheme({ color: 'black', palette: { mode: 'dark' } });
 ```
 
 
-## Test when ThemeProvider is imported from `@mui/styles`: MUIv4 > MUIv5
+
+## Test when ThemeProvider is imported from `@mui/styles`
 
 ```js
 import { ThemeProvider } from '@mui/styles';
@@ -140,7 +142,7 @@ import { color } from '@mui/styles/color';
 import { theme } from '@mui/styles/theme';
 ```
 
-## Test when there are multiple packages imported from `@mui/styles`: MUIv4 > MUIv5
+## Test when there are multiple packages imported from `@mui/styles`
 
 ```js
 import { ThemeProvider, styles } from '@mui/styles';
@@ -152,7 +154,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { styles } from '@mui/styles';
 ```
 
-## Test when ThemeProvider is already imported from `@mui/material/styles`: MUIv4 > MUIv5
+## Test when ThemeProvider is already imported from `@mui/material/styles`
 
 ```js
 import { ThemeProvider, styles } from '@mui/material/styles';
@@ -162,7 +164,7 @@ import { ThemeProvider, styles } from '@mui/material/styles';
 import { ThemeProvider, styles } from '@mui/material/styles';
 ```
 
-## Test when no package is imported from `@mui/material/styles`: MUIv4 > MUIv5
+## Test when no package is imported from `@mui/material/styles`
 
 ```js
 import {} from '@mui/material/styles';
@@ -174,7 +176,7 @@ import {} from '@mui/material/styles';
 
 
 
-## Test when palette info color is `cyan[300]`: MUIv4 > MUIv5
+## Test when palette info color is `cyan[300]`
 
 ```js
 main: cyan[300];
@@ -184,7 +186,7 @@ main: cyan[300];
 main: lightBlue[500];
 ```
 
-## Test when palette info color is `cyan[500]`: MUIv4 > MUIv5
+## Test when palette info color is `cyan[500]`
 
 ```js
 main: cyan[500];
@@ -194,7 +196,7 @@ main: cyan[500];
 main: lightBlue[700];
 ```
 
-## Test when palette info color is `cyan[700]`: MUIv4 > MUIv5
+## Test when palette info color is `cyan[700]`
 
 ```js
 main: cyan[700];
@@ -204,7 +206,7 @@ main: cyan[700];
 main: lightBlue[900];
 ```
 
-## Test when palette info color is `cyan[0]`: MUIv4 > MUIv5
+## Test when palette info color is `cyan[0]`
 
 ```js
 main: cyan[0];
@@ -214,7 +216,7 @@ main: cyan[0];
 main: cyan[0];
 ```
 
-## Test when palette info color is `cyan[710]`: MUIv4 > MUIv5
+## Test when palette info color is `cyan[710]`
 
 ```js
 main: cyan[710];
@@ -224,7 +226,7 @@ main: cyan[710];
 main: cyan[710];
 ```
 
-## Test when palette info color is empty: `cyan[]`; MUIv4 > MUIv5
+## Test when palette info color is empty: `cyan[]`
 
 ```js
 main: cyan[];
@@ -236,8 +238,7 @@ main: cyan[];
 
 
 
-
-## Test when palette success color is `green[300]`: MUIv4 > MUIv5
+## Test when palette success color is `green[300]`
 
 ```js
 main: green[300];
@@ -247,7 +248,7 @@ main: green[300];
 main: green[500];
 ```
 
-## Test when palette success color is `green[500]`: MUIv4 > MUIv5
+## Test when palette success color is `green[500]`
 
 ```js
 main: green[500];
@@ -257,7 +258,7 @@ main: green[500];
 main: green[800];
 ```
 
-## Test when palette success color is `green[700]`: MUIv4 > MUIv5
+## Test when palette success color is `green[700]`
 
 ```js
 main: green[700];
@@ -267,7 +268,7 @@ main: green[700];
 main: green[900];
 ```
 
-## Test when palette success color is `green[0]`: MUIv4 > MUIv5
+## Test when palette success color is `green[0]`
 
 ```js
 main: green[0];
@@ -277,7 +278,7 @@ main: green[0];
 main: green[0];
 ```
 
-## Test when palette success color is `green[710]`: MUIv4 > MUIv5
+## Test when palette success color is `green[710]`
 
 ```js
 main: green[710];
@@ -287,7 +288,7 @@ main: green[710];
 main: green[710];
 ```
 
-## Test when palette success color is empty: `green[]`; MUIv4 > MUIv5
+## Test when palette success color is empty: `green[]`
 
 ```js
 main: green[];
