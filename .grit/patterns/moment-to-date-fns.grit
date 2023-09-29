@@ -574,9 +574,6 @@ pattern moment_exp_to_datefns_exp() {
     // Durations API
     rewrite_duration_ctors(),
 
-    // convert all specific getters/setters to date-fns equivalent
-    // TODO: Using a helper, convert `.get`/`.set` calls where the argument isn't a literal.
-    // e.g: `moment().get(alert())`.
     rewrite_moment_getters_and_setters(),
     rewrite_duration_set_and_get(),
 
