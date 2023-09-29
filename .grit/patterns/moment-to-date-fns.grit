@@ -233,8 +233,8 @@ pattern rewrite_moment_getters_and_setters() {
 
     `$date.$func($arg)` as $exp where {
       $func <: or {
-        r"dates?" => `Month`,
-        r"(?:days?)|(?:weekdays?)" => `Day`,
+        or { `date`, `dates` }  => `Month`,
+        or { `day`, `days`, `weekday`, `weekdays` } => `Day`,
         `isoWeekday` => `ISODay`,
         `dayOfYear` => `DayOfYear`,
         `weekOfYear` => `WeekOfYear`,
@@ -336,7 +336,7 @@ pattern rewrite_duration_set_and_get() {
 pattern missing_datefns_features() {
   `$date.$method()` where {
     $method <: or { `utc`, `local` }
-  } => `$date`
+  } => `/* (Moment#$method) is not supported in date-fns. Prefer using local state when displaying dates */ $date`
 }
 
 pattern rewrite_misc_methods() {
@@ -357,16 +357,12 @@ pattern rewrite_misc_methods() {
 
     missing_datefns_features(),
 
-    `$normalize` where {
-      $normalize <: or {
-        `$_.normalizeUnits`,
-        `normalizeUnits`
-      }
+    or {
+      `$_.normalizeUnits`,
+      `normalizeUnits`
     } => `normalizeMomentJSUnit`,
 
-    `$isValid` where {
-      $isValid <: or { `$_.isValid`, `isValid` },
-    } => `datefns.isValid`,
+    or { `$_.isValid`, `isValid` } => `datefns.isValid`,
 
     `$d.toArray()` as $exp where {
       $out = `((d => [
@@ -482,14 +478,7 @@ pattern rewrite_moment_imports() {
 
 pattern moment_exp_to_datefns_exp() {
   or {
-    // TODO: back-track the origin of an identifier and mutate the declaration on-demand.
     moment_const_decl($declaration, $declarators) where { $declaration => `let $declarators` },
-
-    // Formatting
-    `$date.format($fmt)` as $fmt_exp where {
-      $date <: identifier(),
-      $fmt_exp => `($date = $date.format($fmt))`
-    },
 
     // parsing:
     // date-fns uses different format to parse dates.

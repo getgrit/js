@@ -231,6 +231,7 @@ const date = moment()
 const unit = Math.random() > 0.5 ? "year" : "month"
 date.get(unit)
 date.set(unit, 10)
+moment.normalizeUnits("m")
 ```
 
 ```ts
@@ -238,6 +239,30 @@ let date = new Date()
 const unit = Math.random() > 0.5 ? "year" : "month"
 getUnitFromDate(date, unit)
 setUnitOnDate(date, unit, 10)
+normalizeMomentJSUnit("m")
+
+function normalizeMomentJSUnit(fmt) {
+  const unitRegexs = [
+    [/\b(?:y|years?)\b/, 'year'],
+    [/\b(?:q|quarters?)\b/, 'quarter'],
+    [/\b(?:M|months?)\b/, 'month'],
+    [/\b(?:w|weeks?)\b/, 'week'],
+    [/\b(?:d|days?)\b/, 'day'],
+    [/\b(?:h|hours?)\b/, 'hour'],
+    [/\b(?:m|minutes?)\b/, 'minute'],
+    [/\b(?:s|seconds?)\b/, 'second'],
+    [/\b(?:ms|millisecond?)\b/, 'millisecond']
+  ];
+
+
+  for (const [regex, normalized] of unitRegexs) {
+    if (regex.test(fmt)) {
+      return normalized;
+    }
+  }
+
+  return null;
+}
 
 function setUnitOnDate(date, unit, value) {
   unit = normalizeMomentJSUnit(unit);
@@ -284,29 +309,6 @@ function setUnitOnDate(date, unit, value) {
   }
 
   return date;
-}
-
-function normalizeMomentJSUnit(fmt) {
-  const unitRegexs = [
-    [/\b(?:y|years?)\b/, 'year'],
-    [/\b(?:q|quarters?)\b/, 'quarter'],
-    [/\b(?:M|months?)\b/, 'month'],
-    [/\b(?:w|weeks?)\b/, 'week'],
-    [/\b(?:d|days?)\b/, 'day'],
-    [/\b(?:h|hours?)\b/, 'hour'],
-    [/\b(?:m|minutes?)\b/, 'minute'],
-    [/\b(?:s|seconds?)\b/, 'second'],
-    [/\b(?:ms|millisecond?)\b/, 'millisecond']
-  ];
-
-
-  for (const [regex, normalized] of unitRegexs) {
-    if (regex.test(fmt)) {
-      return normalized;
-    }
-  }
-
-  return null;
 }
 
 function getUnitFromDate(date, unit) {
@@ -382,4 +384,18 @@ function dateOrDuration2JSON(d) {
 
   return d.toJSON();
 }
+```
+
+## Stateful display methods
+
+These methods have no direct equivalent in date-fns and should not be migrated.
+
+```js
+const date = moment()
+date.utc()
+```
+
+```ts
+let date = new Date()
+/* (Moment#utc) is not supported in date-fns. Prefer using local state when displaying dates */ date;
 ```
