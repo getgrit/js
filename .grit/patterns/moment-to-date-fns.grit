@@ -25,15 +25,13 @@ pattern moment_arith($date, $method, $count, $specifier) {
 // let a = foo()(x => print(x))("hello")
 // ```
 // Hence, the first statement should end in a semi colon to avoid ambiguity.
-pattern statement_should_end_in_semi() {
-  or {
-    expression_statement(),
-    lexical_declaration()
-  }
-}
-
 pattern should_follow_semi() {
-  `$exp` where { $exp <: after statement_should_end_in_semi() }
+  `$exp` where {
+    $exp <: after or {
+      expression_statement(),
+      lexical_declaration()
+    }
+  }
 }
 
 // A call to `add/sub` where the caller (`this`) is an identifier. eg: foo.add(bar);
@@ -168,6 +166,7 @@ pattern rewrite_moment_arithmetic() {
           hour() => `hours`,
           minute() => `minutes`,
           second() => `seconds`,
+          millisecond() => `milliseconds`
         }
       },
 
@@ -178,17 +177,6 @@ pattern rewrite_moment_arithmetic() {
       },
       // If the arithmetic expression is not an expression statement,
       // wrap it in `()`, as `=` has very low precedence.
-      if ($date <: not within expression_statement($expression)) {
-        $out = `($out)`
-      }
-    } => `$out`,
-
-    moment_arith($date, $method, $count, $specifier) where {
-      $specifier <: string(fragment=$frag where { $frag <: r"\b(?:ms|milliseconds?)\b"}),
-      $out = `$method($date, { seconds: $count / 1000 })`,
-      if ($date <: identifier()) {
-        $out = `$date = $out`
-      },
       if ($date <: not within expression_statement($expression)) {
         $out = `($out)`
       }
@@ -453,7 +441,7 @@ pattern moment_exp_to_datefns_exp() {
     // construction
     `moment($arg)` as $exp where {
       $out = `new Date($arg)`,
-      if ($exp <: after statement_should_end_in_semi()) {
+      if ($exp <: should_follow_semi()) {
         $out = `($out)`
       }
     } => `$out`,

@@ -56,7 +56,7 @@ let then = new Date("2001-01-01")
 
 now = addDate(now, { days: 10 })
 then = subDate(then, { years: 12 })
-now = subDate(now, { seconds: 10 / 1000 }) 
+now = subDate(now, { milliseconds: 10 }) 
 
 foo((now = subDate(now, { months: 12 })))
 
@@ -133,7 +133,6 @@ function subDate(dateOrDuration, duration) {
   }
   return durationfns.subtract(dateOrDuration, duration)
 }
-
 ```
 
 ## startOf/endOf
