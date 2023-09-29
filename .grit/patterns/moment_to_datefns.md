@@ -1,4 +1,4 @@
---
+---
 title: Migrate from moment.js to date-fns
 ---
 
@@ -136,7 +136,7 @@ duration.toJSON()
 ```ts
 let duration = ({ days: 10 })
 dateOrDuration2JSON(duration)
-/* Helper function inserted by Grit: */
+/* Helper function inserted by Grit */
 function dateOrDuration2JSON(d) {
   if (d instanceof Date) {
     return datefns.formatISO(d);
@@ -181,3 +181,34 @@ function f() {
 ((d, val) => (d instanceof Date ? d.setDay(val) : (d.days = val)))(f(), (a instanceof Date ? datefns.getDay(a) : (a.days ?? 0)))
 ```
 
+## Miscellaneous methods
+
+```js
+const date = moment()
+
+console.log(date.toJSON())
+console.log(date.clone())
+
+const duration = moment.duration(10, "d")
+const humanized = duration.humanize()
+```
+
+```ts
+let date = new Date()
+
+console.log(dateOrDuration2JSON(date))
+console.log(((date instanceof Date) ? new Date(date.getTime()) : structuredClone(date)))
+
+let duration = { days: 10 };
+const humanized = datefns.formatDuration(duration)
+/* Helper function inserted by Grit */
+function dateOrDuration2JSON(d) {
+  if (d instanceof Date) {
+    return datefns.formatISO(d)
+  } else if (durationfns.UNITS.some((unit) => Object.hasOwnProperty.call(d, unit))) {
+    return durationfns.toJSON(d)
+  }
+
+  return d.toJSON();
+}
+```

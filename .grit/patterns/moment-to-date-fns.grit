@@ -45,7 +45,7 @@ pattern moment_arith_lhs_identifier($date, $method, $count, $specifier) {
 // A `const` variable declaration that initializes a moment date object
 pattern moment_const_decl($declaration, $declarators) {
   `$varName = $moment()` where {
-    $moment <: or { `moment`, `$_.duration` },
+    $moment <: or { `moment`, `$_.duration`, `$_.clone` },
     $varName <: within `$declaration` where { $declaration <: `const $declarators` },
   }
 }
@@ -61,7 +61,7 @@ pattern moment_set_to_start_or_end_literal($date, $func_type, $unit) {
 // moment.max(...) or moment.min(...)
 pattern moment_limit_to_max_or_min($date, $arg, $methodName) {
   `$date.$methodName($arg)` where {
-    or { $methodName <: "max", $methodName <: "min" }
+    $methodName  <: or { `max`, `min` }
   }
 }
 
@@ -320,11 +320,33 @@ pattern rewrite_duration_set_and_get() {
   } => `durationfns.$getter($duration)`,
 }
 
+// Some stateful features of moment-js are simply missing in date-fns.
+// For example, calling `date.utc(<boolean>)` will set a flag on `date`
+// to use UTC to display a moment instead of the original moment's time.
+// This only affects the way a date is displayed (PST vs UTC).
+// This could technically be migrated by maintaining a global map of flags and
+// turning every `utc()` call into `set`, and every `display` call into a custom
+// overload, but I think that would introduce too much unwanted noise into the user's program.
+pattern missing_datefns_features() {
+  `$date.$method()` where {
+    $method <: or { `utc`, `local` }
+  } => `$date`
+}
+
 pattern rewrite_misc_methods() {
   or {
     `$d.toJSON()` => `dateOrDuration2JSON($d)`,
-    `$d.clone()` => `((d => (d instanceof Date) ? (new Date(d.getTime())) : structuredClone(d) )($d))`,
-    `$d.humanize()` => `datefns.formatDuration($d)`
+    `$d.clone()` as $exp where {
+      $out = `((d => (d instanceof Date) ? (new Date(d.getTime())) : structuredClone(d) )($d))`,
+      if ($d <: identifier()) {
+        $out = `(($d instanceof Date) ? new Date($d.getTime()) : structuredClone($d))`,
+      },
+      if ($exp <: should_follow_semi()) {
+        $out = `;\n$out`
+      }
+    } => `$out`,
+    `$d.humanize()` => `datefns.formatDuration($d)`,
+    missing_datefns_features()
   }
 }
 
@@ -410,6 +432,7 @@ pattern rewrite_moment_imports() {
     `import $_ from "moment"` => `import datefns from "date-fns";\n import durationfns from "duration-fns";`,
   }
 }
+
 
 pattern moment_exp_to_datefns_exp() {
   or {
@@ -568,11 +591,11 @@ pattern add_helper_functions() {
 }`,
     $out = `$prog`,
     if ($prog <: contains `dateOrDuration2JSON($_)`) {
-      $out = `$out\n/* Helper function inserted by Grit: */\n$dateOrDurationToJSON`
+      $out = `$out\n/* Helper function inserted by Grit */\n$dateOrDurationToJSON`
     },
     
     if ($prog <: contains `makeDuration($_)`) {
-      $out = `$out\n/* Helper function inserted by Grit: */\n$makeDuration`
+      $out = `$out\n/* Helper function inserted by Grit */\n$makeDuration`
     },
 
     if ($prog <: contains `normalizeMomentJSUnit($_)`) {
