@@ -96,7 +96,7 @@ const unit = Math.random() > 0.5 ? "d" : "y"
 
 now = addDate(now, { [normalizeMomentJSUnit(unit) + 's']: 10 })
 now = subDate(now, { [normalizeMomentJSUnit(unit) + 's']: (then instanceof Date) ? datefns.getDay(then) : (then.days ?? 0) })
-/*Helper function inserted by Grit - normalize moment JS unit specifier */
+
 function normalizeMomentJSUnit(fmt) {
   const unitRegexs = [
     [/\b(?:y|years?)\b/, 'year'],
@@ -164,7 +164,7 @@ duration.toJSON()
 ```ts
 let duration = ({ days: 10 })
 dateOrDuration2JSON(duration)
-/* Helper function inserted by Grit */
+
 function dateOrDuration2JSON(d) {
   if (d instanceof Date) {
     return datefns.formatISO(d);
@@ -191,7 +191,6 @@ function f() {
 }
 f().days(a.days())
 ```
-
 
 ```ts
 let a = new Date()
@@ -223,6 +222,122 @@ let d = new Date();
 d instanceof Date ? datefns.getYear(d) : d.years ?? 0;
 d = datefns.setMonth(d, d instanceof Date ? datefns.getYear(d) : d.years ?? 0);
 d instanceof Date ? datefns.getMilliseconds(d) : d.milliseconds ?? 0;
+```
+
+## Get/Set when specifier is a non-literal
+
+```js
+const date = moment()
+const unit = Math.random() > 0.5 ? "year" : "month"
+date.get(unit)
+date.set(unit, 10)
+```
+
+```ts
+let date = new Date() 
+const unit = Math.random() > 0.5 ? "year" : "month"
+getUnitFromDate(date, unit)
+setUnitOnDate(date, unit, 10)
+
+function setUnitOnDate(date, unit, value) {
+  unit = normalizeMomentJSUnit(unit);
+  if (date instanceof Date) {
+    switch (unit) {
+      case 'year':
+        date.setFullYear(value);
+        break;
+      case 'quarter': {
+        const month = datefns.getMonth(datefns.setQuarter(date, value));
+        date.setMonth(month);
+        break;
+      }
+      case 'month':
+        date.setMonth(value);
+        break;
+      case 'week': {
+        const newDate = datefns.setWeek(date, value);
+        date.setDate(newDate.getDate());
+        date.setMonth(newDate.getMonth());
+        break;
+      }
+      case 'day':
+        date.setDate(value);
+        break;
+      case 'hour':
+        date.setHours(value);
+        break;
+      case 'minute':
+        date.setMinutes(value);
+        break;
+      case 'second':
+        date.setSeconds(value);
+        break;
+      case 'millisecond':
+        date.setMilliseconds(value);
+        break;
+      default:
+        return date;
+    }
+  } else {
+    // duration object
+    date[unit + "s"] = value
+  }
+
+  return date;
+}
+
+function normalizeMomentJSUnit(fmt) {
+  const unitRegexs = [
+    [/\b(?:y|years?)\b/, 'year'],
+    [/\b(?:q|quarters?)\b/, 'quarter'],
+    [/\b(?:M|months?)\b/, 'month'],
+    [/\b(?:w|weeks?)\b/, 'week'],
+    [/\b(?:d|days?)\b/, 'day'],
+    [/\b(?:h|hours?)\b/, 'hour'],
+    [/\b(?:m|minutes?)\b/, 'minute'],
+    [/\b(?:s|seconds?)\b/, 'second'],
+    [/\b(?:ms|millisecond?)\b/, 'millisecond']
+  ];
+
+
+  for (const [regex, normalized] of unitRegexs) {
+    if (regex.test(fmt)) {
+      return normalized;
+    }
+  }
+
+  return null;
+}
+
+function getUnitFromDate(date, unit) {
+  unit = normalizeMomentJSUnit(unit);
+  if (date instanceof Date) {
+    switch (unit) {
+      case 'year':
+        return date.getFullYear();
+      case 'quarter':
+        return datefns.getQuarter(date);
+      case 'month':
+        return date.getMonth();
+      case 'week':
+        return datefns.getWeek(date);
+      case 'day':
+        return date.getDate();
+      case 'hour':
+        return date.getHours();
+      case 'minute':
+        return date.getMinutes();
+      case 'second':
+        return date.getSeconds();
+      case 'millisecond':
+        return date.getMilliseconds();
+      default:
+        return 0;
+    }
+  }
+
+  return date[unit + "s"]
+}
 ```
 
 ## Miscellaneous methods
@@ -257,7 +372,7 @@ console.log(datefns.isValid(date));
   seconds: d.getSeconds(),
   milliseconds: d.getMilliseconds(),
 }))(date))
-/* Helper function inserted by Grit */
+
 function dateOrDuration2JSON(d) {
   if (d instanceof Date) {
     return datefns.formatISO(d)

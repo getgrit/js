@@ -229,7 +229,7 @@ pattern rewrite_moment_arithmetic() {
 pattern rewrite_moment_getters_and_setters() {
   or {
     `$date.daysInMonth()` => `datefns.getDaysInMonth($date)`,
-    moment_getter_or_setter(),
+     moment_getter_or_setter(),
 
     `$date.$func($arg)` as $exp where {
       $func <: or {
@@ -262,7 +262,6 @@ pattern rewrite_moment_getters_and_setters() {
     // There are no setters for the number of ISO Weeks in an year.
     `$date.$method()` where { $method <: or { `weeksInYear`, `isoWeeksInYear` } } => `datefns.getISOWeeksInYear($date)`,
 
-    // TODO: support `.get(x)` calls when `x` isn't a literal.
     `$date.get($unit)` as $exp where {
       $unit <: string(fragment=$unit_raw),
       $unit_raw <: normalize_unit_specifier($norm),
@@ -282,31 +281,38 @@ pattern rewrite_moment_getters_and_setters() {
       if ($exp <: should_follow_semi()) {
         $out = `;\n$out`
       }
-  } => `$out`,
+    } => `$out`,
 
-  // TODO: support `x.set(unit, val)` calls when `unit` isn't a literal.
-  `$date.set($unit, $value)` as $exp where {
-    $unit <: string(fragment=$setter),
-    $setter <: or {
-      // units in a momentjs getter are case insensitive and allow plural forms
-      regex_year() => `setYear`,
-      regex_month() => `setMonth`,
-      regex_date() => `setDate`,
-      regex_hour() => `setHours`,
-      regex_minute() => `setMinutes`,
-      regex_second() => `setSeconds`,
-      regex_ms()  => `setMilliseconds`,
-    },
-    $comment = `/* TODO: date-fns objects are immutable, propagate this value appropriately */`,
-    $out = `datefns.$setter($date, $value)`,
-    if ($date <: identifier()) {
-      $out = `($date = datefns.$setter($date, $value))`
-    },
-    
-    if ($exp <: should_follow_semi()) {
-      $out = `;\n$out`
-    }
-  } => `$out`,
+    `$date.get($unit)` where {
+      !$unit <: string(),
+    } => `getUnitFromDate($date, $unit)`,
+
+    `$date.set($unit, $value)` where {
+      !$unit <: string(),
+    } => `setUnitOnDate($date, $unit, $value)`,
+
+    `$date.set($unit, $value)` as $exp where {
+      $unit <: string(fragment=$setter),
+      $setter <: or {
+        // units in a momentjs getter are case insensitive and allow plural forms
+        regex_year() => `setYear`,
+        regex_month() => `setMonth`,
+        regex_date() => `setDate`,
+        regex_hour() => `setHours`,
+        regex_minute() => `setMinutes`,
+        regex_second() => `setSeconds`,
+        regex_ms()  => `setMilliseconds`,
+      },
+      $comment = `/* TODO: date-fns objects are immutable, propagate this value appropriately */`,
+      $out = `datefns.$setter($date, $value)`,
+      if ($date <: identifier()) {
+        $out = `($date = datefns.$setter($date, $value))`
+      },
+      
+      if ($exp <: should_follow_semi()) {
+        $out = `;\n$out`
+      }
+    } => `$out`,
   }
 }
 
@@ -381,7 +387,6 @@ pattern rewrite_misc_methods() {
         $out = `;\n$out`
       }
     } =>  `$out`,
-      
 
     `$d.toObject()` as $exp where {
       $out = `((d => ({
@@ -565,7 +570,7 @@ pattern moment_exp_to_datefns_exp() {
     
     `$date.unix()` => `datefns.getUnixTime($date)`,
     `$date.daysInMonth()` => `datefns.getDaysInMonth($date)`,
-    `$date.toDate()` => `($date)`,
+    `$date.toDate()` => `$date`,
     `$date.toISOString()` => `datefns.formatISO($date)`,
 
     // Queries:
@@ -649,17 +654,96 @@ pattern add_helper_functions() {
   return durationfns.subtract(dateOrDuration, duration)
 }`,
 
+  $setUnitOnDate = `function setUnitOnDate(date, unit, value) {
+  unit = normalizeMomentJSUnit(unit);
+  if (date instanceof Date) {
+    switch (unit) {
+      case 'year':
+        date.setFullYear(value);
+        break;
+      case 'quarter': {
+        const month = datefns.getMonth(datefns.setQuarter(date, value));
+        date.setMonth(month);
+        break;
+      }
+      case 'month':
+        date.setMonth(value);
+        break;
+      case 'week': {
+        const newDate = datefns.setWeek(date, value);
+        date.setDate(newDate.getDate());
+        date.setMonth(newDate.getMonth());
+        break;
+      }
+      case 'day':
+        date.setDate(value);
+        break;
+      case 'hour':
+        date.setHours(value);
+        break;
+      case 'minute':
+        date.setMinutes(value);
+        break;
+      case 'second':
+        date.setSeconds(value);
+        break;
+      case 'millisecond':
+        date.setMilliseconds(value);
+        break;
+      default:
+        return date;
+    }
+  } else {
+    // duration object
+    date[unit + "s"] = value
+  }
+
+  return date;
+}`,
+
+  $getUnitFromDate = `function getUnitFromDate(date, unit) {
+  unit = normalizeMomentJSUnit(unit);
+  if (date instanceof Date) {
+    switch (unit) {
+      case 'year':
+        return date.getFullYear();
+      case 'quarter':
+        return datefns.getQuarter(date);
+      case 'month':
+        return date.getMonth();
+      case 'week':
+        return datefns.getWeek(date);
+      case 'day':
+        return date.getDate();
+      case 'hour':
+        return date.getHours();
+      case 'minute':
+        return date.getMinutes();
+      case 'second':
+        return date.getSeconds();
+      case 'millisecond':
+        return date.getMilliseconds();
+      default:
+        return 0;
+    }
+  }
+
+  return date[unit + "s"]
+}`,
     $out = `$prog`,
+    // would use `false`, but `booleanConstant: not yet supported`.
+    $normalize_helper_exists = "no",
     if ($prog <: contains `dateOrDuration2JSON($_)`) {
-      $out = `$out\n/* Helper function inserted by Grit */\n$dateOrDurationToJSON`
+      $out = `$out\n\n$dateOrDurationToJSON`
     },
     
     if ($prog <: contains `makeDuration($_)`) {
-      $out = `$out\n/* Helper function inserted by Grit */\n$makeDuration`
+      $out = `$out\n\n$makeDuration`
     },
 
     if ($prog <: contains `normalizeMomentJSUnit($_)`) {
-      $out = `$out\n/*Helper function inserted by Grit - normalize moment JS unit specifier */\n$normalizeMomentJSUnit`
+      $out = `$out\n\n$normalizeMomentJSUnit`,
+      $normalize_helper_exists = "yes"
     },
 
     if ($prog <: contains `addDate($_)`) {
@@ -668,7 +752,22 @@ pattern add_helper_functions() {
 
     if ($prog <: contains `subDate($_)`) {
       $out = `$out\n\n$subDate`
-    }
- 
+    },
+
+    if ($prog <: contains `setUnitOnDate($_)`) {
+      $out = `$out\n\n$setUnitOnDate`,
+      if ($normalize_helper_exists == "no") {
+        $out = `$out\n\n$normalizeMomentJSUnit`,
+        $normalize_helper_exists = "yes"
+      }
+    },
+
+    if ($prog <: contains `getUnitFromDate($_)`) {
+      $out = `$out\n\n$getUnitFromDate`,
+      if ($normalize_helper_exists == "no") {
+        $out = `$out\n\n$normalizeMomentJSUnit`,
+        $normalize_helper_exists = "yes"
+      }
+    },
   } => `$out`
 }
