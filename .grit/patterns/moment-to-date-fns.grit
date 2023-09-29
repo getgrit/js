@@ -283,13 +283,8 @@ pattern rewrite_moment_getters_and_setters() {
       }
     } => `$out`,
 
-    `$date.get($unit)` where {
-      !$unit <: string(),
-    } => `getUnitFromDate($date, $unit)`,
-
-    `$date.set($unit, $value)` where {
-      !$unit <: string(),
-    } => `setUnitOnDate($date, $unit, $value)`,
+    `$date.get($unit)` where { !$unit <: string() } => `getUnitFromDate($date, $unit)`,
+    `$date.set($unit, $value)` where { !$unit <: string() } => `setUnitOnDate($date, $unit, $value)`,
 
     `$date.set($unit, $value)` as $exp where {
       $unit <: string(fragment=$setter),
