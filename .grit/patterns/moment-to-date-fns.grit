@@ -3,12 +3,13 @@ language js
 // A call to `add`/`sub` method of a `momentjs` date object.
 pattern moment_arith($date, $method, $count, $specifier) {
   `$date.$method($count, $specifier)` as $arith_exp where {
-    $method <: or { `add`, `subtract` => `sub` },
+    $method <: or { `add` => `addDate`, `subtract` => `subDate` },
     if ($method <: `add`) {
-      $method <: ensure_import_from(source=`"date-fns/add"`),
+      $add = `add`,
+      $add <: ensure_import_from(source=`"date-fns/add"`),
     } else {
-      $method = `sub`,
-      $method <: ensure_import_from(source=`"date-fns/sub"`),
+      $sub = `sub`,
+      $sub <: ensure_import_from(source=`"date-fns/sub"`),
     }
   }
 }
@@ -195,7 +196,7 @@ pattern rewrite_moment_arithmetic() {
 
     moment_arith($date, $method, $count, $specifier) where {
       !$specifier <: string(),
-      $out = `datefns.$method({ [normalizeMomentJSUnit($specifier) + 's']: $count })`,
+      $out = `$method($date, { [normalizeMomentJSUnit($specifier) + 's']: $count })`,
       if ($date <: identifier()) { $out = `$date = $out`},
       if ($date <: not within expression_statement($expression)) {
         $out = `($out)`
@@ -586,6 +587,21 @@ pattern add_helper_functions() {
 
   return null;
 }`,
+
+  $addDate = `function addDate(dateOrDuration, duration) {
+  if (dateOrDuration instanceof Date) {
+    return add(dateOrDuration, duration)
+  } 
+  return durationfns.sum(dateOrDuration, duration)
+}`,
+
+  $subDate = `function subDate(dateOrDuration, duration) {
+  if (dateOrDuration instanceof Date) {
+    return sub(dateOrDuration, duration)
+  }
+  return durationfns.subtract(dateOrDuration, duration)
+}`,
+
     $out = `$prog`,
     if ($prog <: contains `dateOrDuration2JSON($_)`) {
       $out = `$out\n/* Helper function inserted by Grit */\n$dateOrDurationToJSON`
@@ -596,7 +612,16 @@ pattern add_helper_functions() {
     },
 
     if ($prog <: contains `normalizeMomentJSUnit($_)`) {
-      $out = `$out\n$normalizeMomentJSUnit`
+      $out = `$out\n/*Helper function inserted by Grit - normalize moment JS unit specifier */\n$normalizeMomentJSUnit`
+    },
+
+    if ($prog <: contains `addDate($_)`) {
+      $out = `$out\n\n$addDate`
+    },
+
+    if ($prog <: contains `subDate($_)`) {
+      $out = `$out\n\n$subDate`
     }
+ 
   } => `$out`
 }

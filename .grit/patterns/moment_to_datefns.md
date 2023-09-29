@@ -54,12 +54,25 @@ import { sub } from "date-fns/sub";
 let now = new Date()
 let then = new Date("2001-01-01")
 
-now = add(now, { days: 10 })
-then = sub(then, { years: 12 })
-now = sub(now, { seconds: 10 / 1000 }) 
+now = addDate(now, { days: 10 })
+then = subDate(then, { years: 12 })
+now = subDate(now, { seconds: 10 / 1000 }) 
 
+foo((now = subDate(now, { months: 12 })))
 
-foo((now = sub(now, { months: 12 })))
+function addDate(dateOrDuration, duration) {
+  if (dateOrDuration instanceof Date) {
+    return add(dateOrDuration, duration)
+  }
+  return durationfns.sum(dateOrDuration, duration)
+}
+
+function subDate(dateOrDuration, duration) {
+  if (dateOrDuration instanceof Date) {
+    return sub(dateOrDuration, duration)
+  }
+  return durationfns.subtract(dateOrDuration, duration)
+}
 ```
 
 ## Arithmetic operations wherer specifier is not a literal
@@ -81,8 +94,9 @@ let now = (new Date())
 let then = (new Date("2001-01-02"))
 const unit = Math.random() > 0.5 ? "d" : "y"
 
-now = datefns.add({ [normalizeMomentJSUnit(unit) + 's']: 10 })
-now = datefns.sub({ [normalizeMomentJSUnit(unit) + 's']: (then instanceof Date) ? datefns.getDay(then) : (then.days ?? 0) })
+now = addDate(now, { [normalizeMomentJSUnit(unit) + 's']: 10 })
+now = subDate(now, { [normalizeMomentJSUnit(unit) + 's']: (then instanceof Date) ? datefns.getDay(then) : (then.days ?? 0) })
+/*Helper function inserted by Grit - normalize moment JS unit specifier */
 function normalizeMomentJSUnit(fmt) {
   const unitRegexs = [
     [/\b(?:y|years?)\b/, 'year'],
@@ -105,6 +119,21 @@ function normalizeMomentJSUnit(fmt) {
 
   return null;
 }
+
+function addDate(dateOrDuration, duration) {
+  if (dateOrDuration instanceof Date) {
+    return add(dateOrDuration, duration)
+  }
+  return durationfns.sum(dateOrDuration, duration)
+}
+
+function subDate(dateOrDuration, duration) {
+  if (dateOrDuration instanceof Date) {
+    return sub(dateOrDuration, duration)
+  }
+  return durationfns.subtract(dateOrDuration, duration)
+}
+
 ```
 
 ## startOf/endOf
