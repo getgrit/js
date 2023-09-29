@@ -325,6 +325,7 @@ pattern missing_datefns_features() {
 pattern rewrite_misc_methods() {
   or {
     `$d.toJSON()` => `dateOrDuration2JSON($d)`,
+
     `$d.clone()` as $exp where {
       $out = `((d => (d instanceof Date) ? (new Date(d.getTime())) : structuredClone(d) )($d))`,
       if ($d <: identifier()) {
@@ -334,8 +335,21 @@ pattern rewrite_misc_methods() {
         $out = `;\n$out`
       }
     } => `$out`,
+
     `$d.humanize()` => `datefns.formatDuration($d)`,
-    missing_datefns_features()
+
+    missing_datefns_features(),
+
+    `$normalize` where {
+      $normalize <: or {
+        `$_.normalizeUnits`,
+        `normalizeUnits`
+      }
+    } => `normalizeMomentJSUnit`,
+
+    `$isValid` where {
+      $isValid <: or { `$_.isValid`, `isValid` },
+    } => `datefns.isValid`
   }
 }
 
