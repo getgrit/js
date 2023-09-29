@@ -267,13 +267,13 @@ pattern rewrite_moment_getters_and_setters() {
       $unit <: string(fragment=$norm_unit),
       $norm_unit <: or {
         // units in a momentjs getter are case insensitive and allow plural forms
-        r"(?i)years?"  => `years`,
-        r"(?i)months?"  => `months`,
-        r"(?i)dates?"  => `date`,
-        r"(?i)hours?"  => `hours`,
-        r"(?i)minutes?"  => `minutes`,
-        r"(?i)seconds?"  => `seconds`,
-        r"(?i)milliseconds?"  => `milliseconds`,
+        regex_year()  => `years`,
+        regex_month()  => `months`,
+        regex_date()  => `date`,
+        regex_hour()  => `hours`,
+        regex_minute()  => `minutes`,
+        regex_second()  => `seconds`,
+        regex_ms() => `milliseconds`,
       },
       $capitalized_unit = capitalize(string=$norm_unit),
       $date_get_fn = `datefns.get$capitalized_unit`,
@@ -284,13 +284,13 @@ pattern rewrite_moment_getters_and_setters() {
     $unit <: string(fragment=$setter),
     $setter <: or {
       // units in a momentjs getter are case insensitive and allow plural forms
-      r"(?i)years?"  => `setYear`,
-      r"(?i)months?"  => `setMonth`,
-      r"(?i)dates?"  => `setDate`,
-      r"(?i)hours?"  => `setHours`,
-      r"(?i)minutes?"  => `setMinutes`,
-      r"(?i)seconds?"  => `setSeconds`,
-      r"(?i)milliseconds?"  => `setMilliseconds`,
+      regex_year() => `setYear`,
+      regex_month() => `setMonth`,
+      regex_date() => `setDate`,
+      regex_hour() => `setHours`,
+      regex_minute() => `setMinutes`,
+      regex_second() => `setSeconds`,
+      regex_ms()  => `setMilliseconds`,
     },
     $comment = `/* TODO: date-fns objects are immutable, propagate this value appropriately */`,
     $out = `datefns.$setter($date, $value)`,
@@ -404,11 +404,6 @@ pattern rewrite_duration_ctors() {
       // ([source](https://github.com/date-fns/date-fns/blob/817ce9fda6dc11336923f80b45d34bf7c5a57886/src/types.ts#L58))
     } => `({ $literal_unit: $count })`,
 
-    `$duration_ctor($empty)` where {
-      $duration_ctor <: or { `$_.duration`, `duration` },
-      $empty <: . // no arguments
-    } => `({})`,
-
     `$duration_ctor($args)` where {
       $duration_ctor <: or { `$_.duration`, `duration` },
       $out = `({})`,
@@ -416,6 +411,8 @@ pattern rewrite_duration_ctors() {
         $out = `makeDuration($arg)`
       } else if ($args <: [$count, $unit]) { // two args => value and unit
         $out = `({ [normalizeMomentJSUnit($unit)]: $count })`
+      } else {
+        $out = `({})`
       }
     } => `$out`
   }
