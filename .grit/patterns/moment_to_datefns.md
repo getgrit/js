@@ -15,7 +15,7 @@ sequential {
   or {
     // Replace moment-js imports with date-fns
     rewrite_moment_imports(),
-    // Re-write all `const` declarations to `let`.
+    // Re-write all `const` declarations that initialize a moment object to `let`.
     rewrite_const_to_let(),
     // Rewrite all moment-js expressions to equivalent date-fns expressions
     moment_exp_to_datefns_exp(),
@@ -176,7 +176,7 @@ function dateOrDuration2JSON(d) {
 }
 ```
 
-## Get + Set
+## Getters + Setters
 
 ```js
 const a = moment()
@@ -205,8 +205,24 @@ datefns.setMonth(new Date(), 10)
 function f() {
   return new Date()
 }
-/* TODO: moment-js objects are mutable - feed this value through appropriately */
-((d, val) => (d instanceof Date ? d.setDay(val) : (d.days = val)))(f(), (a instanceof Date ? datefns.getDay(a) : (a.days ?? 0)))
+((d, val) => (d instanceof Date ? d.setDay(val) : (d.days = val)))
+  (f(), (a instanceof Date ? datefns.getDay(a) : (a.days ?? 0)))
+```
+
+## Get/Set when specifier is a literal
+
+```js
+const d = moment();
+d.get('yeaRs')
+d.set('M', d.get('y'))
+d.get('ms')
+```
+
+```ts
+let d = new Date();
+d instanceof Date ? datefns.getYear(d) : d.years ?? 0;
+d = datefns.setMonth(d, d instanceof Date ? datefns.getYear(d) : d.years ?? 0);
+d instanceof Date ? datefns.getMilliseconds(d) : d.milliseconds ?? 0;
 ```
 
 ## Miscellaneous methods
@@ -219,6 +235,8 @@ console.log(date.clone())
 
 const duration = moment.duration(10, "d")
 const humanized = duration.humanize()
+console.log(isValid(date))
+date.toObject()
 ```
 
 ```ts
@@ -229,6 +247,16 @@ console.log(((date instanceof Date) ? new Date(date.getTime()) : structuredClone
 
 let duration = { days: 10 };
 const humanized = datefns.formatDuration(duration)
+console.log(datefns.isValid(date));
+((d => ({
+  years: d.getFullYear(),
+  months: d.getMonth(),
+  date: d.getDate(),
+  hours: d.getHours(),
+  minutes: d.getMinutes(),
+  seconds: d.getSeconds(),
+  milliseconds: d.getMilliseconds(),
+}))(date))
 /* Helper function inserted by Grit */
 function dateOrDuration2JSON(d) {
   if (d instanceof Date) {

@@ -34,6 +34,14 @@ pattern should_follow_semi() {
   }
 }
 
+pattern add_leading_semi() {
+  `$exp` where {
+    if ($exp <: should_follow_semi()) { 
+      $exp => `;\n$exp`
+    }
+  }
+}
+
 // A call to `add/sub` where the caller (`this`) is an identifier. eg: foo.add(bar);
 pattern moment_arith_lhs_identifier($date, $method, $count, $specifier) {
   moment_arith($date, $method, $count, $specifier) where {
@@ -48,7 +56,6 @@ pattern moment_const_decl($declaration, $declarators) {
     $varName <: within `$declaration` where { $declaration <: `const $declarators` },
   }
 }
-
 // Matches calls like `moment.startOf('day')`, `moment.startOf('week')`
 pattern moment_set_to_start_or_end_literal($date, $func_type, $unit) {
   `$date.$func_type($specifier)` where {
@@ -76,6 +83,7 @@ pattern second() { string(fragment=r"\b(?:s|seconds?)\b") }
 pattern millisecond() { string(fragment=r"\b(?:ms|milliseconds?)\b") }
 
 pattern regex_year() { r"\b(?:(?i)y|years?)\b" }
+pattern regex_quarter() { r"\b(?:(?i)q|quarters?)\b" }
 pattern regex_month() { r"\b(?:M|(?i)months?)\b" }
 pattern regex_week() { r"\b(?:(?i)w|weeks?)\b" }
 pattern regex_date() { r"\b(?:(?i)d|dates?)\b"  }
@@ -85,7 +93,7 @@ pattern regex_minute() { r"\b(?:(?i)m|minutes?)\b" }
 pattern regex_second() { r"\b(?:(?i)s|seconds?)\b" }
 pattern regex_ms() { r"\b(?:(?i)ms|milliseconds?)\b" }
 
-pattern moment_set_or_get() {
+pattern moment_getter_or_setter() {
   `$d.$accessor($arg)` as $exp where {
     $accessor <: r"(year|month|week|day|hour|minute|second|millisecond)s?"($unit),
     $duration_accessor = join(list=[$unit, "s"], separator=""),
@@ -116,14 +124,10 @@ pattern moment_set_or_get() {
           $out = `((() => ($d instanceof Date) ? ($d = $d.$setfn(val)) : ($d.$duration_accessor = val))(val))`
         }
       } else {
-        $comment = `/* TODO: moment-js objects are mutable - feed this value through appropriately */`,
         $out = `(((d, val) => (d instanceof Date) ? d.$setfn(val) : (d.$duration_accessor = val))($d, $arg))`,
         if ($out <: should_follow_semi()) {
-          $out = `$comment\n$out`
-        } else {
-          $out = `$comment $out`
+          $out = `;\n$out`
         }
-       
       },
 
       if ($out <: should_follow_semi()) {
@@ -134,17 +138,29 @@ pattern moment_set_or_get() {
 }
 
 // convert a moment.js unit specifier to its normal form ("y" -> "year")
-pattern normalize_unit_specifier() {
-  or {
-    year() => `year`,
-    quarter() => `quarter`,
-    month() => `month`,
-    week() => `week`,
-    day() => `day`,
-    hour() => `hour`,
-    minute() => `minute`,
-    second() => `second`,
-    millisecond() => `millisecond`
+pattern normalize_unit_specifier($norm) {
+  `$specifier` where {
+    $return = ``,
+    if ($specifier <: regex_year()) {
+      $return = `year`
+    } else if ($specifier <: regex_quarter()) {
+      $return = `quarter`
+    } else if ($specifier <: regex_month()) {
+      $return = `month`
+    } else if ($specifier <: regex_week()) {
+      $return = `week`
+    } else if ($specifier <: regex_day()) {
+      $return = `day`
+    } else if ($specifier <: regex_hour()) {
+      $return = `hour`
+    } else if ($specifier <: regex_minute()) {
+      $return = `minute`
+    } else if ($specifier <: regex_second()) {
+      $return = `second`
+    } else if ($specifier <: regex_ms()) {
+      $return = `millisecond`
+    },
+    $norm = $return
   }
 }
 
@@ -213,12 +229,7 @@ pattern rewrite_moment_arithmetic() {
 pattern rewrite_moment_getters_and_setters() {
   or {
     `$date.daysInMonth()` => `datefns.getDaysInMonth($date)`,
-    // case: when `d` is a `Moment`:
-    // d.milliseconds() -> datefns.getMilliseconds(date);
-    // d.millisecond() -> datefns.getMilliseconds(date);
-    // case: when `d` is `Duration`.
-    // d.milliseconds() -> duration.milliseconds;
-    moment_set_or_get(),
+    moment_getter_or_setter(),
 
     `$date.$func($arg)` as $exp where {
       $func <: or {
@@ -252,21 +263,26 @@ pattern rewrite_moment_getters_and_setters() {
     `$date.$method()` where { $method <: or { `weeksInYear`, `isoWeeksInYear` } } => `datefns.getISOWeeksInYear($date)`,
 
     // TODO: support `.get(x)` calls when `x` isn't a literal.
-    `$date.get($unit)` where {
-      $unit <: string(fragment=$norm_unit),
-      $norm_unit <: or {
-        // units in a momentjs getter are case insensitive and allow plural forms
-        regex_year()  => `years`,
-        regex_month()  => `months`,
-        regex_date()  => `date`,
-        regex_hour()  => `hours`,
-        regex_minute()  => `minutes`,
-        regex_second()  => `seconds`,
-        regex_ms() => `milliseconds`,
+    `$date.get($unit)` as $exp where {
+      $unit <: string(fragment=$unit_raw),
+      $unit_raw <: normalize_unit_specifier($norm),
+      $capitalized_unit = capitalize(string=$norm),
+      $duration_property = join(list=[$norm, "s"], separator=""),
+      $getfn = `get$capitalized_unit`,
+
+      if ($norm <: or { `millisecond`, `second`, `minute`, `hour` } ) {
+        $getfn = join(list=[$getfn, "s"], separator="")
       },
-      $capitalized_unit = capitalize(string=$norm_unit),
-      $date_get_fn = `datefns.get$capitalized_unit`,
-  } => `((d => (d instanceof Date) ? $date_get_fn(d) : (d.$norm_unit ?? 0))($date))`,
+
+      $out = `((d => (d instanceof Date) ? datefns.$getfn(d) : (d.$duration_property ?? 0))($date))`,
+      if ($date <: identifier()) {
+        $out = `((d instanceof Date) ? datefns.$getfn(d) : (d.$duration_property ?? 0))`
+      },
+
+      if ($exp <: should_follow_semi()) {
+        $out = `;\n$out`
+      }
+  } => `$out`,
 
   // TODO: support `x.set(unit, val)` calls when `unit` isn't a literal.
   `$date.set($unit, $value)` as $exp where {
@@ -285,10 +301,10 @@ pattern rewrite_moment_getters_and_setters() {
     $out = `datefns.$setter($date, $value)`,
     if ($date <: identifier()) {
       $out = `($date = datefns.$setter($date, $value))`
-    } else if ($exp <: should_follow_semi()) {
-      $out = `$comment\n$out`
-    } else {
-      $out = `$comment $out`
+    },
+    
+    if ($exp <: should_follow_semi()) {
+      $out = `;\n$out`
     }
   } => `$out`,
   }
@@ -349,7 +365,37 @@ pattern rewrite_misc_methods() {
 
     `$isValid` where {
       $isValid <: or { `$_.isValid`, `isValid` },
-    } => `datefns.isValid`
+    } => `datefns.isValid`,
+
+    `$d.toArray()` as $exp where {
+      $out = `((d => [
+        d.getFullYear(),
+        d.getMonth(),
+        d.getDate(),
+        d.getHours(),
+        d.getMinutes(),
+        d.getSeconds(),
+        d.getMilliseconds()
+      ])($d))`,
+      if ($exp <: should_follow_semi()) {
+        $out = `;\n$out`
+      }
+    } =>  `$out`,
+      
+
+    `$d.toObject()` as $exp where {
+      $out = `((d => ({
+        years: d.getFullYear(),
+        months: d.getMonth(), 
+        date: d.getDate(),
+        hours: d.getHours(),
+        minutes: d.getMinutes(),
+        seconds: d.getSeconds(),
+        milliseconds: d.getMilliseconds()}))($d))`,
+      if ($exp <: should_follow_semi()) {
+        $out = `;\n$out`
+      }
+    } => `$out`
   }
 }
 
@@ -521,7 +567,6 @@ pattern moment_exp_to_datefns_exp() {
     `$date.daysInMonth()` => `datefns.getDaysInMonth($date)`,
     `$date.toDate()` => `($date)`,
     `$date.toISOString()` => `datefns.formatISO($date)`,
-    `$date.toObject()` => `((d => ({ years: datefns.getYears(d), months: datefns.getMonths(d), hours: datefns.hours(d), minutes: datefns.minutes(d), seconds: datefns.seconds(d), milliseconds: datefns.getMilliseconds(d) }))($date))`,
 
     // Queries:
     rewrite_moment_queries(),
