@@ -401,13 +401,32 @@ pattern rewrite_moment_queries() {
       $compare <: or { `isBefore`, `isAfter` }
     } => `datefns.$compare($date_a, $date_b)`,
 
-    `$date_a.$compare($date_b)` where {
+    `$date_a.$compare($date_b)` as $exp where {
       $compare <: or {
         `isSameOrBefore` => `isBefore`,
-        `isSameOrAfter` => `isAfter`
+        `isSameOrAfter` => `isAfter`,
+      },
+      $date_a <: identifier(),
+      $date_b <: identifier(),
+      // Since `a` and `b` are evaluated twice, it is safer to use an IIFE here for correctness.
+      $out = `(((a, b) => datefns.isEqual(a, b) || datefns.$compare(a, b))($date_a, $date_b))`,
+      $out = `(datefns.isEqual($date_a, $date_b) || datefns.$compare($date_a, $date_b))`,
+      if ($exp <: should_follow_semi()) {
+        $out = `;\n$out`
       }
-    // NOTE: since `a` and `b` are evaluated twice, it is safer to use an IIFE here for correctness.
-    } => `((a, b) => datefns.isEqual(a, b) || datefns.$compare(a, b))($date_a, $date_b)`,
+    } => `$out`,
+
+    `$date_a.$compare($date_b)` as $exp where {
+      $compare <: or {
+        `isSameOrBefore` => `isBefore`,
+        `isSameOrAfter` => `isAfter`,
+      },
+      // Since `a` and `b` are evaluated twice, it is safer to use an IIFE here for correctness.
+      $out = `(((a, b) => datefns.isEqual(a, b) || datefns.$compare(a, b))($date_a, $date_b))`,
+      if ($exp <: should_follow_semi()) {
+        $out = `;\n$out`
+      }
+    } => `$out`,
 
     `$date.isBetween($start_date, $end_date)` => `((date) => datefns.isAfter(date, $start_date) && datefns.isBefore(date, $end_date))($date)`,
     `$date.isLeapYear()` => `datefns.isLeapYear($date)`,

@@ -399,3 +399,28 @@ date.utc()
 let date = new Date()
 /* (Moment#utc) is not supported in date-fns. Prefer using local state when displaying dates */ date;
 ```
+
+### Queries
+
+```js
+const then = moment()
+const now = moment()
+
+console.log(then.isBefore(now))
+console.log(then.isAfter(now))
+console.log(then.isSameOrAfter(now))
+console.log(then.isSameOrBefore(now))
+
+moment().isSameOrBefore(moment())
+```
+
+```ts
+let then = new Date()
+let now = new Date()
+
+console.log(datefns.isBefore(then, now))
+console.log(datefns.isAfter(then, now))
+console.log((datefns.isEqual(then, now) || datefns.isAfter(then, now)))
+console.log((datefns.isEqual(then, now) || datefns.isBefore(then, now)));
+(((a, b) => datefns.isEqual(a, b) || datefns.isBefore(a, b))(new Date(), new Date()))
+```
