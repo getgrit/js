@@ -400,7 +400,7 @@ let date = new Date()
 /* (Moment#utc) is not supported in date-fns. Prefer using local state when displaying dates */ date;
 ```
 
-### Queries
+## Queries
 
 ```js
 const then = moment()
@@ -467,7 +467,7 @@ moment.updateLocale(`en`, {
 /* localization in date-fns uses pure functions. ref : https://date-fns.org/v2.30.0/docs/Locale */ void 0;
 ```
 
-### Formatting dates
+## Formatting dates
 
 ```js
 const fmt = "[Today is] YYYY-MM-DD A"
