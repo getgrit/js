@@ -5,8 +5,7 @@ pattern moment_arith($date, $method, $count, $specifier) {
   `$date.$method($count, $specifier)` as $arith_exp where {
     $method <: or { `add` => `addDate`, `subtract` => `subDate` },
     if ($method <: `add`) {
-      $add = `add`,
-      $add <: ensure_import_from(source=`"date-fns/add"`),
+      $method <: ensure_import_from(source=`"date-fns/add"`),
     } else {
       $sub = `sub`,
       $sub <: ensure_import_from(source=`"date-fns/sub"`),
