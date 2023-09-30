@@ -466,3 +466,15 @@ moment.updateLocale(`en`, {
 ```ts
 /* localization in date-fns uses pure functions. ref : https://date-fns.org/v2.30.0/docs/Locale */ void 0;
 ```
+
+### Formatting dates
+
+```js
+const fmt = "[Today is] YYYY-MM-DD A"
+moment().format(fmt)
+```
+
+```ts
+const fmt = "[Today is] YYYY-MM-DD A"
+datefns.format(new Date(), fmt)
+```

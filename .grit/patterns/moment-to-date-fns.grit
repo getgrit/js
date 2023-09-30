@@ -505,11 +505,15 @@ pattern moment_exp_to_datefns_exp() {
     moment_const_decl($declaration, $declarators) where { $declaration => `let $declarators` },
 
     // parsing:
-    // date-fns uses different format to parse dates.
+    // date-fns v2 uses standard unicode tokens to parse dates, unlike moment-js that
+    // has it's own spec.
     // https://github.com/date-fns/date-fns/blob/main/docs/unicodeTokens.md
     // momentjs: https://momentjs.com/docs/#/parsing/string-format/
-    // TODO: This needs more work, the two format specifications have more differences.
-    `moment($str, $fmt)` => `datefns.parse($str, ($fmt).replace(/D/g, "d").replace(/Y/g, "y").replace(/h/g, "H").replace(/x/g, "T"), new Date())`,
+    // However, date-fns v1 uses moment-js's format specification that allows interpolation,
+    // arbitrary characters.
+    // This migration is written with the assumption that we're porting a 
+    // TODO: parsing
+    `$d.format($fmt)` => `datefns.format($d, $fmt)`,
     
     // construction
     `moment($arg)` as $exp where {
