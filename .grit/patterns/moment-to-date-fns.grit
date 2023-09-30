@@ -208,7 +208,7 @@ pattern rewrite_moment_getters_and_setters() {
         or { `date`, `dates` }  => `Month`,
         or { `day`, `days`, `weekday`, `weekdays` } => `Day`,
         or { `isoWeek`, `isoWeeks` } => `ISOWeek`,
-        or { `week`, `weeks` }  => `Week`
+        or { `week`, `weeks` }  => `Week`,
         `isoWeekday` => `ISODay`,
         `dayOfYear` => `DayOfYear`,
         `weekOfYear` => `WeekOfYear`,
@@ -298,6 +298,37 @@ pattern rewrite_duration_set_and_get() {
   } => `durationfns.$getter($duration)`,
 }
 
+
+// Moment-js has some helpers that mutate the global locale, calendar format, etc.:
+// https://momentjs.com/docs/#/customization/
+// e.g: setting the global locale to 'en-us', or modifying the builtin month names in the `en` locale.
+// In date-fns, modifying month names in an existing locale is possible, but not encouraged;
+// and adding new locales is very different: 
+// 1. https://date-fns.org/v2.30.0/docs/setDefaultOptions
+// 2. https://date-fns.org/v2.30.0/docs/Locale
+// There is no 1:1 feature parity with moment.js, and thus a correct migration
+// is not straight-forward (or even possible without using implementation details of date-fns's locale representation).
+pattern remove_moment_global_customizations() {
+  or {
+    `$fn($_)` as $exp where {
+      $fn <: or {
+        `$_.updateLocale`,
+        `updateLocale`,
+        `$_.locale`,
+        `locale`,
+        `$_.lang`,
+        `lang`,
+        `$_.relativeTimeThreshold`,
+        `relativeTimeThreshold`,
+        `$_.relativeTimeRounding`
+      },
+      $noop = `/* localization in date-fns uses pure functions. ref : https://date-fns.org/v2.30.0/docs/Locale */ void 0`,
+      $out = $noop,
+    } => `$out`,
+    `$_.calendarFormat = $_` => `/* Use pure functions to set default calendar format in date-fns. ref: https://date-fns.org/v2.30.0/docs/Locale */ void 0;`
+  }
+}
+
 // Some stateful features of moment-js are simply missing in date-fns.
 // For example, calling `date.utc(<boolean>)` will set a flag on `date`
 // to use UTC to display a moment instead of the original moment's time.
@@ -306,9 +337,12 @@ pattern rewrite_duration_set_and_get() {
 // turning every `utc()` call into `set`, and every `display` call into a custom
 // overload, but I think that would introduce too much unwanted noise into the user's program.
 pattern missing_datefns_features() {
-  `$date.$method()` where {
-    $method <: or { `utc`, `local` }
-  } => `/* (Moment#$method) is not supported in date-fns. Prefer using local state when displaying dates */ $date`
+  or {
+    `$date.$method()` where {
+      $method <: or { `utc`, `local` }
+    } => `/* (Moment#$method) is not supported in date-fns. Prefer using local state when displaying dates */ $date`,
+    remove_moment_global_customizations()
+  }
 }
 
 pattern rewrite_misc_methods() {

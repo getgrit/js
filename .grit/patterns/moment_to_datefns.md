@@ -425,7 +425,7 @@ console.log((datefns.isEqual(then, now) || datefns.isBefore(then, now)));
 (((a, b) => datefns.isEqual(a, b) || datefns.isBefore(a, b))(new Date(), new Date()))
 ```
 
-## toArray, toObject works even when called on non-date objects
+## toArray and toObject work even when called on non-date objects
 
 ```js
 const o =  { 
@@ -452,5 +452,17 @@ const o =  {
        d.getMinutes(),
        d.getSeconds(),
        d.getMilliseconds()]
-    : d.toArray())))(o)
+    : d.toArray())))(o);
+```
+
+## Global customizations
+
+```js
+moment.updateLocale(`en`, {
+  months: [jan, feb, mar] 
+});
+```
+
+```ts
+/* localization in date-fns uses pure functions. ref : https://date-fns.org/v2.30.0/docs/Locale */ void 0;
 ```
