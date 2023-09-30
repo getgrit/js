@@ -365,7 +365,7 @@ console.log(((date instanceof Date) ? new Date(date.getTime()) : structuredClone
 let duration = { days: 10 };
 const humanized = datefns.formatDuration(duration)
 console.log(datefns.isValid(date));
-((d => ({
+((d => (d instanceof Date ? {
   years: d.getFullYear(),
   months: d.getMonth(),
   date: d.getDate(),
@@ -373,7 +373,7 @@ console.log(datefns.isValid(date));
   minutes: d.getMinutes(),
   seconds: d.getSeconds(),
   milliseconds: d.getMilliseconds(),
-}))(date))
+} : d.toObject()))(date))
 
 function dateOrDuration2JSON(d) {
   if (d instanceof Date) {
@@ -423,4 +423,34 @@ console.log(datefns.isAfter(then, now))
 console.log((datefns.isEqual(then, now) || datefns.isAfter(then, now)))
 console.log((datefns.isEqual(then, now) || datefns.isBefore(then, now)));
 (((a, b) => datefns.isEqual(a, b) || datefns.isBefore(a, b))(new Date(), new Date()))
+```
+
+## toArray, toObject works even when called on non-date objects
+
+```js
+const o =  { 
+  toArray() { 
+    return [1, 2, 3]
+  }
+}
+
+o.toArray()
+```
+
+```ts
+const o =  { 
+  toArray() { 
+    return [1, 2, 3]
+  }
+};
+
+((d => (d instanceof Date 
+    ? [d.getFullYear(),
+       d.getMonth(), 
+       d.getDate(),
+       d.getHours(),
+       d.getMinutes(),
+       d.getSeconds(),
+       d.getMilliseconds()]
+    : d.toArray())))(o)
 ```

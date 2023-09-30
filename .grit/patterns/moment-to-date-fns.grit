@@ -14,34 +14,6 @@ pattern moment_arith($date, $method, $count, $specifier) {
   }
 }
 
-// Matches any statement that should end in a semi-colon to avoid possible ambiguity.
-// For example, in the following snippet:
-// ```
-// let a = foo()
-// (x => print(x))("hello")
-// ```
-// The second "statement" is actually a call expression that is chained to the `foo` call:
-// ```
-// let a = foo()(x => print(x))("hello")
-// ```
-// Hence, the first statement should end in a semi colon to avoid ambiguity.
-pattern should_follow_semi() {
-  `$exp` where {
-    $exp <: after or {
-      expression_statement(),
-      lexical_declaration()
-    }
-  }
-}
-
-pattern add_leading_semi() {
-  `$exp` where {
-    if ($exp <: should_follow_semi()) { 
-      $exp => `;\n$exp`
-    }
-  }
-}
-
 // A call to `add/sub` where the caller (`this`) is an identifier. eg: foo.add(bar);
 pattern moment_arith_lhs_identifier($date, $method, $count, $specifier) {
   moment_arith($date, $method, $count, $specifier) where {
@@ -365,7 +337,7 @@ pattern rewrite_misc_methods() {
     or { `$_.isValid`, `isValid` } => `datefns.isValid`,
 
     `$d.toArray()` as $exp where {
-      $out = `((d => [
+      $out = `((d => (d instanceof Date) ? [
         d.getFullYear(),
         d.getMonth(),
         d.getDate(),
@@ -373,21 +345,21 @@ pattern rewrite_misc_methods() {
         d.getMinutes(),
         d.getSeconds(),
         d.getMilliseconds()
-      ])($d))`,
+      ] : d.toArray())($d))`,
       if ($exp <: should_follow_semi()) {
         $out = `;\n$out`
       }
     } =>  `$out`,
 
     `$d.toObject()` as $exp where {
-      $out = `((d => ({
+      $out = `((d => ((d instanceof Date) ? {
         years: d.getFullYear(),
         months: d.getMonth(), 
         date: d.getDate(),
         hours: d.getHours(),
         minutes: d.getMinutes(),
         seconds: d.getSeconds(),
-        milliseconds: d.getMilliseconds()}))($d))`,
+        milliseconds: d.getMilliseconds()} : d.toObject()))($d))`,
       if ($exp <: should_follow_semi()) {
         $out = `;\n$out`
       }
