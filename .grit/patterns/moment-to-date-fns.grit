@@ -207,11 +207,11 @@ pattern rewrite_moment_getters_and_setters() {
       $func <: or {
         or { `date`, `dates` }  => `Month`,
         or { `day`, `days`, `weekday`, `weekdays` } => `Day`,
+        or { `isoWeek`, `isoWeeks` } => `ISOWeek`,
+        or { `week`, `weeks` }  => `Week`
         `isoWeekday` => `ISODay`,
         `dayOfYear` => `DayOfYear`,
         `weekOfYear` => `WeekOfYear`,
-        r"isoWeeks?" => `ISOWeek`,
-        r"weeks?" => `Week`
       },
 
       $comment = `/*TODO: date-fns objects are immutable, feed this value back through properly*/`,
