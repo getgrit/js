@@ -453,7 +453,6 @@ pattern rewrite_duration_ctors() {
     `$duration_ctor($count, $literal_unit)` where {
       // could be moment.duration(...) (default import) or duration(..)
       $duration_ctor <: or { `$_.duration`, `duration` },
-      // TODO: handle the case where the unit is not a literal (or a compile time constant).
       $literal_unit <: or {
         year() => `years`,
         month() => `months`,
