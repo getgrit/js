@@ -136,6 +136,9 @@ const originalModule = {
 };
 const currentWorkerId = JEST_WORKER_ID;
 
+test.skip("test.skip should be processed", () => {
+  expect('value').toBe('value');
+});
 it("should complete asynchronously", done => {
   expect('value').toBe('value');
   done();
@@ -155,6 +158,10 @@ it("should complete asynchronously", function(done) {
 it("should complete asynchronously", function(finish) {
   expect('value').toBe('value');
   finish();
+});
+test.skip("test.skip with done should be processed", (done) => {
+  expect('value').toBe('value');
+  done()
 });
 it("should be ignored", () => {
   expect('value').toBe('value');
@@ -178,13 +185,11 @@ beforeEach(() => {
 ```
 
 ```javascript
-import { vi, it, expect, beforeAll, beforeEach, afterAll, afterEach } from 'vitest';
-
-
+import { vi, test, expect, it, beforeAll, beforeEach, afterAll, afterEach } from 'vitest';
 
 vi.mock('./some-path', () => ({ 
-            default: 'hello' 
-          }))
+              default: 'hello' 
+            }))
 vi.mock('./some-path', () => ({ default: 'value' }));
 vi.mock('./some-path', () => function() { return 'hello'; });
 
@@ -197,6 +202,9 @@ const originalModule = {
 };
 const currentWorkerId = VITEST_POOL_ID;
 
+test.skip("test.skip should be processed", () => {
+  expect('value').toBe('value');
+});
 it("should complete asynchronously", () => new Promise(done => {
   expect('value').toBe('value');
   done();
@@ -216,6 +224,10 @@ it("should complete asynchronously", () => new Promise(function(done) {
 it("should complete asynchronously", () => new Promise(function(finish) {
   expect('value').toBe('value');
   finish();
+}));
+test.skip("test.skip with done should be processed", () => new Promise((done) => {
+  expect('value').toBe('value');
+  done()
 }));
 it("should be ignored", () => {
   expect('value').toBe('value');
