@@ -2,7 +2,7 @@
 title: Jest to Vitest
 ---
 
-Convert Jest test to Vitest.
+Convert Jest tests to Vitest
 
 tags: #migration, #js
 
@@ -10,140 +10,269 @@ tags: #migration, #js
 engine marzano(0.1)
 language js
 
-pattern updated_imports() {
-  call_expression($function) where {
-    $function <: or {
-      js"test",
-      js"expect",
-      js"describe",
-      js"it",
-      js"beforeEach",
-      js"afterEach",
-      js"beforeAll",
-      js"afterAll"
+pattern adjust_imports() {
+  $body where {
+    $body <: or {
+      `$sym.$_($_)`,
+      `$sym($_)`,
     } where {
+      $program <: program($statements),
+      $mocha = `'mocha'`,
+      $sym <: or {
+        `test`,
+        `expect`,
+        `describe`,
+        `it`,
+        `beforeEach`,
+        `afterEach`,
+        `beforeAll`,
+        `afterAll`,
+        `jest`,
+        `vi`
+      } where {
+        // Filter out methods which are imported from mocha
+        $sym <: not imported_from(from = $mocha),
+        // Filter out methods which are imported as default from any module
+        $statements <: not contains or {
+          `import $sym from $_`,
+        }
+      },
       $source = `'vitest'`,
-      $function <: ensure_import_from($source),
       $vi = `vi`,
-      $vi <: ensure_import_from($source)
+      if ($sym <: not `jest`) {
+        $sym <: ensure_import_from($source)
+      } else {
+        $vi <: ensure_import_from($source)
+      }
     }
   }
 }
 
-or {
-  // Imports
-  updated_imports(),
-  `import $_ from 'jest'` => .,
+pattern main_migration() {
+  file($body) where {
+    $body <: contains bubble or {
+      `JEST_WORKER_ID` => `VITEST_POOL_ID`,
 
-  `jest.requireActual($module)` => `await vi.importActual($module)`,
+      // Imports
+      `import $_ from 'jest'` => .,
 
-  `JEST_WORKER_ID` => `VITEST_POOL_ID`,
+      // MODLE MOCKS
+      // default literal mocking
+      `jest.mock($module, $mockImplementation)` where {
+        $mockImplementation <: arrow_function($body) where {
+            // still waiting for default mock confirmation
+            $body <: literal_value() => `({ 
+              default: $body 
+            })`
+          }
+        } => `vi.mock($module, $mockImplementation)`,
+      // TODO: Handle more jest.mock cases
 
-  // module mocks
-  `jest.mock($module, $mockImplementation)` where { 
-    $mockImplementation <: arrow_function($body) where { 
-      $body <: literal_value() => `({ 
-        default: $body 
-      })`
-    }
-  } => `vi.mock($module, $mockImplementation)`,
-  `jest.mock` => `vi.mock`,
+      `...jest.requireActual($module)` => `...(await vi.importActual($module))`,
+      `jest.requireActual($module)` => `await vi.importActual($module)`,
+      `jest.$sym` => `vi.$sym`,
 
-  // done callback
-  `$sym($description, $callback)` where {
-    and {
-        $sym <: contains {
-            or { `it`, `test`}
-        },
-        $callback <: arrow_function($body, $parameters, $parameter) where {
+      // done callback
+      or {
+        `$sym.$_($description, $callback)`,
+        `$sym($description, $callback)`,
+      } where {
+        $sym <: or { `it`, `test` },
+        or {
+          $callback <: arrow_function($body, $parameters, $parameter) where {
             or {
-                // For matching `done => { ... }`
-                ! $parameter <: .,
-                // For matching `(done) => { ... }`
-                $parameters <: contains r"\w+",
+              // For matching `xxx => { ... }` .i.e without `(...)` and all names of first arg
+              ! $parameter <: .,
+              // For matching `(xxx) => { ... }` .i.e with `(...)` and all names of first arg
+              $parameters <: contains r"[^()]+",
+              // All `() => { ... }` are ignored
             }
-        } => `() => new Promise($callback)`,
-    }
-  } => `$sym($description, $callback)`,
-
-  // beforeAll, beforeEach, afterAll, afterEach hooks
-  `$sym($callback)` where {
-    and {
-      $sym <: contains {
-            or { `beforeAll`, `beforeEach`, `afterAll`, `afterEach`}
+          } => `() => new Promise($callback)`,
+          $callback <: function($body, $parameters) where {
+            // For matching `function (xxx) { ... }` .i.e all names of first arg
+            $parameters <: contains r"[^()]+",
+            // All `function() { ... }` are ignored
+          } => `() => new Promise($callback)`,
         },
-      $callback <: arrow_function($body, $parameters, $parameter) where {
-        $body <: call_expression() => `{ $body }`
-      }
-    }
-  } => `$sym($callback)`,
-  
+      },
+
+      // beforeAll, beforeEach, afterAll, afterEach hooks
+      `$sym($callback)` where {
+        and {
+          $sym <: or { `beforeAll`, `beforeEach`, `afterAll`, `afterEach` },
+          or {
+            $callback <: arrow_function($body, $parameters, $parameter) where {
+              $body <: call_expression() => `{ $body }`
+            },
+            // when `callback` is already a function, we don't need to do the migration
+          }
+        }
+      },
+    },
+  },
+}
+
+sequential {
+  maybe main_migration(),
+  maybe adjust_imports(),
 }
 ```
 
 ## Convert assertions
 
 ```javascript
-import { runCLI } from 'jest';
-jest.mock("./some-path", () => "hello");
-jest.mock("./some-path", () => {
-  return {
-    name: 'hello'
-  }
-});
-const { cloneDeep } = jest.requireActual("lodash/cloneDeep");
-it("is 1", done => {
-  expect("1").toBe("1")
-  done()
-});
-test("is 1", done => {
-  expect("1").toBe("1");
+import { runCLI, mock, requireActual } from 'jest';
+
+jest.mock('./some-path', () => 'hello');
+jest.mock('./some-path', () => ({ default: 'value' }));
+jest.mock('./some-path', () => function() { return 'hello'; });
+
+const { cloneDeep } = jest.requireActual('lodash/cloneDeep');
+const { map } = jest.requireActual('lodash/map');
+const { filter } = jest.requireActual('lodash/filter');
+const originalModule = {
+  ...jest.requireActual('../foo-bar-baz'),
+  test: 1
+};
+const currentWorkerId = JEST_WORKER_ID;
+
+it("should complete asynchronously", done => {
+  expect('value').toBe('value');
   done();
 });
-test("is 1", (done) => {
-  expect("1").toBe("1");
+it("should complete asynchronously", finish => {
+  expect('value').toBe('value');
+  finish();
+});
+it("should complete asynchronously", (done) => {
+  expect('value').toBe('value');
   done();
 });
+it("should complete asynchronously", function(done) {
+  expect('value').toBe('value');
+  done();
+});
+it("should complete asynchronously", function(finish) {
+  expect('value').toBe('value');
+  finish();
+});
+it("should be ignored", () => {
+  expect('value').toBe('value');
+});
+it("should be ignored", function() {
+  expect('value').toBe('value');
+});
+
 beforeAll(() => setActivePinia(createTestingPinia()));
 beforeEach(() => setActivePinia(createTestingPinia()));
 afterAll(() => setActivePinia(createTestingPinia()));
 afterEach(() => setActivePinia(createTestingPinia()));
 beforeAll(async () => {
-  await expect("1").toBe("1");
-  await expect("2").toBe("2");
-})
+  await expect('1').toBe('1');
+  await expect('2').toBe('2');
+});
+beforeEach(() => {
+  initializeApp();
+  setDefaultUser();
+});
 ```
 
 ```javascript
-import { it, vi, expect, test, beforeAll, beforeEach, afterAll, afterEach } from "vitest";
+import { vi, it, expect, beforeAll, beforeEach, afterAll, afterEach } from 'vitest';
 
-vi.mock("./some-path", () => ({
-   default: "hello",
-}));
-vi.mock("./some-path", () => {
-  return {
-    name: 'hello'
-  }
-});
+
+
+vi.mock('./some-path', () => ({ 
+            default: 'hello' 
+          }))
+vi.mock('./some-path', () => ({ default: 'value' }));
+vi.mock('./some-path', () => function() { return 'hello'; });
+
 const { cloneDeep } = await vi.importActual('lodash/cloneDeep');
-it("is 1", () => new Promise(done => {
-    expect("1").toBe("1");
-    done();
+const { map } = await vi.importActual('lodash/map');
+const { filter } = await vi.importActual('lodash/filter');
+const originalModule = {
+  ...(await vi.importActual('../foo-bar-baz')),
+  test: 1
+};
+const currentWorkerId = VITEST_POOL_ID;
+
+it("should complete asynchronously", () => new Promise(done => {
+  expect('value').toBe('value');
+  done();
 }));
-test("is 1", () => new Promise(done => {
-    expect("1").toBe("1");
-    done();
+it("should complete asynchronously", () => new Promise(finish => {
+  expect('value').toBe('value');
+  finish();
 }));
-test("is 1", () => new Promise(done => {
-    expect("1").toBe("1");
-    done();
+it("should complete asynchronously", () => new Promise((done) => {
+  expect('value').toBe('value');
+  done();
 }));
+it("should complete asynchronously", () => new Promise(function(done) {
+  expect('value').toBe('value');
+  done();
+}));
+it("should complete asynchronously", () => new Promise(function(finish) {
+  expect('value').toBe('value');
+  finish();
+}));
+it("should be ignored", () => {
+  expect('value').toBe('value');
+});
+it("should be ignored", function() {
+  expect('value').toBe('value');
+});
+
 beforeAll(() => { setActivePinia(createTestingPinia()) });
 beforeEach(() => { setActivePinia(createTestingPinia()) });
 afterAll(() => { setActivePinia(createTestingPinia()) });
 afterEach(() => { setActivePinia(createTestingPinia()) });
 beforeAll(async () => {
-  await expect("1").toBe("1");
-  await expect("2").toBe("2");
+  await expect('1').toBe('1');
+  await expect('2').toBe('2');
+});
+beforeEach(() => {
+  initializeApp();
+  setDefaultUser();
+});
+```
+
+## Import vi even with just vi.mock
+
+```javascript
+jest.mock('./some-path', () => ({ default: 'value' }));
+```
+
+```javascript
+import { vi } from 'vitest';
+
+vi.mock('./some-path', () => ({ default: 'value' }));
+```
+
+## Do not import methods which are imported from mocha/expect
+```javascript
+import expect from 'expect'
+import { describe, test, before, beforeEach, after } from 'mocha'
+
+describe('Repository component', () => {
+  beforeEach(() => { })
+  it("should complete asynchronously", () => {
+    expect('value').toBe('value');
+  })
+})
+```
+
+```javascript
+import { it } from 'vitest';
+
+import expect from 'expect'
+import { describe, test, before, beforeEach, after } from 'mocha'
+
+describe('Repository component', () => {
+  beforeEach(() => { })
+  it("should complete asynchronously", () => {
+    expect('value').toBe('value');
+  })
 })
 ```
