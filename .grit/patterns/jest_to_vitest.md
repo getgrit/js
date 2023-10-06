@@ -182,6 +182,10 @@ beforeEach(() => {
   initializeApp();
   setDefaultUser();
 });
+afterEach(function() {
+  initializeApp();
+  setDefaultUser();
+});
 ```
 
 ```javascript
@@ -245,6 +249,10 @@ beforeAll(async () => {
   await expect('2').toBe('2');
 });
 beforeEach(() => {
+  initializeApp();
+  setDefaultUser();
+});
+afterEach(function() {
   initializeApp();
   setDefaultUser();
 });
