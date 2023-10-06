@@ -61,7 +61,8 @@ pattern insert_imports() {
         $shebang = "",
         $GLOBAL_IMPORTED_SOURCES <: some process_one_source($p, $all_imports),
         if ($all_imports <: not []) {
-            $p <: maybe contains bubble($shebang) r"^#!(.*)"($sb) as $curr where {
+            // Try to find a shebang and insert after that
+            $p <: maybe contains bubble($shebang) hash_bang_line() as $curr where {
                 $shebang = $curr
             },
             if ($shebang <: not .) {
