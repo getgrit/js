@@ -33,11 +33,9 @@ pattern openrouter_completions() {
     }
 }
 
-sequential {
-  or { openrouter_fix_init(), openrouter_completions() },
-  // run until we converge
+or {
   openrouter_fix_init(),
-  openrouter_fix_init()
+  openrouter_completions()
 }
 ```
 
