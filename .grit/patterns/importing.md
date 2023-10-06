@@ -65,6 +65,7 @@ fetch();
 ```
 
 ## Ignores Shebang
+
 ```js
 #!/usr/bin/env node
 
@@ -78,7 +79,7 @@ console.log(orderBy([1, 2, 3]));
 
 console.log(v4());
 
-fetch()
+fetch();
 ```
 
 ```js
@@ -94,7 +95,7 @@ console.log(orderBy([1, 2, 3]));
 
 console.log(v4());
 
-fetch()
+fetch();
 ```
 
 ## Ensures a React import
@@ -102,12 +103,15 @@ fetch()
 From https://docs.grit.io/guides/imports:
 
 ```typescript
+import _ from 'lodash';
+
 class Button extends Component {
   // ...
 }
 ```
 
 ```typescript
+import _ from 'lodash';
 import { Component } from 'React';
 
 class Button extends Component {
