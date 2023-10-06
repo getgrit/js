@@ -79,18 +79,20 @@ pattern main_migration() {
       } where {
         $sym <: or { `it`, `test` },
         or {
-          $callback <: arrow_function($body, $parameters, $parameter) where {
-            or {
-              // For matching `xxx => { ... }` .i.e without `(...)` and all names of first arg
-              ! $parameter <: .,
-              // For matching `(xxx) => { ... }` .i.e with `(...)` and all names of first arg
-              $parameters <: contains r"[^()]+",
-              // All `() => { ... }` are ignored
-            }
+          $callback <: or {
+            // For matching `(xxx) => { ... }`
+            `($parameters) => { $_ }` where {
+              $parameters <: [$one, ...]
+            },
+            // For matching `xxx => { ... }`
+            `$parameter => { $_ }` where {
+              $parameter <: not .
+            },
+            // All `() => { ... }` are ignored
           } => `() => new Promise($callback)`,
-          $callback <: function($body, $parameters) where {
-            // For matching `function (xxx) { ... }` .i.e all names of first arg
-            $parameters <: contains r"[^()]+",
+          $callback <: `function($parameters) { $_ }` where {
+            // For matching `function (xxx) { ... }`
+            $parameters <: [$one, ...]
             // All `function() { ... }` are ignored
           } => `() => new Promise($callback)`,
         },
@@ -101,7 +103,7 @@ pattern main_migration() {
         and {
           $sym <: or { `beforeAll`, `beforeEach`, `afterAll`, `afterEach` },
           or {
-            $callback <: arrow_function($body, $parameters, $parameter) where {
+            $callback <: arrow_function($body) where {
               $body <: call_expression() => `{ $body }`
             },
             // when `callback` is already a function, we don't need to do the migration
