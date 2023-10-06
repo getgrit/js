@@ -69,7 +69,7 @@ pattern insert_imports() {
         if ($all_imports <: not []) {
             $p <: maybe contains bubble($shebang) get_shebang($shebang),
             if ($shebang <: not .) {
-                $shebang => `$shebang\n$all_imports`,
+              $shebang += `\n$all_imports`
             } else {
                 $p => `$all_imports\n$p`
             }
