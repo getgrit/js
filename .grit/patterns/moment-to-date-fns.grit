@@ -20,10 +20,44 @@ pattern moment_arith_lhs_identifier($date, $method, $count, $specifier) {
   }
 }
 
-// A `const` variable declaration that initializes a moment date object
+// Any call expression that returns a moment.js date or duration object.
+pattern exp_returns_moment($exp) {
+  `$fn()` as $exp where {
+    $fn <: or {
+      `moment`,
+      `$_.duration`,
+      `$_.clone`,
+      `$_.add`,
+      `$_.subtract`,
+      `$_.startOf`,
+      `$_.endOf`,
+      `$m.$min_or_max` where {
+        !$m <: `Math`,
+        $min_or_max <: or { `min`, `max` }
+      },
+    } 
+  }
+}
+
+// A variable declarator that declares a moment.js Date or Duration object.
+pattern moment_var_decl($var_name) {
+  variable_declarator(name=$var_name, $value) where {
+    $value <: exp_returns_moment(),
+    $var_name <: identifier()
+  }
+}
+
+// collect all identifiers that are declared as a moment.js date or duration
+pattern collect_moment_identifier_decls($id_list) {
+  moment_var_decl(var_name=$name) where {
+    $id_list += $name
+  }
+}
+
+// A `const` variable declaration that initializes a moment date or duration object
 pattern moment_const_decl($declaration, $declarators) {
-  `$varName = $moment()` where {
-    $moment <: or { `moment`, `$_.duration`, `$_.clone` },
+  `$varName = $moment` where {
+    $moment <: exp_returns_moment(),
     $varName <: within `$declaration` where { $declaration <: `const $declarators` },
   }
 }
@@ -346,10 +380,36 @@ pattern missing_datefns_features() {
   }
 }
 
+// Rewrite .toJSON and .toArray calls
+pattern rewrite_to_json_or_array($moment_ids) {
+  or {
+    `$d.toJSON()` as $exp where {
+      $out = `/* if "$d" is a moment-js object, replace with date.toJSON() call */ $exp`,
+      if ($moment_ids <: contains $d) {
+        $out = `dateOrDuration2JSON($d)`
+      }
+    } => `$out`,
+
+    `$d.toArray()` as $exp where {
+      $out = `/* if "$d" is a moment-js object, convert it to an array */ $exp`,
+      if ($moment_ids <: contains $d) {
+        $out = `dateOrDuration2Array($d)`
+      }
+    } => `$out`
+  }
+}
+
+// rewrite `$d.toJSON()` to an appropriate JSON conversion call.
+pattern rewrite_conversion_calls() {
+  program($statements) where {
+    $id_list = [],
+    $statements <: maybe contains collect_moment_identifier_decls($id_list),
+    $statements <: maybe contains bubble($id_list) rewrite_to_json_or_array(moment_ids=$id_list),
+  } 
+}
+
 pattern rewrite_misc_methods() {
   or {
-    `$d.toJSON()` => `dateOrDuration2JSON($d)`,
-
     `$d.clone()` as $exp where {
       $out = `((d => (d instanceof Date) ? (new Date(d.getTime())) : structuredClone(d) )($d))`,
       if ($d <: identifier()) {
@@ -370,21 +430,6 @@ pattern rewrite_misc_methods() {
     } => `normalizeMomentJSUnit`,
 
     or { `$_.isValid`, `isValid` } => `datefns.isValid`,
-
-    `$d.toArray()` as $exp where {
-      $out = `((d => (d instanceof Date) ? [
-        d.getFullYear(),
-        d.getMonth(),
-        d.getDate(),
-        d.getHours(),
-        d.getMinutes(),
-        d.getSeconds(),
-        d.getMilliseconds()
-      ] : d.toArray())($d))`,
-      if ($exp <: should_follow_semi()) {
-        $out = `;\n$out`
-      }
-    } =>  `$out`,
 
     `$d.toObject()` as $exp where {
       $out = `((d => ((d instanceof Date) ? {
@@ -477,7 +522,7 @@ pattern rewrite_duration_ctors() {
     `$duration_ctor($args)` where {
       $duration_ctor <: or { `$_.duration`, `duration` },
       $out = `({})`,
-      if ($args <: [$arg]) { // one argument => string or object 
+      if ($args <: [$arg]) { // one argument => string or object
         $out = `makeDuration($arg)`
       } else if ($args <: [$count, $unit]) { // two args => value and unit
         $out = `({ [normalizeMomentJSUnit($unit)]: $count })`
@@ -492,17 +537,9 @@ pattern rewrite_const_to_let() {
   moment_const_decl($declaration, $declarators) where { $declaration => `let $declarators` }
 }
 
-pattern rewrite_moment_imports() {
-  or {
-    `const $id = require("moment")` => `const datefns = require("date-fns");\nconst durationfns = require("duration-fns")`,
-    // TODO: only add a default import of `duration-fns` if neccessary.
-    `import $_ from "moment"` => `import datefns from "date-fns";\n import durationfns from "duration-fns";`,
-  }
-}
-
-
 pattern moment_exp_to_datefns_exp() {
   or {
+    rewrite_conversion_calls(),
     moment_const_decl($declaration, $declarators) where { $declaration => `let $declarators` },
 
     // parsing:
@@ -511,10 +548,7 @@ pattern moment_exp_to_datefns_exp() {
     // https://github.com/date-fns/date-fns/blob/main/docs/unicodeTokens.md
     // momentjs: https://momentjs.com/docs/#/parsing/string-format/
     // However, date-fns v1 uses moment-js's format specification that allows interpolation,
-    // arbitrary characters.
-    // This migration is written with the assumption that we're porting a 
-    // TODO: parsing
-    `$d.format($fmt)` => `datefns.format($d, $fmt)`,
+    `$d.format($fmt)` => `/* TODO: format specifiers aren't compatible between moment.js and date-fns. Re-write this.*/ moment($d).format($d, $fmt)`,
     
     // construction
     `moment($arg)` as $exp where {
@@ -600,6 +634,19 @@ pattern moment_exp_to_datefns_exp() {
   }
 }
 
+pattern add_datefns_imports() {
+  program() as $prog where {
+    $out = `$prog`,
+    if ($prog <: contains `datefns`) {
+      $out = `import datefns from "date-fns";\n$out`
+    },
+    
+    if ($prog <: contains `durationfns`) {
+      $out = `import durationfns from "duration-fns";\n$out`
+    },
+  } => `$out`
+}
+
 pattern add_helper_functions() {
   program() as $prog where {
     $dateOrDurationToJSON = `function dateOrDuration2JSON(d) {
@@ -653,7 +700,7 @@ pattern add_helper_functions() {
   $addDate = `function addDate(dateOrDuration, duration) {
   if (dateOrDuration instanceof Date) {
     return add(dateOrDuration, duration)
-  } 
+  }
   return durationfns.sum(dateOrDuration, duration)
 }`,
 
@@ -740,12 +787,35 @@ pattern add_helper_functions() {
 
   return date[unit + "s"]
 }`,
+
+    $dateOrDuration2Array = `function dateOrDuration2Array(d) {
+      if (d instanceof Date) {
+        return [
+          d.getFullYear(),
+          d.getMonth(), 
+          d.getDate(),
+          d.getHours(),
+          d.getMinutes(),
+          d.getSeconds(),
+          d.getMilliseconds()
+        ]
+      } else if (durationfns.UNITS.some(u => Object.hasOwnProperty.call(d, u))) {
+        return durationfns.UNITS.map(u => d[u] ?? 0)
+      }
+
+      return d.toArray()
+    }`,
     $out = `$prog`,
     // would use `false`, but `booleanConstant: not yet supported`.
     $normalize_helper_exists = "no",
     if ($prog <: contains `dateOrDuration2JSON($_)`) {
       $out = `$out\n\n$dateOrDurationToJSON`
     },
+
+    if ($prog <: contains `dateOrDuration2Array($_)`) {
+      $out = `$out\n\n$dateOrDuration2Array`
+    },
+    
     
     if ($prog <: contains `makeDuration($_)`) {
       $out = `$out\n\n$makeDuration`
@@ -779,5 +849,6 @@ pattern add_helper_functions() {
         $normalize_helper_exists = "yes"
       }
     },
+
   } => `$out`
 }

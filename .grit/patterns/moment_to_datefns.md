@@ -13,14 +13,13 @@ language js
 
 sequential {
   or {
-    // Replace moment-js imports with date-fns
-    rewrite_moment_imports(),
     // Re-write all `const` declarations that initialize a moment object to `let`.
     rewrite_const_to_let(),
     // Rewrite all moment-js expressions to equivalent date-fns expressions
     moment_exp_to_datefns_exp(),
   },
-  add_helper_functions()
+  add_helper_functions(),
+  add_datefns_imports()
 }
 ```
 
@@ -48,6 +47,7 @@ foo(now.subtract(12, "month"))
 ```
 
 ```ts
+import durationfns from "duration-fns";
 import { add } from "date-fns/add";
 import { sub } from "date-fns/sub";
 
@@ -87,6 +87,8 @@ now.subtract(then.days(), unit)
 ```
 
 ```ts
+import durationfns from "duration-fns";
+import datefns from "date-fns";
 import { add } from "date-fns/add";
 import { sub } from "date-fns/sub";
 
@@ -146,6 +148,7 @@ console.log(moment().startOf('s'))
 ```
 
 ```ts
+import datefns from "date-fns";
 date = datefns.setWeek(date, datefns.startOfWeek(date))
 date = datefns.setWeek(date, datefns.startOfWeek(date))
 date = datefns.setSeconds(date, datefns.endOfSecond(date));
@@ -162,6 +165,8 @@ duration.toJSON()
 ```
 
 ```ts
+import durationfns from "duration-fns";
+import datefns from "date-fns";
 let duration = ({ days: 10 })
 dateOrDuration2JSON(duration)
 
@@ -173,6 +178,82 @@ function dateOrDuration2JSON(d) {
   }
 
   return d.toJSON()
+}
+```
+
+## `toArray` calls
+
+```js
+const date = moment()
+date.toArray()
+```
+
+```ts
+import durationfns from "duration-fns";
+let date = new Date()
+dateOrDuration2Array(date);
+
+function dateOrDuration2Array(d) {
+  if (d instanceof Date) {
+    return [
+      d.getFullYear(),
+      d.getMonth(),
+      d.getDate(),
+      d.getHours(),
+      d.getMinutes(),
+      d.getSeconds(),
+      d.getMilliseconds(),
+    ];
+  } else if (durationfns.UNITS.some((u) => Object.hasOwnProperty.call(d, u))) {
+    return durationfns.UNITS.map((u) => d[u] ?? 0);
+  }
+
+  return d.toArray();
+}
+```
+
+## `toJSON` and `toArray` calls on non-moment objects
+
+```js
+// moment-js objects
+const date = moment(), duration = moment.duration(1, "d")
+
+// non-moment objects
+const x = f(), y = g()
+
+date.toJSON()
+duration.toJSON()
+x.toJSON()
+y.toJSON()
+y.toArray()
+```
+
+```ts
+import durationfns from "duration-fns";
+import datefns from "date-fns";
+// moment-js objects
+let date = new Date(),
+  duration = { days: 1 };
+
+// non-moment objects
+const x = f(), y = g()
+
+dateOrDuration2JSON(date);
+dateOrDuration2JSON(duration);
+/* if "x" is a moment-js object, replace with date.toJSON() call */ x.toJSON();
+/* if "y" is a moment-js object, replace with date.toJSON() call */ y.toJSON();
+/* if "y" is a moment-js object, convert it to an array */ y.toArray();
+
+function dateOrDuration2JSON(d) {
+  if (d instanceof Date) {
+    return datefns.formatISO(d);
+  } else if (
+    durationfns.UNITS.some((unit) => Object.hasOwnProperty.call(d, unit))
+  ) {
+    return durationfns.toJSON(d);
+  }
+
+  return d.toJSON();
 }
 ```
 
@@ -193,6 +274,7 @@ f().days(a.days())
 ```
 
 ```ts
+import datefns from "date-fns";
 let a = new Date()
 let b = new Date();
 (a instanceof Date ? (a = a.setSeconds(30)) : (a.seconds = 30)).valueOf() === new Date().setSeconds(30);
@@ -218,6 +300,7 @@ d.get('ms')
 ```
 
 ```ts
+import datefns from "date-fns";
 let d = new Date();
 d instanceof Date ? datefns.getYear(d) : d.years ?? 0;
 d = datefns.setMonth(d, d instanceof Date ? datefns.getYear(d) : d.years ?? 0);
@@ -235,7 +318,7 @@ moment.normalizeUnits("m")
 ```
 
 ```ts
-let date = new Date() 
+import datefns from "date-fns";let date = new Date() 
 const unit = Math.random() > 0.5 ? "year" : "month"
 getUnitFromDate(date, unit)
 setUnitOnDate(date, unit, 10)
@@ -357,6 +440,8 @@ date.toObject()
 ```
 
 ```ts
+import durationfns from "duration-fns";
+import datefns from "date-fns";
 let date = new Date()
 
 console.log(dateOrDuration2JSON(date))
@@ -415,6 +500,7 @@ moment().isSameOrBefore(moment())
 ```
 
 ```ts
+import datefns from "date-fns";
 let then = new Date()
 let now = new Date()
 
@@ -425,10 +511,10 @@ console.log((datefns.isEqual(then, now) || datefns.isBefore(then, now)));
 (((a, b) => datefns.isEqual(a, b) || datefns.isBefore(a, b))(new Date(), new Date()))
 ```
 
-## toArray and toObject work even when called on non-date objects
+## toArray works even when called on non-date objects
 
 ```js
-const o =  { 
+const o =  {
   toArray() { 
     return [1, 2, 3]
   }
@@ -444,15 +530,7 @@ const o =  {
   }
 };
 
-((d => (d instanceof Date 
-    ? [d.getFullYear(),
-       d.getMonth(), 
-       d.getDate(),
-       d.getHours(),
-       d.getMinutes(),
-       d.getSeconds(),
-       d.getMilliseconds()]
-    : d.toArray())))(o);
+/* if "o" is a moment-js object, convert it to an array */ o.toArray()
 ```
 
 ## Global customizations
@@ -476,5 +554,6 @@ moment().format(fmt)
 
 ```ts
 const fmt = "[Today is] YYYY-MM-DD A"
-datefns.format(new Date(), fmt)
+/* TODO: format specifiers aren't compatible between moment.js and date-fns. Re-write this.*/moment(
+  new Date()).format(new Date(), fmt);
 ```
