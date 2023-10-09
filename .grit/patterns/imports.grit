@@ -62,10 +62,13 @@ pattern insert_imports() {
         if ($all_imports <: not []) {
             or {
               // Try to find a shebang and insert after that
-              $p <: contains hash_bang_line() += `\n$all_imports`,
-              // Find the first statement
+              $p <: program(hash_bang=$h) where {
+                $h <: hash_bang_line() += `\n$all_imports`
+              },
+              // Find the import statement
               $p <: program($statements) where {
-                $statements <: [$anchor, ...],
+                $statements <: some $anchor where { $anchor <: import_clause() },
+                // $statements <: [$anchor, ...],
                 $anchor += `\n$all_imports`
               }
             }

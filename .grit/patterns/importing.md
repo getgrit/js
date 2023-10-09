@@ -36,6 +36,8 @@ contains or {
 ## Ensures, replaces and removes specified imports
 
 ```js
+import { keep } from 'keepable';
+
 import { orderBy } from 'underscore';
 import fetch from 'elsewhere';
 import { fetch } from 'node-fetch';
@@ -50,6 +52,7 @@ fetch();
 ```
 
 ```js
+import { keep } from 'keepable';
 import { orderBy } from 'lodash';
 import { v4 } from 'uuid';
 
