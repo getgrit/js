@@ -355,12 +355,10 @@ pattern remove_moment_global_customizations() {
         `relativeTimeThreshold`,
         `$_.relativeTimeRounding`
       },
-      $noop = `/* localization in date-fns uses pure functions.
-ref : https://date-fns.org/v2.30.0/docs/Locale
-$exp */      
+      $noop = `/* localization in date-fns uses pure functions. ref : https://date-fns.org/v2.30.0/docs/Locale */ void 0`,
       $out = $noop,
     } => `$out`,
-    `$_.calendarFormat = $_` => `/* Use pure functions to set default calendar format in date-fns. ref: https://date-fns.org/v2.30.0/docs/Locale */ void 0;`
+    `$_.calendarFormat = $_` => `/* Use pure functions to set default calendar format in date-fns. ref: https://date-fns.org/v2.30.0/docs/Locale */ void 0`
   }
 }
 
