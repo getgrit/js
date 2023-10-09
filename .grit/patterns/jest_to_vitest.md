@@ -59,14 +59,20 @@ pattern main_migration() {
       // MODLE MOCKS
       // default literal mocking
       `jest.mock($module, $mockImplementation)` where {
-        $mockImplementation <: arrow_function($body) where {
+        $mockImplementation <: or {
+          arrow_function($body) where {
             // still waiting for default mock confirmation
             $body <: literal_value() => `({ 
               default: $body 
             })`
+          },
+          `function($_) { $body }` where {
+            $body <: contains `return $return` where {
+              $return <: literal_value() => `{ default: $return }`
+            }
           }
+        }
         } => `vi.mock($module, $mockImplementation)`,
-      // TODO: Handle more jest.mock cases
 
       `...jest.requireActual($module)` => `...(await vi.importActual($module))`,
       `jest.requireActual($module)` => `await vi.importActual($module)`,
@@ -120,6 +126,10 @@ sequential {
 import { runCLI, mock, requireActual } from 'jest';
 
 jest.mock('./some-path', () => 'hello');
+jest.mock('./some-path', function() {
+  doSomeSetups()
+  return 'hello'
+});
 jest.mock('./some-path', () => ({ default: 'value' }));
 jest.mock('./some-path', () => function() { return 'hello'; });
 
@@ -190,6 +200,10 @@ import { vi, test, expect, it, beforeAll, beforeEach, afterAll, afterEach } from
 vi.mock('./some-path', () => ({ 
               default: 'hello' 
             }))
+vi.mock('./some-path', function() {
+  doSomeSetups()
+  return { default: "hello" };
+})
 vi.mock('./some-path', () => ({ default: 'value' }));
 vi.mock('./some-path', () => function() { return 'hello'; });
 
