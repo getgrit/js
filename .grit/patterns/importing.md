@@ -129,3 +129,23 @@ import { orderBy } from 'lodash';
 
 orderBy([1, 2, 3]);
 ```
+
+## Inserts imports when none exist
+
+```typescript
+console.log('this is a test');
+
+class Button extends Component {
+  // ...
+}
+```
+
+```typescript
+import { Component } from 'React';
+
+console.log('this is a test');
+
+class Button extends Component {
+  // ...
+}
+```

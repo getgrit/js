@@ -65,11 +65,13 @@ pattern insert_imports() {
               $p <: program(hash_bang=$h) where {
                 $h <: hash_bang_line() += `\n$all_imports`
               },
-              // Find the import statement
+              // Find an import statement to anchor on
               $p <: program($statements) where {
                 $statements <: some $anchor where { $anchor <: import_statement() },
                 $anchor += `\n$all_imports`
-              }
+              },
+              // Fall back to inserting the whole program
+              $p => `$all_imports\n$p`
             }
         } else {
             true
