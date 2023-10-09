@@ -67,8 +67,7 @@ pattern insert_imports() {
               },
               // Find the import statement
               $p <: program($statements) where {
-                $statements <: some $anchor where { $anchor <: import_clause() },
-                // $statements <: [$anchor, ...],
+                $statements <: some $anchor where { $anchor <: import_statement() },
                 $anchor += `\n$all_imports`
               }
             }
