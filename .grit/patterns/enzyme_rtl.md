@@ -7,13 +7,19 @@ title: Enzyme to React Testing Library
 tags: #enzyme, #react-testing-library, #rtl
 
 ```grit
+predicate rtl_import_render() {
+    $render = `render`,
+    $render <: ensure_import_from(source=`"@testing-library/react"`)
+}
 pattern mount() {
     or {
         `$mount($comp)` as $mountComp where {
             $mount <: or { `mount`, `shallow` },
-            $render = `render`,
-            $render <: ensure_import_from(source=`"@testing-library/react"`),
+            rtl_import_render(),
             $mountComp => `render($comp)`
+        },
+        `$_.render($_)` where {
+          rtl_import_render()
         },
         `import { $imports } from 'enzyme'` => .
     }
