@@ -84,6 +84,31 @@ or {
 }
 ```
 
+## Simple example
+
+```js
+import { mount } from 'enzyme';
+import TestModel from './modal';
+
+describe('Modal', () => {
+  describe('render', () => {
+    it('should render', () => {
+      testObject.render({ showModal: true });
+      expect(testObject.component.find('h2').text()).toEqual('Test Modal');
+    });
+
+    it('renders header as the first child', () => {
+      const header = testObject.component.find('span').at(0);
+      expect(header.text()).toEqual('Hello, Header!');
+    });
+  });
+});
+```
+
+# Broken examples
+
+These are more complicated and will take AI or other rules to resolve.
+
 ## Render and find using role.
 
 ```js
