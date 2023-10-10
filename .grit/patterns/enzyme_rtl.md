@@ -28,13 +28,13 @@ pattern simulate_input() {
 }
 
 predicate is_rtl_query_selector($value) {
-    $value <: r"^([a-zA-Z0-9_-]*[#.])+[a-zA-Z0-9_.#-]*"
+    $value <: r"^(?:[a-zA-Z0-9_-]*[#.])+[a-zA-Z0-9_.#-]*"
 }
 
 predicate rtl_selector_rewrite($value, $locator, $compVar, $selector) {
     if (is_rtl_query_selector($value)) {
         $locator => `querySelector`
-    } else if ($value <: r"input\[name=([^\]]+)]"($raw)) {
+    } else if ($value <: r"input\[name=([^\]]+)]"($formField)) {
         $selector => `["textbox", ObjectExpression(properties=[
             ObjectProperty(key=Identifier(name="name"), value=raw($formField))
         ])]`
@@ -51,13 +51,13 @@ predicate rtl_selector_rewrite($value, $locator, $compVar, $selector) {
 pattern rewrite_selector() {
     `$compVar.$locator($selector)` where {
         $locator <: `find`,
-        if ($selector <: string_literal(value=$value)) {
+        if ($selector <: string(fragment=$value)) {
             rtl_selector_rewrite($value, $locator, $compVar, $selector)
         } else {
             // If the variable used in the selector has a classname assigned rewrite it
             $program <: contains variable_declaration() as $var where {
                 $var <: contains `$selector = $varSelector` where {
-                    $varSelector <: string_literal(value=$value),
+                    $varSelector <: string(fragment=$value),
                     rtl_selector_rewrite($value, $locator, $compVar, $selector)
                 }
             }
