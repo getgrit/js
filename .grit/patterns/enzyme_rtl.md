@@ -44,7 +44,9 @@ predicate rtl_selector_rewrite($value, $locator, $compVar, $selector) {
         $compVar => `screen`,
         $locator => `getByRole`,
         $selector <: or {
-          `h1`,
+          `'h2'` => `'heading'`,
+          `'span'` => `'heading'`,
+          $_
           // TODO: AI fallback
           // $guessRole = guess(codePrefix="// fix role using HTML tag", fallback=unparse($selector), stop=["function"]),
           // $selector => $guessRole
