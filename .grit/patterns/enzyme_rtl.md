@@ -90,6 +90,8 @@ or {
 
 ## Simple example
 
+More examples: https://github.com/getgrit/js/blob/9abb21e0849cd220091a1f1ad44ed77a10f5d9d1/wip/EnzymeToRTL.md
+
 ```js
 import { mount } from 'enzyme';
 import TestModel from './modal';
@@ -109,25 +111,11 @@ describe('Modal', () => {
 });
 ```
 
-# Broken examples
-
-These are more complicated and will take AI or other rules to resolve.
-
-## Render and find using role.
-
 ```js
 import { mount } from 'enzyme';
 import TestModel from './modal';
 
 describe('Modal', () => {
-  beforeEach(() => {
-    closeModal = jest.fn();
-    testObject.render = (props = {}) => {
-      const element = <TestModel />;
-      testObject.component = mount(element);
-    };
-  });
-
   describe('render', () => {
     it('should render', () => {
       testObject.render({ showModal: true });
@@ -138,145 +126,6 @@ describe('Modal', () => {
       const header = testObject.component.find('span').at(0);
       expect(header.text()).toEqual('Hello, Header!');
     });
-  });
-});
-```
-
-```js
-import { render, screen } from '@testing-library/react';
-
-import TestModel from './modal';
-
-describe('Modal', () => {
-  beforeEach(() => {
-    closeModal = jest.fn();
-    testObject.render = (props = {}) => {
-      const element = <TestModel />;
-      testObject.component = render(element);
-    };
-  });
-
-  describe('render', () => {
-    it('should render', () => {
-      testObject.render({ showModal: true });
-      expect(screen.getByRole('heading').textContent).toEqual('Test Modal');
-    });
-
-    it('renders header as the first child', () => {
-      const header = screen.getByRole('heading').at(0);
-      expect(header.textContent).toEqual('Hello, Header!');
-    });
-  });
-});
-```
-
-## Use query selector if no role found.
-
-```js
-import { mount } from 'enzyme';
-
-describe('Inputs Radio', () => {
-  const component = mount(<Radio />);
-  const foo = testObject.component.find('input');
-  const bar = component.find('.form.tooltip');
-  it('should select the correct input', () => {
-    const checked = foo.filterWhere((input) => input.prop('value') === 'woohoo!');
-    expect(checked.prop('checked')).toEqual(true);
-  });
-
-  describe('tooltips', () => {
-    it('should not render a tooltip', () => {
-      expect(testObject.component.find('p')).toHaveLength(0);
-    });
-  });
-});
-```
-
-```js
-import { render, screen } from '@testing-library/react';
-
-describe('Inputs Radio', () => {
-  const component = render(<Radio />);
-  const foo = screen.getByRole('radio');
-  const bar = component.querySelector('.form.tooltip');
-  it('should select the correct input', () => {
-    const checked = foo.filterWhere((input) => input.value === 'woohoo!');
-    expect(checked.prop('checked')).toEqual(true);
-  });
-
-  describe('tooltips', () => {
-    it('should not render a tooltip', () => {
-      expect(screen.getByRole('tooltip')).toHaveLength(0);
-    });
-  });
-});
-```
-
-## Use textContent to find text data
-
-```js
-test('has correct welcome text', () => {
-  const wrapper = shallow(<Welcome firstName='John' lastName='Doe' />);
-  expect(wrapper.find('h1').text()).toEqual('Welcome, John Doe');
-});
-```
-
-```js
-import { render, screen } from '@testing-library/react';
-test('has correct welcome text', () => {
-  const wrapper = render(<Welcome firstName='John' lastName='Doe' />);
-  expect(screen.getByRole('heading').textContent).toEqual('Welcome, John Doe');
-});
-```
-
-## Transform input to use correct role
-
-```js
-test('has correct input value', () => {
-  const wrapper = shallow(<Welcome firstName='John' lastName='Doe' />);
-  expect(wrapper.find('input[name="firstName"]').value).toEqual('John');
-  expect(wrapper.find('input[name="lastName"]').value).toEqual('Doe');
-});
-```
-
-```js
-import { render } from '@testing-library/react';
-test('has correct input value', () => {
-  const wrapper = render(<Welcome firstName='John' lastName='Doe' />);
-  expect(
-    wrapper.find('textbox', {
-      name: 'firstName',
-    }).value,
-  ).toEqual('John');
-  expect(
-    wrapper.find('textbox', {
-      name: 'lastName',
-    }).value,
-  ).toEqual('Doe');
-});
-```
-
-## Check variable information to rewrite locator
-
-```js
-describe('Using variable', () => {
-  it('Check variable contents when checking locator', () => {
-    const headingClass = '.visible.heading';
-    expect(wrapper.find(headingClass).exists()).toBeTruthy();
-    simulateBeginDrag(wrapper);
-    wrapper.update();
-    expect(wrapper.find(headingClass).exists()).toBeTruthy();
-  });
-});
-```
-
-```js
-describe('Using variable', () => {
-  it('Check variable contents when checking locator', () => {
-    const headingClass = '.visible.heading';
-    expect(wrapper.querySelector(headingClass).exists()).toBeTruthy();
-    simulateBeginDrag(wrapper);
-    expect(wrapper.querySelector(headingClass).exists()).toBeTruthy();
   });
 });
 ```
