@@ -19,11 +19,72 @@ pattern mount() {
     }
 }
 
+pattern simulate_input() {
+    `$inputFind.simulate($type, $value)` as $simulate where {
+        $fire_event = `fireEvent`,
+        $fire_event <: ensure_import_from(source=`"@testing-library/react"`),
+        $eventType = Identifier(name = s"${type}"),
+        $simulate => [
+            `const selector = $inputFind`,
+            `fireEvent.$eventType(selector, { target: { value: $value } });`
+        ]
+    }
+}
+
+predicate is_rtl_query_selector($value) {
+    $value <: r"^([a-zA-Z0-9_-]*[#.])+[a-zA-Z0-9_.#-]*"
+}
+
+predicate rtl_selector_rewrite($value, $locator, $compVar, $selector) {
+    if (is_rtl_query_selector($value)) {
+        $locator => `querySelector`
+    } else if ($value <: s"input\\[name=${formField}\\]") {
+        $selector => ["textbox", ObjectExpression(properties=[
+            ObjectProperty(key=Identifier(name="name"), value=raw($formField))
+        ])]
+    } else {
+        $screen = `screen`,
+        $screen <: ensure_import_from(source=`"@testing-library/react"`),
+        $compVar => `screen`,
+        $locator => `getByRole`,
+        // $guessRole = guess(codePrefix="// fix role using HTML tag", fallback=unparse($selector), stop=["function"]),
+        // $selector => $guessRole
+    }
+}
+
+pattern rewrite_selector() {
+    `$compVar.$locator($selector)` where {
+        $locator <: `find`,
+        if ($selector <: string_literal(value=$value)) {
+            rtl_selector_rewrite($value, $locator, $compVar, $selector)
+        } else {
+            // If the variable used in the selector has a classname assigned rewrite it
+            $program <: contains variable_declaration() as $var where {
+                $var <: contains `$selector = $varSelector` where {
+                    $varSelector <: string_literal(value=$value),
+                    rtl_selector_rewrite($value, $locator, $compVar, $selector)
+                }
+            }
+        }
+    }
+}
+
+
+
+pattern rtl_base_rewrite() {
+    or {
+        `$_.update()` => .,
+        `$_.act()` => .,
+        `$textFind.text()` => `$textFind.textContent`,
+        `$inputFind.prop('value')` => `$inputFind.value`
+    }
+}
+
 or {
     mount(),
-    //RewriteSelector(),
-    //SimulateInput(),
-    //BaseRewrite()
+    rewrite_selector(),
+    simulate_input(),
+    rtl_base_rewrite()
 }
 ```
 
