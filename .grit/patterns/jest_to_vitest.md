@@ -10,7 +10,7 @@ tags: #migration, #js
 engine marzano(0.1)
 language js
 
-pattern adjust_imports() {
+pattern adjust_imports_vitest() {
   $body where {
     $body <: or {
       `$sym.$_($_)`,
@@ -48,7 +48,7 @@ pattern adjust_imports() {
   }
 }
 
-pattern main_migration() {
+pattern main_jest_to_vitest_migration() {
   file($body) where {
     $body <: contains bubble or {
       `JEST_WORKER_ID` => `VITEST_POOL_ID`,
@@ -115,8 +115,8 @@ pattern main_migration() {
 }
 
 sequential {
-  maybe main_migration(),
-  maybe adjust_imports(),
+  maybe main_jest_to_vitest_migration(),
+  maybe adjust_imports_vitest(),
 }
 ```
 
@@ -294,9 +294,9 @@ describe('Repository component', () => {
 ```
 
 ```javascript
+import expect from 'expect'
 import { it } from 'vitest';
 
-import expect from 'expect'
 import { describe, test, before, beforeEach, after } from 'mocha'
 
 describe('Repository component', () => {
