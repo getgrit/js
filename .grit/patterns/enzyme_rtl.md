@@ -43,8 +43,12 @@ predicate rtl_selector_rewrite($value, $locator, $compVar, $selector) {
         $screen <: ensure_import_from(source=`"@testing-library/react"`),
         $compVar => `screen`,
         $locator => `getByRole`,
-        // $guessRole = guess(codePrefix="// fix role using HTML tag", fallback=unparse($selector), stop=["function"]),
-        // $selector => $guessRole
+        $selector <: or {
+          `h1`,
+          // TODO: AI fallback
+          // $guessRole = guess(codePrefix="// fix role using HTML tag", fallback=unparse($selector), stop=["function"]),
+          // $selector => $guessRole
+        }
     }
 }
 
