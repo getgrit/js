@@ -23,11 +23,7 @@ pattern simulate_input() {
     `$inputFind.simulate($type, $value)` as $simulate where {
         $fire_event = `fireEvent`,
         $fire_event <: ensure_import_from(source=`"@testing-library/react"`),
-        $eventType = Identifier(name = s"${type}"),
-        $simulate => [
-            `const selector = $inputFind`,
-            `fireEvent.$eventType(selector, { target: { value: $value } });`
-        ]
+        $simulate => `const selector = $inputFindfireEvent.$eventType(selector, { target: { value: $value } });`
     }
 }
 
@@ -38,10 +34,10 @@ predicate is_rtl_query_selector($value) {
 predicate rtl_selector_rewrite($value, $locator, $compVar, $selector) {
     if (is_rtl_query_selector($value)) {
         $locator => `querySelector`
-    } else if ($value <: s"input\\[name=${formField}\\]") {
-        $selector => ["textbox", ObjectExpression(properties=[
+    } else if ($value <: r"input\[name=([^\]]+)]"($raw)) {
+        $selector => `["textbox", ObjectExpression(properties=[
             ObjectProperty(key=Identifier(name="name"), value=raw($formField))
-        ])]
+        ])]`
     } else {
         $screen = `screen`,
         $screen <: ensure_import_from(source=`"@testing-library/react"`),
