@@ -4,7 +4,7 @@ title: Enzyme to React Testing Library
 
 (Alpha) This pattern is a work in progress and is not yet ready for use.
 
-tags: #enzyme, #react-testing-library, #rtl
+tags: #enzyme, #react-testing-library, #rtl, #alpha, #migration
 
 ```grit
 predicate rtl_import_render() {
@@ -120,8 +120,7 @@ describe('Modal', () => {
 ```
 
 ```js
-
-import { render, screen } from "@testing-library/react";
+import { render, screen } from '@testing-library/react';
 
 import TestModel from './modal';
 
