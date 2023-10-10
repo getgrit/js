@@ -112,19 +112,20 @@ describe('Modal', () => {
 ```
 
 ```js
-import { mount } from 'enzyme';
+import { render, screen } from '@testing-library/react';
+
 import TestModel from './modal';
 
 describe('Modal', () => {
   describe('render', () => {
     it('should render', () => {
       testObject.render({ showModal: true });
-      expect(testObject.component.find('h2').text()).toEqual('Test Modal');
+      expect(screen.getByRole('heading').textContent).toEqual('Test Modal');
     });
 
     it('renders header as the first child', () => {
-      const header = testObject.component.find('span').at(0);
-      expect(header.text()).toEqual('Hello, Header!');
+      const header = screen.getByRole('heading').at(0);
+      expect(header.textContent).toEqual('Hello, Header!');
     });
   });
 });
