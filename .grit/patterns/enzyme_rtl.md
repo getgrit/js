@@ -120,7 +120,8 @@ describe('Modal', () => {
 ```
 
 ```js
-import { render, screen } from '@testing-library/react';
+
+import { render, screen } from "@testing-library/react";
 
 import TestModel from './modal';
 
