@@ -114,8 +114,9 @@ describe('Modal', () => {
 ```
 
 ```js
-import TestModel from './modal';
 import { render, screen } from '@testing-library/react';
+
+import TestModel from './modal';
 
 describe('Modal', () => {
   beforeEach(() => {
