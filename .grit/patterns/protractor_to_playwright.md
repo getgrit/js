@@ -149,25 +149,25 @@ pattern browser_misc() {
 
 pattern things_to_await() {
   or {
-    `page.$_`,
-    `page.goto($_)`,
-    `$_.toHaveCount($_)`,
-    `$_.toHaveText($_)`,
-    `$_.toBeVisible($_)`,
-    `$_.toBeHidden($_)`,
-    `$_.toHaveTitle($_)`,
-    `$_.toHaveURL($_)`,
-    `$_.waitFor($_)`,
-    `$_.waitForFunction($_)`,
-    `$_.waitForTimeout($_)`,
-    `$_.fill($_)`,
-    `$_.click($_)`,
-    `$_.clear($_)`,
-    `$_.nth($_)`,
-    `$_.locator($_)`,
-    `$_.waitForSelector($_)`,
-    `$_.waitForFunction($_)`,
-    `$_.waitForTimeout($_)`,
+    `page.$_;`,
+    `page.goto($_);`,
+    `$_.toHaveCount($_);`,
+    `$_.toHaveText($_);`,
+    `$_.toBeVisible($_);`,
+    `$_.toBeHidden($_);`,
+    `$_.toHaveTitle($_);`,
+    `$_.toHaveURL($_);`,
+    `$_.waitFor($_);`,
+    `$_.waitForFunction($_);`,
+    `$_.waitForTimeout($_);`,
+    `$_.fill($_);`,
+    `$_.click($_);`,
+    `$_.clear($_);`,
+    `$_.nth($_);`,
+    `$_.locator($_);`,
+    `$_.waitForSelector($_);`,
+    `$_.waitForFunction($_);`,
+    `$_.waitForTimeout($_);`,
   }
 }
 
@@ -221,7 +221,7 @@ pattern main_playwright_migration() {
             $test <: ensure_import_from($source),
             $expect = `expect`,
             $expect <: ensure_import_from($source)
-        }
+        } until Bottom
     }
 }
 
