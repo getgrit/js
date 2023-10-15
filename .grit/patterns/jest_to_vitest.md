@@ -85,13 +85,9 @@ pattern main_jest_to_vitest_migration() {
       } where {
         $sym <: or { `it`, `test` },
         $callback <: or {
-          // For matching `(xxx) => { ... }`
-          `($parameters) => { $_ }` where {
-            $parameters <: [$one, ...]
-          },
-          // For matching `xxx => { ... }`
+          // For matching `xxx => { ... }` & `(xxx) => { ... }`
           `$parameter => { $_ }` where {
-            $parameter <: not .
+            $parameter <: not "()"
           },
           // For matching `function (xxx) { ... }`
           `function($parameters) { $_ }` where {
