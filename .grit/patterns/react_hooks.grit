@@ -472,10 +472,14 @@ pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos, $handler_ca
         },
         // clean-up props arg -- not needed if only used in constructor, and first step introduced it
         // if it sees it anywhere in the pattern
-        arrow_function(parameters=$props, body=$body) where {
+        arrow_function(parameters=$props, $body, $parenthesis) where {
             $props <: contains or { `props`, `inputProps` },
             $body <: not contains `props`,
-            $props => `()`
+            if ($parenthesis <: undefined) {
+                $props => `()`
+            } else {
+                $props => .
+            }
         }
     }
 }
