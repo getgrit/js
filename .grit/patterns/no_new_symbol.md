@@ -31,6 +31,7 @@ var bar = Symbol('bar');
 
 ```javascript
 function woo(Symbol) {
+  Symbol = "foo";
   const foo = new Symbol('foo');
 }
 ```
