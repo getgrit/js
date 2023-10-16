@@ -73,15 +73,15 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 $statement <: prepend_comment(statements=$static_statements),
                 $static <: `static`,
                 $body <: change_this($states_statements),
-                $static_statements += `$class_name.$name = $parameters => $body;`
+                $static_statements += `$class_name.$name = ($parameters) => $body;`
             },
             and {
                 $statement <: prepend_comment($statements),
                 $async <: `async`,
                 if ($handler_callback_suffix <: .) {
-                  $statements += `const $name = async $parameters => $body;`
+                  $statements += `const $name = async ($parameters) => $body;`
                 } else {
-                  $statements += `const $[name]$[handler_callback_suffix] = useCallback(async $parameters => $body, []);`
+                  $statements += `const $[name]$[handler_callback_suffix] = useCallback(async ($parameters) => $body, []);`
                 }
             },
             and {
@@ -97,9 +97,9 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             and {
                 $statement <: prepend_comment($statements),
                 if ($handler_callback_suffix <: .) {
-                  $statements += `const $name = $parameters => $body;`
+                  $statements += `const $name = ($parameters) => $body;`
                 } else {
-                  $statements += `const $[name]$[handler_callback_suffix] = useCallback($parameters => $body, []);`
+                  $statements += `const $[name]$[handler_callback_suffix] = useCallback(($parameters) => $body, []);`
                 }
             }
         },
