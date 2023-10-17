@@ -475,7 +475,7 @@ pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos, $handler_ca
         arrow_function(parameters=$props, $body, $parenthesis) where {
             $props <: contains or { `props`, `inputProps` },
             $body <: not contains `props`,
-            if ($parenthesis <: undefined) {
+            if ($parenthesis <: .) {
                 $props => `()`
             } else {
                 $props => .
