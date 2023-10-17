@@ -89,7 +89,7 @@ pattern main_jest_to_vitest_migration() {
           `$parameter => { $_ }` where {
             and {
               $parameter <: not "()",
-              !$parameter <: undefined
+              $parameter <: not .
             }
           },
           // For matching `function (xxx) { ... }`
