@@ -58,6 +58,7 @@ module.exports.king = '9';
 
 ```js
 export const king = '9';
+
 ```
 
 ## Transform default exports
@@ -81,6 +82,8 @@ export async function createTeam() {
 }
 
 export const addTeamToOrgSubscription = () => console.log('cool');
+
+
 ```
 
 ### Keep inline values intact

@@ -31,7 +31,7 @@ Array(0, 1, 2);
 ```
 
 ```typescript
-[0, 1, 2]
+[0, 1, 2];
 ```
 
 ## Transform Array constructor using `new` to Array object.
@@ -41,7 +41,7 @@ new Array(0, 1, 2);
 ```
 
 ```typescript
-[0, 1, 2]
+[0, 1, 2];
 ```
 
 ## Don't transform Array constructor.

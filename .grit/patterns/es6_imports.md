@@ -48,13 +48,13 @@ const starImport = require('star');
 ```
 
 ```ts
-import defaultImport from '../../shared/default';
-import { something, another } from './lib';
-import { value, original as renamed } from 'something';
-import { ogName as otherName } from 'chai';
-import { assert } from 'chai';
-import { config as conf } from 'chai';
-import starImport from 'star';
+import defaultImport from '../../shared/default'
+import { something, another } from './lib'
+import { value, original as renamed } from 'something'
+import { ogName as otherName } from 'chai'
+import { assert } from 'chai'
+import { config as conf } from 'chai'
+import starImport from 'star'
 ```
 
 ### Handle dotenv

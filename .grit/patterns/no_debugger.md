@@ -28,6 +28,7 @@ function isTruthy(x) {
 
 ```typescript
 function isTruthy(x) {
+  
   return Boolean(x);
 }
 ```

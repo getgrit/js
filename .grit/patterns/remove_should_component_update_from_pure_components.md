@@ -36,6 +36,8 @@ class Foo extends React.PureComponent {
 class Foo extends React.PureComponent {
   customMethod() {}
 
+  
+
   render() {
     return <Hello />;
   }
@@ -59,6 +61,8 @@ class Foo extends PureComponent {
 ```typescript
 class Foo extends PureComponent {
   customMethod() {}
+
+  
 
   render() {
     return <Hello />;

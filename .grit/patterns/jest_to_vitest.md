@@ -197,11 +197,13 @@ afterEach(function () {
 ```
 
 ```javascript
+
+
 import { vi, test, expect, it, beforeAll, beforeEach, afterAll, afterEach } from 'vitest';
 
 vi.mock('./some-path', () => ({
-  default: 'hello',
-}));
+              default: 'hello'
+            }));
 vi.mock('./some-path', function () {
   doSomeSetups();
   return { default: 'hello' };
@@ -227,36 +229,30 @@ const currentWorkerId = VITEST_POOL_ID;
 test.skip('test.skip should be processed', () => {
   expect('value').toBe('value');
 });
-it('should complete asynchronously', () =>
-  new Promise((done) => {
-    expect('value').toBe('value');
-    done();
-  }));
-it('should complete asynchronously', () =>
-  new Promise((finish) => {
-    expect('value').toBe('value');
-    finish();
-  }));
-it('should complete asynchronously', () =>
-  new Promise((done) => {
-    expect('value').toBe('value');
-    done();
-  }));
-it('should complete asynchronously', () =>
-  new Promise(function (done) {
-    expect('value').toBe('value');
-    done();
-  }));
-it('should complete asynchronously', () =>
-  new Promise(function (finish) {
-    expect('value').toBe('value');
-    finish();
-  }));
-test.skip('test.skip with done should be processed', () =>
-  new Promise((done) => {
-    expect('value').toBe('value');
-    done();
-  }));
+it('should complete asynchronously', () => new Promise((done) => {
+  expect('value').toBe('value');
+  done();
+}));
+it('should complete asynchronously', () => new Promise((finish) => {
+  expect('value').toBe('value');
+  finish();
+}));
+it('should complete asynchronously', () => new Promise((done) => {
+  expect('value').toBe('value');
+  done();
+}));
+it('should complete asynchronously', () => new Promise(function (done) {
+  expect('value').toBe('value');
+  done();
+}));
+it('should complete asynchronously', () => new Promise(function (finish) {
+  expect('value').toBe('value');
+  finish();
+}));
+test.skip('test.skip with done should be processed', () => new Promise((done) => {
+  expect('value').toBe('value');
+  done();
+}));
 it('should be ignored', () => {
   expect('value').toBe('value');
 });
@@ -264,18 +260,10 @@ it('should be ignored', function () {
   expect('value').toBe('value');
 });
 
-beforeAll(() => {
-  setActivePinia(createTestingPinia());
-});
-beforeEach(() => {
-  setActivePinia(createTestingPinia());
-});
-afterAll(() => {
-  setActivePinia(createTestingPinia());
-});
-afterEach(() => {
-  setActivePinia(createTestingPinia());
-});
+beforeAll(() => { setActivePinia(createTestingPinia()) });
+beforeEach(() => { setActivePinia(createTestingPinia()) });
+afterAll(() => { setActivePinia(createTestingPinia()) });
+afterEach(() => { setActivePinia(createTestingPinia()) });
 beforeAll(async () => {
   await expect('1').toBe('1');
   await expect('2').toBe('2');

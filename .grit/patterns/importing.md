@@ -53,12 +53,15 @@ fetch();
 
 ```js
 import { keep } from 'keepable';
-import { orderBy } from 'lodash';
-import { v4 } from 'uuid';
+import { orderBy } from "lodash";
+ import { v4 } from "uuid";
+
+
 
 import fetch from 'elsewhere';
 
-import { more } from 'node-fetch';
+import {  more } from 'node-fetch';
+
 
 console.log(orderBy([1, 2, 3]));
 
@@ -87,12 +90,15 @@ fetch();
 
 ```js
 #!/usr/bin/env node
-import { orderBy } from 'lodash';
-import { v4 } from 'uuid';
+import { orderBy } from "lodash";
+ import { v4 } from "uuid";
+
+
 
 import fetch from 'elsewhere';
 
-import { more } from 'node-fetch';
+import {  more } from 'node-fetch';
+
 
 console.log(orderBy([1, 2, 3]));
 
@@ -115,7 +121,8 @@ class Button extends Component {
 
 ```typescript
 import _ from 'lodash';
-import { Component } from 'React';
+import { Component } from "React";
+
 
 class Button extends Component {
   // ...
@@ -141,7 +148,7 @@ class Button extends Component {
 ```
 
 ```typescript
-import { Component } from 'React';
+import { Component } from "React";
 
 console.log('this is a test');
 

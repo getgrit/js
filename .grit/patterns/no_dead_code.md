@@ -37,6 +37,7 @@ function f() {
 ```typescript
 function f() {
   return 3;
+  
 }
 ```
 
@@ -54,6 +55,7 @@ function f() {
 function f() {
   foo();
   return 3;
+  
 }
 ```
 

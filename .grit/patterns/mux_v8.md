@@ -163,33 +163,33 @@ const Mux = require('@mux/mux-node');
 const mux = new Mux({
   baseURL: 'test.com',
   fetch: (url, opts) => {
-    let opts = opts ?? { headers: {} };
+                    let opts = opts ?? { headers: {} };
 
-    opts.headers['x-source-platform'] = 'Test | 0.0.1';
+                    opts.headers['x-source-platform'] = 'Test | 0.0.1';
 
-    return fetch(url, opts);
-  },
+                    return fetch(url, opts)
+                },
 });
 
 const mux = new Mux({
-  tokenId: accessToken,
-  tokenSecret: secret,
-});
+                tokenId: accessToken,
+                tokenSecret: secret,
+            });
 
 const mux = new Mux();
 
 const mux = new Mux({
-  tokenId: accessToken,
-  tokenSecret: secret,
-  baseURL: 'test.com',
+                        tokenId: accessToken,
+                        tokenSecret: secret,
+                        baseURL: 'test.com',
   fetch: (url, opts) => {
-    let opts = opts ?? { headers: {} };
+                    let opts = opts ?? { headers: {} };
 
-    opts.headers['x-source-platform'] = 'Test | 0.0.1';
+                    opts.headers['x-source-platform'] = 'Test | 0.0.1';
 
-    return fetch(url, opts);
-  },
-});
+                    return fetch(url, opts)
+                },
+                    });
 ```
 
 ## Replace destructured properties with field access
@@ -265,12 +265,8 @@ Mux.Webhooks.verifyHeader(rawBody, req.headers['mux-signature'] as string, webho
 ```
 
 ```ts
-const mux = new Mux();
-mux.webhooks.verifyHeader(
-  Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody,
-  req.headers,
-  webhookSignatureSecret,
-);
+const mux = new Mux()
+mux.webhooks.verifyHeader(Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody, req.headers, webhookSignatureSecret);
 ```
 
 ## Verify webhooks with existing Mux instance
@@ -300,11 +296,7 @@ const mux = new Mux({
 
 export const verifyWebhookSignature = (rawBody: string | Buffer, req: NextApiRequest) => {
   if (webhookSignatureSecret) {
-    mux.webhooks.verifyHeader(
-      Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody,
-      req.headers,
-      webhookSignatureSecret,
-    );
+    mux.webhooks.verifyHeader(Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody, req.headers, webhookSignatureSecret);
   }
 };
 ```

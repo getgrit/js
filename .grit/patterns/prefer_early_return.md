@@ -73,25 +73,23 @@ export const activityHandler = async (activityObj: ActivityObject, eventType: st
     inputData: activityObj,
   });
   const customEvent = checkCustomEvent(activityObj);
-  if (!customEvent) {
-    return logPromise;
-  }
+  if (!(customEvent)) { return logPromise }
   const internalUser = InternalServiceAccount.getNamed('webhook');
-  const baseCommitObj = createCommitRef(customEvent.pull_request.head.ref);
-  const branchRefObj = createBranchRef(customEvent.pull_request.head.ref);
-  const response = await executeOperation({
-    operationName: 'platform_reply',
-    internalUser,
-    projectFullName: customEvent.project.full_name,
-    baseCommitObj,
-    branchRefObj,
-    workflowArgs: { eventType: customEvent },
-  });
-  if (!response) {
-    logger.error('failed to execute operation');
-    return false;
-  } else {
-    return Promise.all([logPromise, response.handle]);
-  }
+    const baseCommitObj = createCommitRef(customEvent.pull_request.head.ref);
+    const branchRefObj = createBranchRef(customEvent.pull_request.head.ref);
+    const response = await executeOperation({
+      operationName: 'platform_reply',
+      internalUser,
+      projectFullName: customEvent.project.full_name,
+      baseCommitObj,
+      branchRefObj,
+      workflowArgs: { eventType: customEvent },
+    });
+    if (!response) {
+      logger.error('failed to execute operation');
+      return false;
+    } else {
+      return Promise.all([logPromise, response.handle]);
+    }
 };
 ```
