@@ -586,50 +586,6 @@ object = {
 };
 ```
 
-## Test when component definition is not valid
-
-```js
-const theme = createTheme({
-  props: {
-    MuiButton: {
-      disableRipple: true,
-    },
-  },
-});
-```
-
-```ts
-const theme = createTheme({
-  components: { MuiButton : defaultProps {disableRipple: true,}, },
-});
-```
-
-## Test component definition when createTheme has multiple properties
-
-```js
-const theme = createTheme({
-  style: {
-    white: true,
-  },
-  isDark: true,
-  props: {
-    MuiButton: {
-      disableRipple: true,
-    },
-  },
-});
-```
-
-```ts
-const theme = createTheme({
-  style: {
-    white: true,
-  },
-  isDark: true,
-  components: { MuiButton : defaultProps {disableRipple: true,}, },
-});
-```
-
 ## Test component definition when props has multiple properties
 
 ```js
@@ -661,5 +617,51 @@ const theme = createTheme({
 ```ts
 const theme = createTheme({
   props: {},
+});
+```
+
+<!-- Broken (outputs unparseable JavaScript) -->
+
+# Test when component definition is not valid
+
+```js
+const theme = createTheme({
+  props: {
+    MuiButton: {
+      disableRipple: true,
+    },
+  },
+});
+```
+
+```ts
+const theme = createTheme({
+  components: { MuiButton : defaultProps {disableRipple: true,}, },
+});
+```
+
+# Test component definition when createTheme has multiple properties
+
+```js
+const theme = createTheme({
+  style: {
+    white: true,
+  },
+  isDark: true,
+  props: {
+    MuiButton: {
+      disableRipple: true,
+    },
+  },
+});
+```
+
+```ts
+const theme = createTheme({
+  style: {
+    white: true,
+  },
+  isDark: true,
+  components: { MuiButton : defaultProps {disableRipple: true,}, },
 });
 ```
