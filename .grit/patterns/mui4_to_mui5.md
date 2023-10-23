@@ -586,26 +586,6 @@ object = {
 };
 ```
 
-## Test component definition when props has multiple properties
-
-```js
-const theme = createTheme({
-  props: {
-    MuiButton: {
-      disableRipple: true,
-      dark: true,
-    },
-  },
-});
-```
-
-```ts
-const theme = createTheme({
-  components: { MuiButton : defaultProps {disableRipple: true,
-      dark: true,}, },
-});
-```
-
 ## Test component definition when createTheme props is empty
 
 ```js
@@ -663,5 +643,25 @@ const theme = createTheme({
   },
   isDark: true,
   components: { MuiButton : defaultProps {disableRipple: true,}, },
+});
+```
+
+# Test component definition when props has multiple properties
+
+```js
+const theme = createTheme({
+  props: {
+    MuiButton: {
+      disableRipple: true,
+      dark: true,
+    },
+  },
+});
+```
+
+```ts
+const theme = createTheme({
+  components: { MuiButton : defaultProps {disableRipple: true,
+      dark: true,}, },
 });
 ```
