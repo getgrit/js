@@ -424,24 +424,6 @@ object = {
 };
 ```
 
-## Test when palette success color is empty: `green[]`
-
-```js
-object = {
-  style: {
-    main: green[],
-  }
-}
-```
-
-```ts
-object = {
-  style: {
-    main: green[],
-  }
-}
-```
-
 ## Test when palette success color is not in a style object
 
 ```js
@@ -548,24 +530,6 @@ object = {
     main: orange[710],
   },
 };
-```
-
-## Test when palette warning color is empty: `orange[]`
-
-```js
-object = {
-  style: {
-    main: orange[],
-  }
-}
-```
-
-```ts
-object = {
-  style: {
-    main: orange[],
-  }
-}
 ```
 
 ## Test when palette warning color is not in a style object
