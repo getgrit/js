@@ -39,7 +39,7 @@ pattern html_tags_pair() { or { html_headings() , html_containers() , html_block
 ```
 
 ```typescript
-<Hello />
+<Hello  />
 ```
 
 ## Converts components with 1 attribute
@@ -69,7 +69,7 @@ pattern html_tags_pair() { or { html_headings() , html_containers() , html_block
 ```
 
 ```typescript
-<Hello />
+<Hello  />
 ```
 
 ## Doesn't convert self-closing components

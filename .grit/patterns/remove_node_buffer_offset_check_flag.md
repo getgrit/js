@@ -68,16 +68,16 @@ console.log(buf);
 ```
 
 ```typescript
-buf.readUIntLE(0xfeedface, 0);
+buf.readUIntLE(0xfeedface, 0 );
 
 buf1.writeUInt32LE(0xfeedface, 1);
 
-buf.writeUIntBE(a, b, c);
+buf.writeUIntBE(a, b, c );
 buf.writeUIntBE(a, b, 1);
 
 buf.readInt16BE(a, b, 1);
 
-buf.readInt16BE(a);
+buf.readInt16BE(a );
 
 console.log(buf);
 ```

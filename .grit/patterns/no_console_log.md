@@ -26,6 +26,7 @@ console.log('foo');
 ```javascript
 // Do not remove this
 console.error('foo');
+
 ```
 
 ## Removes the statement in a function
@@ -37,7 +38,9 @@ function f() {
 ```
 
 ```typescript
-function f() {}
+function f() {
+  
+}
 ```
 
 ## Works in a list as well
@@ -47,7 +50,7 @@ server.listen(PORT, console.log(`Server started on port ${PORT}`));
 ```
 
 ```typescript
-server.listen(PORT);
+server.listen(PORT );
 ```
 
 ## Doesn't remove `console.log` in a catch clause
@@ -71,4 +74,6 @@ console.log('bar');
 ```javascript
 // Do not remove this
 console.error('foo');
+
+
 ```

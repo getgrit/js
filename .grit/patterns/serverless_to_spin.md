@@ -121,7 +121,7 @@ module.exports.handler = async (event) => {
 
 ```js
 export async function handleRequest(request) {
-  return {
+        return {
     status: 200,
     body: JSON.stringify(
       {
@@ -132,7 +132,7 @@ export async function handleRequest(request) {
       2,
     ),
   };
-}
+    }
 ```
 
 ## Converts a TypeScript handler
@@ -156,10 +156,12 @@ export const hello = async (event: APIGatewayProxyEvent): Promise<APIGatewayProx
 ```
 
 ```ts
-import { HttpRequest, HttpResponse } from '@fermyon/spin-sdk';
+
+import { HttpRequest, HttpResponse } from "@fermyon/spin-sdk";
+
 
 export async function handleRequest(request: HttpRequest): Promise<HttpResponse> {
-  return {
+        return {
     status: 200,
     body: JSON.stringify(
       {
@@ -170,7 +172,7 @@ export async function handleRequest(request: HttpRequest): Promise<HttpResponse>
       2,
     ),
   };
-}
+    }
 ```
 
 ## Converts a handler with inputs
@@ -207,25 +209,25 @@ module.exports.luckyNumber = (event, context, callback) => {
 // Returns a random integer between min (inclusive) and max (inclusive)
 const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-const decoder = new TextDecoder('utf-8');
+const decoder = new TextDecoder('utf-8')
 
 export async function handleRequest(request) {
-  const upperLimit = JSON.parse(decoder.decode(request.body)).intent.slots.UpperLimit.value || 100;
+        const upperLimit = JSON.parse(decoder.decode(request.body)).intent.slots.UpperLimit.value || 100;
   const number = getRandomInt(0, upperLimit);
   const response = {
-    status: 200,
-    body: JSON.stringify({
-      version: '1.0',
-      response: {
-        outputSpeech: {
-          type: 'PlainText',
-          text: `Your lucky number is ${number}`,
-        },
-        shouldEndSession: false,
+            status: 200,
+            body: JSON.stringify({
+    version: '1.0',
+    response: {
+      outputSpeech: {
+        type: 'PlainText',
+        text: `Your lucky number is ${number}`,
       },
-    }),
-  };
+      shouldEndSession: false,
+    },
+  })
+          };
 
   return response;
-}
+    }
 ```

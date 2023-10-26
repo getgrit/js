@@ -28,9 +28,7 @@ export default function () {
 ```
 
 ```typescript
-export default function main() {
-  console.log('test');
-}
+export default function main() { console.log('test'); }
 ```
 
 ## Name asynchronous function declaration main
@@ -42,9 +40,7 @@ export default async function (test) {
 ```
 
 ```typescript
-export default async function main(test) {
-  console.log(test);
-}
+export default async function main(test) { console.log(test); }
 ```
 
 ## Name arrow function main
@@ -59,5 +55,5 @@ export default async (test) => {
 const main = async (test) => {
   console.log('test');
 };
-export default main;
+export default main
 ```

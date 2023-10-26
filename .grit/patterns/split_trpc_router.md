@@ -160,40 +160,10 @@ export type AppRouter = typeof appRouter;
 ```
 
 ```typescript
-// @file js/trpcRouter.server.ts
-
-import { helloRoute } from './hello.route';
-import { goodbyeRoute } from './goodbye.route';
-import { t } from './middleware';
-
-export const appRouter = t.router({
-  hello: helloRoute,
-  goodbye: goodbyeRoute,
-});
-
-export type AppRouter = typeof appRouter;
-// @file js/goodbye.route.ts
-import { proc } from './middleware';
+import { proc } from "./middleware";
 import { db } from '../db';
 export const goodbyeRoute = proc.input(z.object({ name: z.string() })).query(async ({ input }) => {
-  await db.remove(input.name);
-  return { text: `Goodbye ${input.name}` };
-});
-// @file js/hello.route.ts
-import { proc } from './middleware';
-export const helloRoute = proc.input(z.object({ name: z.string() })).query(async ({ input }) => {
-  return { text: `Hello ${input.name}` };
-});
-// @file js/middleware.ts
-import { initTRPC } from '@trpc/server';
-import * as Sentry from '@sentry/remix';
-import { Context } from './trpcContext.server';
-export const t = initTRPC.context<Context>().create();
-export const proc = t.procedure.use(
-  t.middleware(
-    Sentry.Handlers.trpcMiddleware({
-      attachRpcInput: true,
-    }),
-  ),
-);
+    await db.remove(input.name);
+    return { text: `Goodbye ${input.name}` };
+  })
 ```

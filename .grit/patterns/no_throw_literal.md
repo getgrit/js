@@ -23,7 +23,7 @@ throw "error";
 ```
 
 ```
-throw new Error("error");
+throw new Error("error")
 ```
 
 ## String concatenation ⇒ `new Error('...')`
@@ -33,7 +33,7 @@ throw "next " + "error";
 ```
 
 ```
-throw new Error("next " + "error");
+throw new Error("next " + "error")
 ```
 
 ## String variable ⇒ `new Error('...')`
@@ -54,7 +54,7 @@ throw 0;
 ```
 
 ```typescript
-throw new Error(0);
+throw new Error(0)
 ```
 
 ## `undefined` ⇒ `new Error(undefined)`
@@ -64,7 +64,7 @@ throw undefined;
 ```
 
 ```typescript
-throw new Error(undefined);
+throw new Error(undefined)
 ```
 
 ## `null` ⇒ `new Error(null)`
@@ -74,7 +74,7 @@ throw null;
 ```
 
 ```typescript
-throw new Error(null);
+throw new Error(null)
 ```
 
 ## Do not change `Error` object without arguments

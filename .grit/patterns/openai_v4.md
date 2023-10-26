@@ -297,6 +297,7 @@ const openai = new OpenAIApi(myConfig);
 ```ts
 import OpenAI from 'openai';
 
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -317,6 +318,7 @@ const openai = new OpenAIApi(myConfig);
 
 ```ts
 const OpenAI = require('openai');
+
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -399,6 +401,7 @@ const completion = await myOpenAi.createCompletion({
 ```ts
 import OpenAI from 'openai';
 
+
 const myOpenAi = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -417,10 +420,7 @@ const response = await openai.createTranscription(fs.createReadStream('audio.mp3
 ```
 
 ```ts
-const response = await openai.audio.transcriptions.create({
-  model: 'whisper-1',
-  file: fs.createReadStream('audio.mp3'),
-});
+const response = await openai.audio.transcriptions.create({ model: 'whisper-1', file: fs.createReadStream('audio.mp3') });
 ```
 
 ## File handling
@@ -437,9 +437,11 @@ console.log(myFile);
 ```
 
 ```ts
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI(
+  {
+    apiKey: process.env.OPENAI_API_KEY,
+  }
+);
 
 const myFile = await openai.files.retrieveContent('my-file', options);
 console.log(myFile);
@@ -550,7 +552,12 @@ const fineTune: FineTune = 4;
 ```
 
 ```ts
-import OpenAI, { toFile } from 'openai';
+import OpenAI, {
+  
+  
+  
+  toFile,
+} from 'openai';
 
 // imported, so should change
 const messages: OpenAI.Chat.CreateChatCompletionRequestMessage = 1;
@@ -581,7 +588,12 @@ const fineTune: FineTune = 4;
 ```
 
 ```ts
-import OpenAI, { toFile } from 'openai';
+import OpenAI, {
+  
+  
+  
+  toFile,
+} from 'openai';
 
 // imported, so should change
 const messages: OpenAI.Chat.CreateChatCompletionRequestMessage = 1;
@@ -614,7 +626,13 @@ const fineTune: FineTune = 4;
 
 ```ts
 const OpenAI = require('openai');
-const { toFile } = require('openai');
+const {
+  
+  
+  
+  
+  toFile,
+} = require('openai');
 
 // imported, so should change
 const messages: OpenAI.Chat.CreateChatCompletionRequestMessage = 1;
@@ -665,7 +683,13 @@ const chat = new ChatOpenAI({
 
 ```ts
 const OpenAI = require('openai');
-const { toFile } = require('openai');
+const {
+  
+  
+  
+  
+  toFile,
+} = require('openai');
 
 const { ChatOpenAI } = require('langchain/chat_models/openai');
 const { BufferMemory } = require('langchain/memory');

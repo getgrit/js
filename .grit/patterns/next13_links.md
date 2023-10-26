@@ -24,5 +24,7 @@ language js
 ```
 
 ```typescript
-<Link href='https://leerob.io'>https://leerob.io</Link>
+<Link href='https://leerob.io'>
+  https://leerob.io
+</Link>
 ```
