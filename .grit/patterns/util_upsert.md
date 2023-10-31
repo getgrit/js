@@ -23,7 +23,11 @@ pattern upsert($key, $value) {
                         },
                         $old => $value
                     },
-                    $obj where {
+                    $obj where or {
+                        and {
+                            $obj <: r",\s*\}",
+                            $obj += `$key: $value`
+                        },
                         $obj += `, $key: $value`
                     }
                 }
