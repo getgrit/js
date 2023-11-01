@@ -74,11 +74,38 @@ function wrapper_key($method) {
   if ($method <: or {`loginAnonymous`, `loginGoogle`}) {
     return `loginResponse`
   } else if ($method <: `getLobbyInfo`) {
-    return `lobbyInfo`
+    return `lobby`
   } else {
     return `connectionInfo`
   },
   return `connectionInfo`
+}
+
+// many request funs have a different arg order, usually shifting the request to the beginning,
+// so we need to rearrange $args
+// TODO: the rest of the functions
+function reorder_args($method, $args) {
+  if ($method <: `setLobbyState`) {
+    // TODO how do we match and use rest-of-args without so much copypasta?
+    if ($args <: [$app_id, $room_id, $req, $opts]) {
+      $use_args = join(list=[$req, $app_id, $room_id, $opts], separator=", ")
+    } else if ($args <: [$app_id, $room_id, $req]) {
+      $use_args = join(list=[$req, $room_id, $app_id], separator=", ")
+    } else {
+      $use_args = $args
+    }
+  } else if ($method <: `loginGoogle`) {
+    if ($args <: [$app_id, $req, $opts]) {
+      $use_args = join(list=[$req, $app_id, $opts], separator=", ")
+    } else if ($args <: [$app_id, $req]) {
+      $use_args = join(list=[$req, $app_id], separator=", ")
+    } else {
+      $use_args = $args
+    }
+  } else {
+    $use_args = join(list=$args, separator=", ")
+  },
+  return $use_args
 }
 
 pattern rewrite_method_calls($resource, $callee) {
@@ -86,34 +113,16 @@ pattern rewrite_method_calls($resource, $callee) {
     // TODO more elegant handling of await-or-not, maybe via regex? better idea?
     contains bubble($resource, $callee) `await $callee.$method($args)` as $body where {
       $suffix = deprecated_suffix(resource=$resource, method=$method),
-      // TODO extract an unwrap member to replace `connectionInfo`
-      // TODO how do we match and use rest-of-args without so much copypasta?
       // TODO finish rearranging methods
       // TODO generalize arg-rearrangement for the non-await case, since they're the same.
-      if ($method <: `setLobbyState`) {
-        if ($args <: [$app_id, $room_id, $req, $opts]) {
-          $use_args = join(list=[$req, $app_id, $room_id, $opts], separator=", ")
-        } else if ($args <: [$app_id, $room_id, $req]) {
-          $use_args = join(list=[$req, $room_id, $app_id], separator=", ")
-        }
-      } else if ($method <: `loginGoogle`) {
-        if ($args <: [$app_id, $req, $opts]) {
-          $use_args = join(list=[$req, $app_id, $opts], separator=", ")
-        } else if ($args <: [$app_id, $req]) {
-          $use_args = join(list=[$req, $app_id], separator=", ")
-        }
-      } else {
-        $use_args = join(list=$args, separator=", ")
-      },
+      $use_args = reorder_args($method, $args),
       $unwrap_at = wrapper_key(method=$method),
       $body => `(await $callee.$[method]$[suffix]($use_args)).$unwrap_at`
     },
     contains bubble($resource, $callee) `$callee.$method($args)` as $body where {
       $suffix = deprecated_suffix(resource=$resource, method=$method),
-      // TODO: many request funs have a different arg order, usually shifting the request to the beginning,
-      // so we need to rearrange $args
-      // TODO extract an unwrap member to replace `connectionInfo`
-      $body => `$callee.$[method]$[suffix]($args)`
+      $use_args = reorder_args($method, $args),
+      $body => `$callee.$[method]$[suffix]($use_args)`
     }
   }
 }
@@ -213,4 +222,5 @@ any {
   `import $_ from "@hathora/hathora-cloud-sdk/src/models/index"` => .,
   gather_calls(),
 }
+
 ```
