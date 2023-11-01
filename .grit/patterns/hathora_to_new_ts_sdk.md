@@ -69,6 +69,18 @@ function deprecated_suffix($resource, $method) {
   return ``
 }
 
+// TODO the rest of the unwrappings
+function wrapper_key($method) {
+  if ($method <: or {`loginAnonymous`, `loginGoogle`}) {
+    return `loginResponse`
+  } else if ($method <: `getLobbyInfo`) {
+    return `lobbyInfo`
+  } else {
+    return `connectionInfo`
+  },
+  return `connectionInfo`
+}
+
 pattern rewrite_method_calls($resource, $callee) {
   maybe any {
     // TODO more elegant handling of await-or-not, maybe via regex? better idea?
@@ -93,7 +105,8 @@ pattern rewrite_method_calls($resource, $callee) {
       } else {
         $use_args = join(list=$args, separator=", ")
       },
-      $body => `(await $callee.$[method]$[suffix]($use_args)).connectionInfo`
+      $unwrap_at = wrapper_key(method=$method),
+      $body => `(await $callee.$[method]$[suffix]($use_args)).$unwrap_at`
     },
     contains bubble($resource, $callee) `$callee.$method($args)` as $body where {
       $suffix = deprecated_suffix(resource=$resource, method=$method),
