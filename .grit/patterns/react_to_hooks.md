@@ -883,7 +883,7 @@ const Expandable = () => {
   const [open, setOpen] = useState(false);
 
   const handleToggleHandler = useCallback(() => {
-    setOpen(!open);
+    setOpen((open) => !open);
   }, [open]);
 
   return null;
@@ -995,6 +995,47 @@ const Expandable = () => {
         setError(error);
       });
   }, [error]);
+
+  return null;
+};
+
+export default Expandable;
+```
+
+## Sets state correctly where the state is an object
+
+```js
+import React from 'react';
+
+export default class Expandable extends React.PureComponent {
+  componentDidMount() {
+    this.setState({
+      dashboard: { label: result.dashboard_title, value: result.id },
+    });
+  }
+
+  handleClick() {
+    console.log(this.state.dashboard);
+  }
+
+  render() {
+    return null;
+  }
+}
+```
+
+```ts
+import React, { useState, useEffect, useCallback } from 'react';
+
+const Expandable = () => {
+  const [dashboard, setDashboard] = useState();
+
+  useEffect(() => {
+    setDashboard({ label: result.dashboard_title, value: result.id });
+  }, []);
+  const handleClickHandler = useCallback(() => {
+    console.log(dashboard);
+  }, [dashboard]);
 
   return null;
 };
