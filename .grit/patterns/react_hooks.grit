@@ -227,13 +227,13 @@ pattern change_this($states_statements) {
 }
 
 pattern find_miscellaneous_state($states_statements) {
-    maybe contains `this.state.$name` where {
-        $capitalized = capitalize(string = $name),
-        $resolved = `const [$name, set$capitalized] =`,
-        $program <: not contains `constructor ($_) { $body }` where {
-            $body <: contains $name,
+    maybe contains `this.state.$state_name` where {
+        $capitalized = capitalize(string = $state_name),        
+        $program <: not contains method_definition(name=$method_name, $body) where {
+            $method_name <: js"constructor",
+            // $body <: contains $state_name,
         },
-        $states_statements += `const [$name, set$capitalized] = useState();`,
+        $states_statements += `const [$state_name, set$capitalized] = useState();`,
     },
 }
 
