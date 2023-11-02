@@ -890,3 +890,62 @@ const Expandable = () => {
 
 export default Expandable;
 ```
+
+## Identifies state which is accessed but not initialized
+
+```js
+import React, { ReactNode } from 'react';
+
+export type Props = {
+  children: ReactNode,
+};
+
+type State = {
+  error: Error,
+};
+
+export default class Expandable extends React.Component<Props, State> {
+  componentDidUpdate(prevProps: Props) {
+    if (this.state.error) {
+      console.error(this.state.error);
+    }
+  }
+
+  handleVerify() {
+    sendRequest().catch((error) => this.setState({ error }));
+  }
+
+  render() {
+    return null;
+  }
+}
+```
+
+```ts
+import React, { ReactNode, useState, useEffect, useCallback } from 'react';
+
+export type Props = {
+  children: ReactNode;
+};
+
+type State = {
+  error: Error;
+};
+
+const Expandable = () => {
+  const [error, setError] = useState();
+
+  useEffect(() => {
+    if (error) {
+      console.error(error);
+    }
+  }, [error]);
+  const handleVerifyHandler = useCallback(() => {
+    sendRequest().catch((error) => setError(error));
+  }, [error]);
+
+  return null;
+};
+
+export default Expandable;
+```

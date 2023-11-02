@@ -40,68 +40,76 @@ pattern handle_ref($statements, $statement, $name, $type) {
 
 pattern handle_one_statement($class_name, $statements, $states_statements, $static_statements, $render_statements, $constructor_statements, $handler_callback_suffix, $use_ref_from) {
     or {
-        method_definition($static, $async, $name, $body, $parameters) as $statement where or {
-            and {
-                $name <: js"constructor",
-                $body <: maybe contains bubble($constructor_statements) {
-                    lexical_declaration($declarations) as $decl where $declarations <:
-                        variable_declarator($name, $value) where {
-                            $name <: not contains js"this.state",
-                            $value <: not contains js"this.state",
-                            $constructor_statements += $decl
-                        }
+        method_definition($static, $async, $name, $body, $parameters) as $statement where {
+            or {
+                and {
+                    $name <: js"constructor",
+                    $body <: maybe contains bubble($constructor_statements) {
+                        lexical_declaration($declarations) as $decl where $declarations <:
+                            variable_declarator($name, $value) where {
+                                $name <: not contains js"this.state",
+                                $value <: not contains js"this.state",
+                                $constructor_statements += $decl
+                            }
+                    },
+                    $body <: change_this($states_statements),
                 },
-                $body <: change_this($states_statements)
-            },
-            and {
-                $statement <: prepend_comment($statements),
-                $name <: or { `componentDidUpdate`, `componentDidMount` },
-                $body <: change_this($states_statements),
-                $statements += `useEffect(() => $body, []);`
-            },
-            and {
-                $statement <: prepend_comment($statements),
-                $name <: `componentWillUnmount`,
-                $body <: change_this($states_statements),
-                $statements += `useEffect(() => {\n    return () => $body;\n}, []);`
-            },
-            and {
-                $name <: `render`,
-                $body <: statement_block(statements = $render_statements)
-            },
-            and {
-                $statement <: prepend_comment(statements=$static_statements),
-                $static <: `static`,
-                $body <: change_this($states_statements),
-                $static_statements += `$class_name.$name = ($parameters) => $body;`
-            },
-            and {
-                $statement <: prepend_comment($statements),
-                $async <: `async`,
-                if ($handler_callback_suffix <: .) {
-                  $statements += `const $name = async ($parameters) => $body;`
-                } else {
-                  $statements += `const $[name]$[handler_callback_suffix] = useCallback(async ($parameters) => $body, []);`
+                and {
+                    $statement <: prepend_comment($statements),
+                    $name <: or { `componentDidUpdate`, `componentDidMount` },
+                    $body <: change_this($states_statements),
+                    $statements += `useEffect(() => $body, []);`
+                },
+                and {
+                    $statement <: prepend_comment($statements),
+                    $name <: `componentWillUnmount`,
+                    $body <: change_this($states_statements),
+                    $statements += `useEffect(() => {\n    return () => $body;\n}, []);`
+                },
+                and {
+                    $name <: `render`,
+                    $body <: statement_block(statements = $render_statements)
+                },
+                and {
+                    $statement <: prepend_comment(statements=$static_statements),
+                    $static <: `static`,
+                    $body <: change_this($states_statements),
+                    $static_statements += `$class_name.$name = ($parameters) => $body;`
+                },
+                and {
+                    $statement <: prepend_comment($statements),
+                    $async <: `async`,
+                    if ($handler_callback_suffix <: .) {
+                    $statements += `const $name = async ($parameters) => $body;`
+                    } else {
+                    $statements += `const $[name]$[handler_callback_suffix] = useCallback(async ($parameters) => $body, []);`
+                    }
+                },
+                and {
+                    $statement <: prepend_comment($statements),
+                    $statement <: after `@computed`,
+                    $statements += `const $name = useMemo(() => $body, []);`
+                },
+                and {
+                    $statement <: prepend_comment($statements),
+                    $statement <: contains js"get",
+                    $statements += `const $name = useMemo(() => $body, []);`
+                },
+                and {
+                    $statement <: prepend_comment($statements),
+                    if ($handler_callback_suffix <: .) {
+                    $statements += `const $name = ($parameters) => $body;`
+                    } else {
+                    $statements += `const $[name]$[handler_callback_suffix] = useCallback(($parameters) => $body, []);`
+                    }
                 }
             },
-            and {
-                $statement <: prepend_comment($statements),
-                $statement <: after `@computed`,
-                $statements += `const $name = useMemo(() => $body, []);`
+            if ($name <: js"constructor") {
+                $is_constructor = true,
+            } else {
+                $is_constructor = false,
             },
-            and {
-                $statement <: prepend_comment($statements),
-                $statement <: contains js"get",
-                $statements += `const $name = useMemo(() => $body, []);`
-            },
-            and {
-                $statement <: prepend_comment($statements),
-                if ($handler_callback_suffix <: .) {
-                  $statements += `const $name = ($parameters) => $body;`
-                } else {
-                  $statements += `const $[name]$[handler_callback_suffix] = useCallback(($parameters) => $body, []);`
-                }
-            }
+            $body <: find_miscellaneous_state($states_statements, $is_constructor),
         },
         public_field_definition($static, $name, $value, $type) as $statement where or {
             and {
@@ -230,7 +238,7 @@ pattern find_miscellaneous_state($states_statements, $is_constructor) {
     },
     maybe contains `this.state.$name` where {
         $capitalized = capitalize(string = $name),
-        $states_statements <: not some r".*const [$name, set$capitalized] =.*",
+        $states_statements <: not some true,
         $states_statements += `const [$name, set$capitalized] = useState()`,
     },
 }
@@ -464,11 +472,11 @@ pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos, $handler_ca
             $x <: contains bubble($statements) or {
                 pair(key = $key, value = $value) where {
                     $capitalized = capitalize(string = $key),
-                    $statements += `set$capitalized($value);`
+                    $statements += `set$capitalized($value)`
                 },
                 shorthand_property_identifier() as $identifier where {
                     $capitalized = capitalize(string = $identifier),
-                    $statements += `set$capitalized($identifier);`
+                    $statements += `set$capitalized($identifier)`
                 }
             },
             $separator = `\n    `,
