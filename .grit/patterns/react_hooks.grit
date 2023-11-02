@@ -64,7 +64,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                             $statements += `useEffect(() => {(async () => $body)()}, []);`
                         },
                         $statements += `useEffect(() => $body, []);`
-                    }
+                    },
                 },
                 and {
                     $statement <: prepend_comment($statements),
