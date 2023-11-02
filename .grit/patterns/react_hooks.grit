@@ -233,7 +233,7 @@ pattern find_miscellaneous_state($states_statements) {
         $program <: not contains `constructor ($_) { $body }` where {
             $body <: contains $name,
         },
-        $states_statements += `const [$name, set$capitalized] = useState()`,
+        $states_statements += `const [$name, set$capitalized] = useState();`,
     },
 }
 
