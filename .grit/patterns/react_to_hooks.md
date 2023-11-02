@@ -99,11 +99,12 @@ import { useState, useEffect, useCallback } from 'react';
 const App = () => {
   const [name, setName] = useState('');
   const [another, setAnother] = useState(3);
+  const [count, setCount] = useState();
   const [isOpen, setIsOpen] = useState();
 
   useEffect(() => {
     document.title = `You clicked ${count} times`;
-  }, []);
+  }, [count]);
   useEffect(() => {
     // alert("This component was mounted");
     document.title = `You clicked ${count} times`;
@@ -111,7 +112,7 @@ const App = () => {
     if (isOpen && !prevProps.isOpen) {
       alert('You just opened the modal!');
     }
-  }, [isOpen]);
+  }, [count, isOpen]);
   const alertNameHandler = useCallback(() => {
     alert(name);
   }, [name]);
