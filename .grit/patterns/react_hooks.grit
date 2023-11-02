@@ -314,7 +314,7 @@ pattern maybe_wrapped_class_declaration($class_name, $body, $class) {
         export_statement(declaration = class_declaration(name = $class_name, $body, $heritage) as $class),
         class_declaration(name = $class_name, $body, $heritage) as $class
     } where {
-        $heritage <: contains extends_clause(value = contains `Component`)
+        $heritage <: contains extends_clause(value = contains or { `Component`, `PureComponent` })
     }
 }
 pattern first_step($use_ref_from, $handler_callback_suffix) {
