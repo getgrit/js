@@ -268,10 +268,7 @@ pattern adjust_imports() {
         or {
             // ugly dealing with imports
             contains import_specifier(name = `Component`) => `$hooks`,
-            contains `import React from 'react'` as $i where {
-                $i <: not contains namespace_import(),
-                $i => `import React, { $hooks } from 'react';`
-            },
+            contains `import React, { $x } from "react"` => `import React, { $x, $hooks } from "react"`,
             contains `import React from "react"` as $i where {
                 if ($i <: not contains namespace_import()) {
                     $i => `import React, { $hooks } from 'react';`
@@ -282,6 +279,7 @@ pattern adjust_imports() {
         }
     }
 }
+
 pattern maybe_wrapped_class_declaration($class_name, $body, $class) {
     or {
         export_statement(declaration = class_declaration(name = $class_name, $body, $heritage) as $class),

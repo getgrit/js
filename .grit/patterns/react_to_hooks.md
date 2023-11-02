@@ -837,3 +837,56 @@ const MyComponent = () => {
 
 export default MyComponent;
 ```
+
+## Does not remove existing react imports
+
+```js
+import React, { ReactNode } from 'react';
+
+export type Props = {
+  children: ReactNode,
+};
+
+type State = {
+  open: boolean,
+};
+
+export default class Expandable extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { open: false };
+  }
+
+  handleToggle() {
+    this.setState(({ open }) => ({ open: !open }));
+  }
+
+  render() {
+    return null;
+  }
+}
+```
+
+```ts
+import React, { ReactNode, useState, useCallback } from 'react';
+
+export type Props = {
+  children: ReactNode;
+};
+
+type State = {
+  open: boolean;
+};
+
+const Expandable = () => {
+  const [open, setOpen] = useState(false);
+
+  const handleToggleHandler = useCallback(() => {
+    setOpen(!open);
+  }, [open]);
+
+  return null;
+};
+
+export default Expandable;
+```
