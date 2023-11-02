@@ -1075,7 +1075,7 @@ const Loader = () => {
 export default Loader;
 ```
 
-## Does not duplicate commas
+## Converts default props
 
 ```js
 import React from 'react';
@@ -1084,6 +1084,7 @@ export class Nice extends React.Component {
   static defaultProps = {
     compact: false,
     title: null,
+    renderContent() {},
   };
 
   constructor(props) {
@@ -1103,6 +1104,7 @@ export const Nice = (inputProps) => {
   const props = {
     compact: false,
     title: null,
+    renderContent: function () {},
     ...inputProps,
   };
 
