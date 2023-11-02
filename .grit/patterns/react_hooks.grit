@@ -52,29 +52,29 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                                 $constructor_statements += $decl
                             }
                     },
-                    $body <: change_this($states_statements),
+                    $body <: change_this($states_statements, is_constructor=true),
                 },
                 and {
                     $statement <: prepend_comment($statements),
                     $name <: or { `componentDidUpdate`, `componentDidMount` },
-                    $body <: change_this($states_statements),
+                    $body <: change_this($states_statements, is_constructor=false),
                     $statements += `useEffect(() => $body, []);`
                 },
                 and {
                     $statement <: prepend_comment($statements),
                     $name <: `componentWillUnmount`,
-                    $body <: change_this($states_statements),
+                    $body <: change_this($states_statements, is_constructor=false),
                     $statements += `useEffect(() => {\n    return () => $body;\n}, []);`
                 },
                 and {
                     $name <: `render`,
                     $body <: statement_block(statements = $render_statements),
-                    $body <: change_this($states_statements),
+                    $body <: change_this($states_statements, is_constructor=false),
                 },
                 and {
                     $statement <: prepend_comment(statements=$static_statements),
                     $static <: `static`,
-                    $body <: change_this($states_statements),
+                    $body <: change_this($states_statements, is_constructor=false),
                     $static_statements += `$class_name.$name = ($parameters) => $body;`
                 },
                 and {
@@ -205,21 +205,32 @@ pattern prepend_comment($statements) {
         $statements += js"$comment"
     }
 }
-pattern change_this($states_statements) {
-    maybe contains bubble($states_statements) or {
+pattern change_this($states_statements, $is_constructor) {
+    maybe contains bubble($states_statements, $is_constructor) or {
         assignment_expression(
             left = `this.state`,
             right = object (
-                properties = some bubble($states_statements) pair($key, $value) where {
+                properties = some bubble($states_statements, $is_constructor) pair($key, $value) where {
                 $capitalized = capitalize(string = $key),
+                or {
+                    $is_constructor <: true,
+                    $program <: not contains `constructor ($_) { $body }` where {
+                        $body <: contains $key,
+                    }
+                },
                 $states_statements += `const [$key, set$capitalized] = useState($value);`
-            }
-            )
+            })
         ) => .,
         variable_declarator(
-            name = object_pattern(properties = some bubble($states_statements) $prop where {
+            name = object_pattern(properties = some bubble($states_statements, $is_constructor) $prop where {
                 $capitalized = capitalize(string = $prop),
-                $states_statements += `const [$prop, set$capitalized] = useState();`
+                or {
+                    $is_constructor <: true,
+                    $program <: not contains `constructor ($_) { $body }` where {
+                        $body <: contains $prop,
+                    }
+                },
+                $states_statements += `const [$prop, set$capitalized] = useState();`,
             }),
             value = `this.state`
         ) => .,
@@ -227,13 +238,12 @@ pattern change_this($states_statements) {
 }
 
 pattern find_miscellaneous_state($states_statements) {
-    maybe contains `this.state.$state_name` where {
-        $capitalized = capitalize(string = $state_name),        
-        $program <: not contains method_definition(name=$method_name, $body) where {
-            $method_name <: js"constructor",
-            // $body <: contains $state_name,
+    maybe contains `this.state.$name` where {
+        $capitalized = capitalize(string = $name),
+        $program <: not contains `constructor ($_) { $body }` where {
+            $body <: contains $name,
         },
-        $states_statements += `const [$state_name, set$capitalized] = useState();`,
+        $states_statements += `const [$name, set$capitalized] = useState();`,
     },
 }
 
