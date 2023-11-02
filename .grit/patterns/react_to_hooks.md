@@ -954,3 +954,46 @@ const Expandable = () => {
 
 export default Expandable;
 ```
+
+## Handles implicit return
+
+```js
+import React from 'react';
+
+export default class Expandable extends React.Component {
+  constructor(value) {
+    this.state = { value, error: undefined };
+  }
+
+  handleVerify() {
+    sendRequest()
+      .then((res) => this.setState({ value: res, error: undefined }))
+      .catch((error) => this.setState({ error }));
+  }
+
+  render() {
+    return null;
+  }
+}
+```
+
+```ts
+import React, { useState, useCallback } from 'react';
+
+const Expandable = () => {
+  const [error, setError] = useState(undefined);
+
+  const handleVerifyHandler = useCallback(() => {
+    sendRequest()
+      .then((res) => {
+        setValue(res);
+        setError(undefined);
+      })
+      .catch((error) => setError(error));
+  }, [error]);
+
+  return null;
+};
+
+export default Expandable;
+```
