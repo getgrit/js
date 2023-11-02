@@ -124,7 +124,11 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
             and {
                 $value <: object($properties),
                 $name <: `defaultProps`,
-                $statements += `const props = { \n    $properties,\n    ...inputProps,\n  };`
+                or {
+                    $properties <: r"(?s)(.*),"($our_props),
+                    $our_props = $properties,
+                },
+                $statements += `const props = { \n    $our_props,\n    ...inputProps,\n  };`
             },
             and {
                 $static <: `static`,

@@ -1074,3 +1074,38 @@ const Loader = () => {
 
 export default Loader;
 ```
+
+## Does not duplicate commas
+
+```js
+import React from 'react';
+
+export class Nice extends React.Component {
+  static defaultProps = {
+    compact: false,
+    title: null,
+  };
+
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return null;
+  }
+}
+```
+
+```ts
+import React from 'react';
+
+export const Nice = (inputProps) => {
+  const props = {
+    compact: false,
+    title: null,
+    ...inputProps,
+  };
+
+  return null;
+};
+```
