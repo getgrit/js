@@ -903,6 +903,7 @@ export type Props = {
 
 type State = {
   error: Error,
+  show: boolean,
 };
 
 export default class Expandable extends React.Component<Props, State> {
@@ -917,7 +918,8 @@ export default class Expandable extends React.Component<Props, State> {
   }
 
   render() {
-    return null;
+    const { show } = this.state;
+    return show ? <></> : null;
   }
 }
 ```
@@ -931,10 +933,12 @@ export type Props = {
 
 type State = {
   error: Error;
+  show: boolean;
 };
 
 const Expandable = () => {
   const [error, setError] = useState();
+  const [show, setShow] = useState();
 
   useEffect(() => {
     if (error) {
@@ -945,7 +949,7 @@ const Expandable = () => {
     sendRequest().catch((error) => setError(error));
   }, [error]);
 
-  return null;
+  return show ? <></> : null;
 };
 
 export default Expandable;
