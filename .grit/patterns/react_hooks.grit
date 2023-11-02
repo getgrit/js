@@ -58,7 +58,13 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                     $statement <: prepend_comment($statements),
                     $name <: or { `componentDidUpdate`, `componentDidMount` },
                     $body <: change_this($states_statements, is_constructor=false),
-                    $statements += `useEffect(() => $body, []);`
+                    or {
+                        {
+                            $async <: `async`,
+                            $statements += `useEffect(() => (async () => $body)(), []);`
+                        },
+                        $statements += `useEffect(() => $body, []);`
+                    }
                 },
                 and {
                     $statement <: prepend_comment($statements),

@@ -1042,3 +1042,37 @@ const Expandable = () => {
 
 export default Expandable;
 ```
+
+## Transforms async useEffect
+
+```js
+import React from 'react';
+
+export default class Loader extends React.PureComponent {
+  async componentDidMount() {
+    await loadSomething();
+  }
+
+  render() {
+    return null;
+  }
+}
+```
+
+```ts
+import React, { useEffect } from 'react';
+
+const Loader = () => {
+  useEffect(
+    () =>
+      (async () => {
+        await loadSomething();
+      })(),
+    [],
+  );
+
+  return null;
+};
+
+export default Loader;
+```
