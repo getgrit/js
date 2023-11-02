@@ -61,7 +61,7 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                     or {
                         {
                             $async <: `async`,
-                            $statements += `useEffect(() => (async () => $body)(), []);`
+                            $statements += `useEffect(() => {(async () => $body)()}, []);`
                         },
                         $statements += `useEffect(() => $body, []);`
                     }

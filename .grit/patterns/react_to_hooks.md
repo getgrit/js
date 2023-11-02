@@ -1063,13 +1063,11 @@ export default class Loader extends React.PureComponent {
 import React, { useEffect } from 'react';
 
 const Loader = () => {
-  useEffect(
-    () =>
-      (async () => {
-        await loadSomething();
-      })(),
-    [],
-  );
+  useEffect(() => {
+    (async () => {
+      await loadSomething();
+    })();
+  }, []);
 
   return null;
 };
