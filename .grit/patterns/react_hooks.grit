@@ -200,7 +200,7 @@ pattern prepend_comment($statements) {
     }
 }
 pattern change_this($states_statements) {
-    maybe contains or {
+    maybe contains bubble($states_statements) or {
         assignment_expression(
             left = `this.state`,
             right = object (
@@ -216,9 +216,26 @@ pattern change_this($states_statements) {
                 $states_statements += `const [$prop, set$capitalized] = useState();`
             }),
             value = `this.state`
-        ) => .
+        ) => .,
     }
 }
+
+pattern find_miscellaneous_state($states_statements, $is_constructor) {
+    if ($is_constructor <: true) {
+        maybe contains `this.state.$name = $x` where {
+            $capitalized = capitalize(string = $name),
+            $states_statements <: not some r".*const [$name, set$capitalized] =.*",
+            $states_statements += `const [$name, set$capitalized] = useState($x)`,
+        }
+    },
+    maybe contains `this.state.$name` where {
+        $capitalized = capitalize(string = $name),
+        $states_statements <: not some r".*const [$name, set$capitalized] =.*",
+        $states_statements += `const [$name, set$capitalized] = useState()`,
+    },
+}
+
+
 pattern gather_hooks($hooks) {
     contains or {
         `useEffect` where {
