@@ -68,7 +68,8 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 },
                 and {
                     $name <: `render`,
-                    $body <: statement_block(statements = $render_statements)
+                    $body <: statement_block(statements = $render_statements),
+                    $body <: change_this($states_statements),
                 },
                 and {
                     $statement <: prepend_comment(statements=$static_statements),
