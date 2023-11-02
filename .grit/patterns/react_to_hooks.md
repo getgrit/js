@@ -946,7 +946,9 @@ const Expandable = () => {
     }
   }, [error]);
   const handleVerifyHandler = useCallback(() => {
-    sendRequest().catch((error) => setError(error));
+    sendRequest().catch((error) => {
+      setError(error);
+    });
   }, [error]);
 
   return show ? <></> : null;
@@ -989,7 +991,9 @@ const Expandable = () => {
         setValue(res);
         setError(undefined);
       })
-      .catch((error) => setError(error));
+      .catch((error) => {
+        setError(error);
+      });
   }, [error]);
 
   return null;

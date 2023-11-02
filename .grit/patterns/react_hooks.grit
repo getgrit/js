@@ -486,7 +486,13 @@ pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos, $handler_ca
             },
             $separator = `\n    `,
             $statements = join(list = $statements, $separator),
-            $set_state => `$statements`
+            or {
+                $set_state <: within arrow_function($body) where {
+                    $body <: $set_state,
+                    $set_state => `{ $statements }`,
+                },
+                $set_state => `$statements`
+            }
         },
         // to deactivate dependency detection, comment out the following lines
         `$method($f, $dependencies_array)` where {
