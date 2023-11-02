@@ -485,8 +485,6 @@ pattern rewrite_accesses($hoisted_states, $hoisted_refs, $use_memos, $handler_ca
                 }
             },
             $separator = `\n    `,
-            // a bit of hack because we cannot use a code snippet as an argument to a builtin function yet
-            $separator += "",
             $statements = join(list = $statements, $separator),
             $set_state => `$statements`
         },
