@@ -4,66 +4,22 @@
 engine marzano(0.1)
 language js
 
-pattern replace_resource_import($resource) {
-  contains import_statement(import = import_clause(name=named_imports($imports)), source= `"@hathora/hathora-cloud-sdk"`) where {
-    if ($imports <: contains $import where $import <: $resource) {
-      $sdk = `sdk`,
-      // TODO what's the best way to ask them to provide their SDK?
-      // emit a file with a TODO? what if they use relative imports?
-      // how do we know what import path to use? add that to the TODO?
-      $sdk <: ensure_import_from(source=`"./sdk"`),
-    } else {
-      true
-    }
-  }
-}
-
-// TODO finish these various resource-specific checks.
-// if it turns out they're very regular, you could just regex-and-recase them.
-function resource_type_import_source($resource) {
-  if($resource <: `RoomV1Api`) {
-    $result = `"@hathora/cloud-sdk-typescript/dist/sdk/roomv1"`
-  } else if ($resource <: `AuthV1Api`) {
-    $result = `"@hathora/cloud-sdk-typescript/dist/sdk/authv1"`
-  } else if ($resource <: `LobbyV1Api`) {
-    $result = `"@hathora/cloud-sdk-typescript/dist/sdk/lobbyv1"`
-  } else if ($resource <: `LobbyV2Api`) {
-    $result = `"@hathora/cloud-sdk-typescript/dist/sdk/lobbyv2"`
-  },
-  return $result
-}
-
-function resource_type_substitute($resource) {
-  if($resource <: `RoomV1Api`) {
-    $result = `RoomV1`
-  } else if ($resource <: `AuthV1Api`) {
-    $result = `AuthV1`
-  } else if ($resource <: `LobbyV1Api`) {
-    $result = `LobbyV1`
-  } else if ($resource <: `LobbyV2Api`) {
-    $result = `LobbyV2`
-  },
-  return $result
-}
-
-function sdk_member_name($resource) {
-  if($resource <: `RoomV1Api`) {
-    $result = `roomV1`
-  } else if ($resource <: `AuthV1Api`) {
-    $result = `authV1`
-  } else if ($resource <: `LobbyV1Api`) {
-    $result = `lobbyV1`
-  } else if ($resource <: `LobbyV2Api`) {
-    $result = `lobbyV2`
-  },
-  return $result
-}
-
 // some functions have changed names to reflect deprecation.
 // XXX not all of them, eg lobby v2 `createLocalLobby` is deprecated,
 // but not renamed.
-function deprecated_suffix($resource, $method) {
-  if ($resource <: or {`RoomV1Api`, `LobbyV1Api`}) {
+function deprecated_suffix($method) {
+  if ($method <: or {
+    `createPrivateLobby`,
+    `createPublicLobby`,
+    `listActivePublicLobbies`,
+    `createRoom`,
+    `destroyRoom`,
+    `getActiveRoomsForProcess`,
+    `getConnectionInfo`,
+    `getInactiveRoomsForProcess`,
+    `getRoomInfo`,
+    `suspendRoom`
+    }) {
     return `Deprecated`
   },
   return ``
@@ -73,7 +29,7 @@ function deprecated_suffix($resource, $method) {
 function wrapper_key($method) {
   if ($method <: or {`loginAnonymous`, `loginGoogle`}) {
     return `loginResponse`
-  } else if ($method <: `getLobbyInfo`) {
+  } else if ($method <: or {`getLobbyInfo`, `setLobbyState`}) {
     return `lobby`
   } else {
     return `connectionInfo`
@@ -108,19 +64,16 @@ function reorder_args($method, $args) {
   return $use_args
 }
 
-pattern rewrite_method_calls($resource, $callee) {
+pattern rewrite_method_calls() {
   maybe any {
-    // TODO more elegant handling of await-or-not, maybe via regex? better idea?
-    contains bubble($resource, $callee) `await $callee.$method($args)` as $body where {
-      $suffix = deprecated_suffix(resource=$resource, method=$method),
-      // TODO finish rearranging methods
-      // TODO generalize arg-rearrangement for the non-await case, since they're the same.
+    bubble `await $callee.$method($args)` as $body where {
+      $suffix = deprecated_suffix(method=$method),
       $use_args = reorder_args($method, $args),
       $unwrap_at = wrapper_key(method=$method),
       $body => `(await $callee.$[method]$[suffix]($use_args)).$unwrap_at`
     },
-    contains bubble($resource, $callee) `$callee.$method($args)` as $body where {
-      $suffix = deprecated_suffix(resource=$resource, method=$method),
+    bubble `$callee.$method($args)` as $body where {
+      $suffix = deprecated_suffix(method=$method),
       $use_args = reorder_args($method, $args),
       $body => `$callee.$[method]$[suffix]($use_args)`
     }
@@ -128,99 +81,61 @@ pattern rewrite_method_calls($resource, $callee) {
 }
 
 pattern generic_replace_resource($resource) {
-  and {
-      replace_resource_import($resource),
-    // TODO what do we do about hygiene when we import names like `sdk`?
-    // do we have to worry about shadowing?
-      maybe any {
-        $member_name = sdk_member_name($resource),      
-        and {
-          contains `const $binding = new $resource()` => `const $binding = sdk.$member_name;`, 
-          rewrite_method_calls(resource=$resource, callee=$binding),
-        },
-        contains type_annotation(type=$resource) where {
-          $source = resource_type_import_source($resource),
-          $substitute = resource_type_substitute($resource),
-          $substitute <: ensure_import_from(source=$source)
-      } => `: $substitute`
-    }
-  }
-}
-
-// v1 functions return an extra layer of indirection now, so eg a login response is at `.loginResponse`
-pattern replace_inside_functions($client_type) {
-  function_declaration(parameters=$params, body=$body) where {
-    // TODO critically, this depends on types. if the target project is pure js, we're SoL.
-    // One option is to just assume any name calling a given method like `getConnectionInfo` is using Hathora.
-    // Not every method name may be that distinctive, and in any real codebase it could be insanely noisy.
-    // A more invasive solution that seems like it would require Grit core support
-    // is just following variable refs by substitution (where possible!) and guessing what's what.
-    // There is a point at which that's just reproducing a static analyzer.
-    $params <: [..., `$client_binding: $client_type`, ...],
-    $body <: rewrite_method_calls(resource=$client_type, callee=$client_binding),
-  }
+  rewrite_method_calls(),
 }
 
 pattern gather_calls() {
-  and { 
-    any {
-      bubble any {
-        generic_replace_resource(resource=`RoomV1Api`),
-        replace_inside_functions(client_type=`RoomV1Api`)
-      },
-      bubble and {
-        $resource = `LobbyV1Api`,
-        any {
-          generic_replace_resource(resource=$resource),
-          replace_inside_functions(client_type=$resource)
-        }
-      },
-      bubble and {
-        $resource = `AuthV1Api`,
-        any {
-          generic_replace_resource(resource=$resource),
-          replace_inside_functions(client_type=$resource)
-        }
-      },
-      bubble and {
-        $resource = `LobbyV2Api`,
-        any {
-          generic_replace_resource(resource=$resource),
-          replace_inside_functions(client_type=$resource)
-        }
+  maybe any {
+    bubble any {
+      generic_replace_resource(resource=`RoomV1Api`),
+    },
+    bubble and {
+      $resource = `LobbyV1Api`,
+      any {
+        generic_replace_resource(resource=$resource),
+      }
+    },
+    bubble and {
+      $resource = `AuthV1Api`,
+      any {
+        generic_replace_resource(resource=$resource),
+      }
+    },
+    bubble and {
+      $resource = `LobbyV2Api`,
+      any {
+        generic_replace_resource(resource=$resource),
       }
     }
   }
 }
 
-pattern type_imports() {
-  or {
-    `Region`,
-    `Lobby`
-  }
-}
-
-pattern replace_type_import($imported_type) {
-  import_statement(import = import_clause(name=named_imports($imports)), source= $old) where {
-    $old <: or {
-    `"@hathora/hathora-cloud-sdk"`,
-    `"@hathora/hathora-cloud-sdk/src/models/index"`
+sequential {
+  $name where and {
+    $name <: imported_from(from = `"@hathora/hathora-cloud-sdk"`),
+    $name <: replace_import(old=`"@hathora/hathora-cloud-sdk"`, new=`"@hathora/cloud-sdk-typescript"`),
   },
-    if ($imports <: contains $import where $import <: $imported_type) {
-      $imports <: contains $import,
-      $import <: ensure_import_from(source=`"@hathora/cloud-sdk-typescript/dist/sdk/models/shared"`)
-    } else {
-      true
-    }
+  any {
+    and {
+      $name where {
+        $name <: or {
+          `new AuthV1Api($_)` => `new HathoraCloud().authV1`,
+          `new LobbyV1Api($_)` => `new HathoraCloud().lobbyV1`,
+          `new LobbyV2Api($_)` => `new HathoraCloud().lobbyV2`,
+          `new RoomV1Api($_)` => `new HathoraCloud().roomV1`,
+        },
+        $cloud = `HathoraCloud`,
+        $src = `"@hathora/cloud-sdk-typescript"`,
+        $cloud <: ensure_import_from(source=$src),
+      }
+    },
+    $name where $name <: or {
+      `AuthV1Api` => `AuthV1`,
+      `LobbyV1Api` => `LobbyV1`,
+      `LobbyV2Api` => `LobbyV2`,
+      `RoomV1Api` => `RoomV1`,
+    },
   },
-}
-
-any {
-  replace_type_import(imported_type=`Lobby`),
-  replace_type_import(imported_type=`Region`),
-  `import $_ from "@hathora/hathora-cloud-sdk";` => .,
-  `import $_ from "@hathora/hathora-cloud-sdk/src/models/index"` => .,
   gather_calls(),
 }
-
 ```
