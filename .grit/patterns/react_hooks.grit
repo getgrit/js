@@ -122,6 +122,10 @@ pattern handle_one_statement($class_name, $statements, $states_statements, $stat
                 $statements += `useEffect(() => $effect, []);`
             },
             and {
+                $value <: identifier(),
+                $statements += `const props = { \n    ...$value,\n    ...inputProps,\n  };`
+            },
+            and {
                 $value <: object($properties),
                 $name <: `defaultProps`,
                 $props = [],
