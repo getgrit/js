@@ -4,247 +4,196 @@
 engine marzano(0.1)
 language js
 
-function wrapper_key($method) {
-  if ($method <: or {`deleteApp`, `destroyRoomDeprecated`, `destroyRoom`, `suspendRoom`, `deleteBuild`, `suspendRoomDeprecated`}) {
-      return ``
-  } else if ($method <: or {`getBalance`}) {
-      return `getBalance200ApplicationJSONDoubleNumber`
-  } else if ($method <: or {`getStoppedProcesses`}) {
-      return `processes`
-  } else if ($method <: or {`getLogsForDeployment`}) {
-      return `getLogsForDeployment200TextPlainByteString`
-  } else if ($method <: or {`initStripeCustomerPortalUrl`}) {
-      return `initStripeCustomerPortalUrl200ApplicationJSONString`
-  } else if ($method <: or {`getLogsForApp`}) {
-      return `getLogsForApp200TextPlainByteString`
-  } else if ($method <: or {`getBuilds`}) {
-      return `builds`
-  } else if ($method <: or {`getProcessInfo`}) {
-      return `process`
-  } else if ($method <: or {`getLogsForProcess`}) {
-      return `getLogsForProcess200TextPlainByteString`
-  } else if ($method <: or {`getConnectionInfoDeprecated`}) {
-      return `connectionInfo`
-  } else if ($method <: or {`getAppInfo`, `createApp`, `updateApp`}) {
-      return `application`
-  } else if ($method <: or {`getPingServiceEndpoints`}) {
-      return `discoveryResponse`
-  } else if ($method <: or {`createLocalLobby`, `setLobbyState`, `createPrivateLobby`, `createPublicLobby`, `getLobbyInfo`, `createLobby`}) {
-      return `lobby`
-  } else if ($method <: or {`getApps`}) {
-      return `applicationWithDeployments`
-  } else if ($method <: or {`createBuild`, `getBuildInfo`}) {
-      return `build`
-  } else if ($method <: or {`getDeploymentInfo`, `createDeployment`}) {
-      return `deployment`
-  } else if ($method <: or {`sendVerificationEmail`}) {
-      return `verificationEmailResponse`
-  } else if ($method <: or {`createRoom`, `getConnectionInfo`}) {
-      return `connectionInfoV2`
-  } else if ($method <: or {`getActiveRoomsForProcessDeprecated`, `getActiveRoomsForProcess`, `getInactiveRoomsForProcessDeprecated`, `getInactiveRoomsForProcess`}) {
-      return `roomWithoutAllocations`
-  } else if ($method <: or {`getRunningProcesses`}) {
-      return `processWithRooms`
-  } else if ($method <: or {`runBuild`}) {
-      return `runBuild200TextPlainByteString`
-  } else if ($method <: or {`getPaymentMethod`}) {
-      return `paymentMethod`
-  } else if ($method <: or {`getRoomInfoDeprecated`, `getRoomInfo`}) {
-      return `room`
-  } else if ($method <: or {`createPrivateLobbyDeprecated`, `createRoomDeprecated`, `createPublicLobbyDeprecated`}) {
-      return `roomId`
-  } else if ($method <: or {`getMetrics`}) {
-      return `metricsResponse`
-  } else if ($method <: or {`listActivePublicLobbiesDeprecated`, `listActivePublicLobbies`}) {
-      return `lobbies`
-  } else if ($method <: or {`getDeployments`}) {
-      return `deployments`
-  } else if ($method <: or {`getInvoices`}) {
-      return `invoices`
-  } else if ($method <: or {`loginNickname`, `loginGoogle`, `loginAnonymous`}) {
-      return `loginResponse`
-  },
-  return ``,
-}
-
-pattern hathora_method() {
+pattern rewrite_method_call() {
   or {
-    `createApp`,
-`createAppRaw`,
-`createBuild`,
-`createBuildRaw`,
-`createDeployment`,
-`createDeploymentRaw`,
-`createLobby`,
-`createLobbyRaw`,
-`createLocalLobby`,
-`createLocalLobbyRaw`,
-`createPrivateLobby`,
-`createPrivateLobbyDeprecated`,
-`createPrivateLobbyDeprecatedRaw`,
-`createPrivateLobbyRaw`,
-`createPublicLobby`,
-`createPublicLobbyDeprecated`,
-`createPublicLobbyDeprecatedRaw`,
-`createPublicLobbyRaw`,
-`createRoom`,
-`createRoomDeprecated`,
-`createRoomDeprecatedRaw`,
-`createRoomRaw`,
-`deleteApp`,
-`deleteAppRaw`,
-`deleteBuild`,
-`deleteBuildRaw`,
-`destroyRoom`,
-`destroyRoomDeprecated`,
-`destroyRoomDeprecatedRaw`,
-`destroyRoomRaw`,
-`getActiveRoomsForProcess`,
-`getActiveRoomsForProcessDeprecated`,
-`getActiveRoomsForProcessDeprecatedRaw`,
-`getActiveRoomsForProcessRaw`,
-`getAppInfo`,
-`getAppInfoRaw`,
-`getApps`,
-`getAppsRaw`,
-`getBalance`,
-`getBalanceRaw`,
-`getBuildInfo`,
-`getBuildInfoRaw`,
-`getBuilds`,
-`getBuildsRaw`,
-`getConnectionInfo`,
-`getConnectionInfoDeprecated`,
-`getConnectionInfoDeprecatedRaw`,
-`getConnectionInfoRaw`,
-`getDeploymentInfo`,
-`getDeploymentInfoRaw`,
-`getDeployments`,
-`getDeploymentsRaw`,
-`getInactiveRoomsForProcess`,
-`getInactiveRoomsForProcessDeprecated`,
-`getInactiveRoomsForProcessDeprecatedRaw`,
-`getInactiveRoomsForProcessRaw`,
-`getInvoices`,
-`getInvoicesRaw`,
-`getLobbyInfo`,
-`getLobbyInfoRaw`,
-`getLogsForApp`,
-`getLogsForAppRaw`,
-`getLogsForDeployment`,
-`getLogsForDeploymentRaw`,
-`getLogsForProcess`,
-`getLogsForProcessRaw`,
-`getMetrics`,
-`getMetricsRaw`,
-`getPaymentMethod`,
-`getPaymentMethodRaw`,
-`getPingServiceEndpoints`,
-`getPingServiceEndpointsRaw`,
-`getProcessInfo`,
-`getProcessInfoRaw`,
-`getRoomInfo`,
-`getRoomInfoDeprecated`,
-`getRoomInfoDeprecatedRaw`,
-`getRoomInfoRaw`,
-`getRunningProcesses`,
-`getRunningProcessesRaw`,
-`getStoppedProcesses`,
-`getStoppedProcessesRaw`,
-`initStripeCustomerPortalUrl`,
-`initStripeCustomerPortalUrlRaw`,
-`listActivePublicLobbies`,
-`listActivePublicLobbiesDeprecated`,
-`listActivePublicLobbiesDeprecatedRaw`,
-`listActivePublicLobbiesRaw`,
-`loginAnonymous`,
-`loginAnonymousRaw`,
-`loginGoogle`,
-`loginGoogleRaw`,
-`loginNickname`,
-`loginNicknameRaw`,
-`request`,
-`runBuild`,
-`runBuildRaw`,
-`sendVerificationEmail`,
-`sendVerificationEmailRaw`,
-`setLobbyState`,
-`setLobbyStateRaw`,
-`suspendRoom`,
-`suspendRoomDeprecated`,
-`suspendRoomDeprecatedRaw`,
-`suspendRoomRaw`,
-`updateApp`,
-`updateAppRaw`,
-`value`,
-  },
-}
-
-// some functions have changed names to reflect deprecation.
-// XXX not all of them, eg lobby v2 `createLocalLobby` is deprecated,
-// but not renamed.
-pattern deprecated_suffix($method) {
-  $method where $method <: or {
-    and {
-      or {
-    `createPrivateLobby`,
-    `createPublicLobby`,
-    `listActivePublicLobbies`,
-    `createRoom`,
-    `destroyRoom`,
-    `getActiveRoomsForProcess`,
-    `getConnectionInfo`,
-    `getInactiveRoomsForProcess`,
-    `getRoomInfo`,
-    `suspendRoom`
-    }, 
-    $method => `$[method]Deprecated`
-    },
-    $method
-  }
-}
-
-pattern reorder_args($method, $args) {
-  $method where $method <: or {
-    `getLobbyInfo` where or {
-      $args <: [$a, $b]  => `($b, $a)`,
-      $args <: [$a, $b, $c]  => `($b, $a, $c)`,
-    },
-    or {`loginNickname`, `loginGoogle`} where or {
-      $args <: [$a, $b, $c] => `($b, $a, $c)`
-    },
-    `createRoom` where or {
-      $args <: [$a, $b] => `($b, $a)`,
-      $args <: [$a, $b, $c] => `($b, $a, $c)`,
-      $args <: [$a, $b, $c, $d] => `($b, $a, $c, $d)`,
-    },
-    or {`setLobbyState`, `createDeployment`, `runBuild`} where or {
-      $args <: [$a, $b, $c] => `($c, $a, $b)`,
-      $args <: [$a, $b, $c, $d] => `($c, $a, $b, $d)`
-    },
-    or {`createPublicLobby`, `createLobby`, `createPrivateLobby`} where or {
-      $args <: [$a, $b, $c] => `($c, $a)`,
-      $args <: [$a, $b, $c, $d] => `($c, $a, $d)`,
-      $args <: [$a, $b, $c, $d, $e] => `($c, $a, $d, $e)`
-    }
-  } => `$method$args`
-}
-
-pattern rewrite_method_calls() {
-  or {
-    `await $callee.$method($args)` as $body where and {
-      $method <: hathora_method(),
-      $unwrap_at = wrapper_key(method=$method),
-      $method <: deprecated_suffix(method=$method),
-      $method <: maybe reorder_args(method=$method, args=$args),
-      $body => `(await $callee.$[method]).$unwrap_at`
-    },
-    `$callee.$method($args)` as $body where and {
-      $method <: hathora_method(),
-      $method <: deprecated_suffix(method=$method),
-      $method <: maybe reorder_args(method=$method, args=$args),
-      $body => `$callee.$[method]`
-    }
+    `await $x.createApp($args)` => `(await $x.createApp($args)).application`,
+    `$x.createBuild($args)` where or {
+      $args <: [$a, $b] => `$a`
+    } => `$x.createBuild($args)`,
+    `await $x.createBuild($args)` where or {
+      $args <: [$a, $b] => `$a`
+    } => `(await $x.createBuild($args)).build`,
+    `$x.createDeployment($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a, $b`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
+    } => `$x.createDeployment($args)`,
+    `await $x.createDeployment($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a, $b`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
+    } => `(await $x.createDeployment($args)).deployment`,
+    `$x.createLobby($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $d`,
+      $args <: [$a, $b, $c, $d, $e] => `$c, $a, $d, $e`
+    } => `$x.createLobby($args)`,
+    `await $x.createLobby($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $d`,
+      $args <: [$a, $b, $c, $d, $e] => `$c, $a, $d, $e`
+    } => `(await $x.createLobby($args)).lobby`,
+    `$x.createLocalLobby($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $d`,
+      $args <: [$a, $b, $c, $d, $e] => `$c, $a, $d, $e`
+    } => `$x.createLocalLobby($args)`,
+    `await $x.createLocalLobby($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $d`,
+      $args <: [$a, $b, $c, $d, $e] => `$c, $a, $d, $e`
+    } => `(await $x.createLocalLobby($args)).lobby`,
+    `$x.createPrivateLobby($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $d`,
+      $args <: [$a, $b, $c, $d, $e] => `$c, $a, $d, $e`
+    } => `$x.createPrivateLobbyDeprecated($args)`,
+    `await $x.createPrivateLobby($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $d`,
+      $args <: [$a, $b, $c, $d, $e] => `$c, $a, $d, $e`
+    } => `(await $x.createPrivateLobbyDeprecated($args)).lobby`,
+    `$x.createPrivateLobbyDeprecated($args)` where or {
+      $args <: [$a, $b] => `$a`,
+      $args <: [$a, $b, $c] => `$a, $c`,
+      $args <: [$a, $b, $c, $d] => `$a, $d, $c`,
+      $args <: [$a, $b, $c, $d, $e] => `$a, $d, $c, $e`
+    } => `$x.createPrivateLobbyDeprecated($args)`,
+    `await $x.createPrivateLobbyDeprecated($args)` where or {
+      $args <: [$a, $b] => `$a`,
+      $args <: [$a, $b, $c] => `$a, $c`,
+      $args <: [$a, $b, $c, $d] => `$a, $d, $c`,
+      $args <: [$a, $b, $c, $d, $e] => `$a, $d, $c, $e`
+    } => `(await $x.createPrivateLobbyDeprecated($args)).roomId`,
+    `$x.createPublicLobby($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a, $b`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
+    } => `$x.createPublicLobbyDeprecated($args)`,
+    `await $x.createPublicLobby($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a, $b`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
+    } => `(await $x.createPublicLobbyDeprecated($args)).lobby`,
+    `$x.createPublicLobbyDeprecated($args)` where or {
+      $args <: [$a, $b] => `$a`,
+      $args <: [$a, $b, $c] => `$a, $c`,
+      $args <: [$a, $b, $c, $d] => `$a, $d, $c`,
+      $args <: [$a, $b, $c, $d, $e] => `$a, $d, $c, $e`
+    } => `$x.createPublicLobbyDeprecated($args)`,
+    `await $x.createPublicLobbyDeprecated($args)` where or {
+      $args <: [$a, $b] => `$a`,
+      $args <: [$a, $b, $c] => `$a, $c`,
+      $args <: [$a, $b, $c, $d] => `$a, $d, $c`,
+      $args <: [$a, $b, $c, $d, $e] => `$a, $d, $c, $e`
+    } => `(await $x.createPublicLobbyDeprecated($args)).roomId`,
+    `$x.createRoom($args)` where or {
+      $args <: [$a, $b] => `$a, $b`,
+      $args <: [$a, $b, $c] => `$c, $a, $b`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
+    } => `$x.createRoomDeprecated($args)`,
+    `await $x.createRoom($args)` where or {
+      $args <: [$a, $b] => `$a, $b`,
+      $args <: [$a, $b, $c] => `$c, $a, $b`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
+    } => `(await $x.createRoomDeprecated($args)).connectionInfoV2`,
+    `$x.createRoomDeprecated($args)` where or {
+      $args <: [$a, $b] => `$b, $a`,
+      $args <: [$a, $b, $c] => `$b, $a, $c`,
+      $args <: [$a, $b, $c, $d] => `$b, $a, $c, $d`
+    } => `$x.createRoomDeprecated($args)`,
+    `await $x.createRoomDeprecated($args)` where or {
+      $args <: [$a, $b] => `$b, $a`,
+      $args <: [$a, $b, $c] => `$b, $a, $c`,
+      $args <: [$a, $b, $c, $d] => `$b, $a, $c, $d`
+    } => `(await $x.createRoomDeprecated($args)).roomId`,
+    `$x.destroyRoom($args)` => `$x.destroyRoomDeprecated($args)`,
+    `await $x.destroyRoom($args)` => `await $x.destroyRoomDeprecated($args)`,
+    `$x.getActiveRoomsForProcess($args)` => `$x.getActiveRoomsForProcessDeprecated($args)`,
+    `await $x.getActiveRoomsForProcess($args)` => `(await $x.getActiveRoomsForProcessDeprecated($args)).roomWithoutAllocations`,
+    `await $x.getActiveRoomsForProcessDeprecated($args)` => `(await $x.getActiveRoomsForProcessDeprecated($args)).roomWithoutAllocations`,
+    `await $x.getAppInfo($args)` => `(await $x.getAppInfo($args)).application`,
+    `await $x.getApps($args)` => `(await $x.getApps($args)).applicationWithDeployments`,
+    `await $x.getBalance($args)` => `(await $x.getBalance($args)).getBalance200ApplicationJSONDoubleNumber`,
+    `await $x.getBuildInfo($args)` => `(await $x.getBuildInfo($args)).build`,
+    `await $x.getBuilds($args)` => `(await $x.getBuilds($args)).builds`,
+    `$x.getConnectionInfo($args)` => `$x.getConnectionInfoDeprecated($args)`,
+    `await $x.getConnectionInfo($args)` => `(await $x.getConnectionInfoDeprecated($args)).connectionInfoV2`,
+    `await $x.getConnectionInfoDeprecated($args)` => `(await $x.getConnectionInfoDeprecated($args)).connectionInfo`,
+    `await $x.getDeploymentInfo($args)` => `(await $x.getDeploymentInfo($args)).deployment`,
+    `await $x.getDeployments($args)` => `(await $x.getDeployments($args)).deployments`,
+    `$x.getInactiveRoomsForProcess($args)` => `$x.getInactiveRoomsForProcessDeprecated($args)`,
+    `await $x.getInactiveRoomsForProcess($args)` => `(await $x.getInactiveRoomsForProcessDeprecated($args)).roomWithoutAllocations`,
+    `await $x.getInactiveRoomsForProcessDeprecated($args)` => `(await $x.getInactiveRoomsForProcessDeprecated($args)).roomWithoutAllocations`,
+    `await $x.getInvoices($args)` => `(await $x.getInvoices($args)).invoices`,
+    `await $x.getLobbyInfo($args)` => `(await $x.getLobbyInfo($args)).lobby`,
+    `await $x.getLogsForApp($args)` => `(await $x.getLogsForApp($args)).getLogsForApp200TextPlainByteString`,
+    `await $x.getLogsForDeployment($args)` => `(await $x.getLogsForDeployment($args)).getLogsForDeployment200TextPlainByteString`,
+    `await $x.getLogsForProcess($args)` => `(await $x.getLogsForProcess($args)).getLogsForProcess200TextPlainByteString`,
+    `await $x.getMetrics($args)` => `(await $x.getMetrics($args)).metricsResponse`,
+    `await $x.getPaymentMethod($args)` => `(await $x.getPaymentMethod($args)).paymentMethod`,
+    `await $x.getPingServiceEndpoints($args)` => `(await $x.getPingServiceEndpoints($args)).discoveryResponse`,
+    `await $x.getProcessInfo($args)` => `(await $x.getProcessInfo($args)).process`,
+    `$x.getRoomInfo($args)` => `$x.getRoomInfoDeprecated($args)`,
+    `await $x.getRoomInfo($args)` => `(await $x.getRoomInfoDeprecated($args)).room`,
+    `await $x.getRoomInfoDeprecated($args)` => `(await $x.getRoomInfoDeprecated($args)).room`,
+    `await $x.getRunningProcesses($args)` => `(await $x.getRunningProcesses($args)).processWithRooms`,
+    `await $x.getStoppedProcesses($args)` => `(await $x.getStoppedProcesses($args)).processes`,
+    `await $x.initStripeCustomerPortalUrl($args)` => `(await $x.initStripeCustomerPortalUrl($args)).initStripeCustomerPortalUrl200ApplicationJSONString`,
+    `$x.listActivePublicLobbies($args)` => `$x.listActivePublicLobbiesDeprecated($args)`,
+    `await $x.listActivePublicLobbies($args)` => `(await $x.listActivePublicLobbiesDeprecated($args)).lobbies`,
+    `$x.listActivePublicLobbiesDeprecated($args)` where or {
+      $args <: [$a, $b] => `$a`,
+      $args <: [$a, $b, $c] => `$a, $c`,
+      $args <: [$a, $b, $c, $d] => `$a, $c, $d`,
+      $args <: [$a, $b, $c, $d, $e] => `$a, $c, $d, $e`
+    } => `$x.listActivePublicLobbiesDeprecated($args)`,
+    `await $x.listActivePublicLobbiesDeprecated($args)` where or {
+      $args <: [$a, $b] => `$a`,
+      $args <: [$a, $b, $c] => `$a, $c`,
+      $args <: [$a, $b, $c, $d] => `$a, $c, $d`,
+      $args <: [$a, $b, $c, $d, $e] => `$a, $c, $d, $e`
+    } => `(await $x.listActivePublicLobbiesDeprecated($args)).lobbies`,
+    `await $x.loginAnonymous($args)` => `(await $x.loginAnonymous($args)).loginResponse`,
+    `$x.loginGoogle($args)` where or {
+      $args <: [$a, $b] => `$b, $a`,
+      $args <: [$a, $b, $c] => `$b, $a, $c`
+    } => `$x.loginGoogle($args)`,
+    `await $x.loginGoogle($args)` where or {
+      $args <: [$a, $b] => `$b, $a`,
+      $args <: [$a, $b, $c] => `$b, $a, $c`
+    } => `(await $x.loginGoogle($args)).loginResponse`,
+    `$x.loginNickname($args)` where or {
+      $args <: [$a, $b] => `$b, $a`,
+      $args <: [$a, $b, $c] => `$b, $a, $c`
+    } => `$x.loginNickname($args)`,
+    `await $x.loginNickname($args)` where or {
+      $args <: [$a, $b] => `$b, $a`,
+      $args <: [$a, $b, $c] => `$b, $a, $c`
+    } => `(await $x.loginNickname($args)).loginResponse`,
+    `$x.runBuild($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a, $b`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
+    } => `$x.runBuild($args)`,
+    `await $x.runBuild($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a, $b`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
+    } => `(await $x.runBuild($args)).runBuild200TextPlainByteString`,
+    `await $x.sendVerificationEmail($args)` => `(await $x.sendVerificationEmail($args)).verificationEmailResponse`,
+    `$x.setLobbyState($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a, $b`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
+    } => `$x.setLobbyState($args)`,
+    `await $x.setLobbyState($args)` where or {
+      $args <: [$a, $b, $c] => `$c, $a, $b`,
+      $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
+    } => `(await $x.setLobbyState($args)).lobby`,
+    `$x.suspendRoom($args)` => `$x.suspendRoomDeprecated($args)`,
+    `await $x.suspendRoom($args)` => `await $x.suspendRoomDeprecated($args)`,
+    `$x.updateApp($args)` where or {
+      $args <: [$a, $b] => `$b, $a`,
+      $args <: [$a, $b, $c] => `$b, $a, $c`
+    } => `$x.updateApp($args)`,
+    `await $x.updateApp($args)` where or {
+      $args <: [$a, $b] => `$b, $a`,
+      $args <: [$a, $b, $c] => `$b, $a, $c`
+    } => `(await $x.updateApp($args)).application`
   }
 }
 
@@ -322,9 +271,8 @@ any {
     $x => $replacement_import,
     $replacement_import <: ensure_import_from(source=$new),
   },
-  bubble maybe rewrite_method_calls()
+  bubble rewrite_method_call()
 }
-
 ```
 
 ## Instantiates API Resources 
@@ -370,8 +318,32 @@ import { LobbyV2, HathoraCloud } from "@hathora/cloud-sdk-typescript";
 const lobbyClient: LobbyV2 = new HathoraCloud().lobbyV2;
 ```
 
+## Renames deprecated methods
+
+```js
+import { RoomV1Api } from "@hathora/hathora-cloud-sdk";
+const roomClient = new RoomV1Api();
+
+roomClient.destroyRoom(process.env.HATHORA_APP_ID!,
+  roomId,
+  { headers: { Authorization: `Bearer ${getDeveloperToken()}`, "Content-Type": "application/json" } }
+);
+```
+
+```js
+import { HathoraCloud } from "@hathora/cloud-sdk-typescript";
+
+const roomClient = new HathoraCloud().roomV1;
+
+roomClient.destroyRoomDeprecated(process.env.HATHORA_APP_ID!,
+  roomId,
+  { headers: { Authorization: `Bearer ${getDeveloperToken()}`, "Content-Type": "application/json" } }
+);
+```
 
 ## Unwraps responses in-place
+
+Responses often have a new intervening wrapper key for the response data. For instance, `setLobbyState` returns data under `.lobby`.
 
 ```js
 import { LobbyV2Api } from "@hathora/hathora-cloud-sdk";
