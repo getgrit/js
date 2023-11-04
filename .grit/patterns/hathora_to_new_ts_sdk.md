@@ -4,132 +4,67 @@
 engine marzano(0.1)
 language js
 
-// some functions have changed names to reflect deprecation.
-// XXX not all of them, eg lobby v2 `createLocalLobby` is deprecated,
-// but not renamed.
-function deprecated_suffix($method) {
-  if ($method <: or {
-    `createPrivateLobby`,
-    `createPublicLobby`,
-    `listActivePublicLobbies`,
-    `createRoom`,
-    `destroyRoom`,
-    `getActiveRoomsForProcess`,
-    `getConnectionInfo`,
-    `getInactiveRoomsForProcess`,
-    `getRoomInfo`,
-    `suspendRoom`
-    }) {
-    return `Deprecated`
-  },
-  return ``
-}
-
 function wrapper_key($method) {
-if ($method <: or {`deleteApp`, `destroyRoomDeprecated`, `destroyRoom`, `suspendRoom`, `deleteBuild`, `suspendRoomDeprecated`}) {
-         return `null`
-      } else if ($method <: or {`getBalance`}) {
-         return `getBalance200ApplicationJSONDoubleNumber`
-      } else if ($method <: or {`getStoppedProcesses`}) {
-         return `processes`
-      } else if ($method <: or {`getLogsForDeployment`}) {
-         return `getLogsForDeployment200TextPlainByteString`
-      } else if ($method <: or {`initStripeCustomerPortalUrl`}) {
-         return `initStripeCustomerPortalUrl200ApplicationJSONString`
-      } else if ($method <: or {`getLogsForApp`}) {
-         return `getLogsForApp200TextPlainByteString`
-      } else if ($method <: or {`getBuilds`}) {
-         return `builds`
-      } else if ($method <: or {`getProcessInfo`}) {
-         return `process`
-      } else if ($method <: or {`getLogsForProcess`}) {
-         return `getLogsForProcess200TextPlainByteString`
-      } else if ($method <: or {`getConnectionInfoDeprecated`}) {
-         return `connectionInfo`
-      } else if ($method <: or {`getAppInfo`, `createApp`, `updateApp`}) {
-         return `application`
-      } else if ($method <: or {`getPingServiceEndpoints`}) {
-         return `discoveryResponse`
-      } else if ($method <: or {`createLocalLobby`, `setLobbyState`, `createPrivateLobby`, `createPublicLobby`, `getLobbyInfo`, `createLobby`}) {
-         return `lobby`
-      } else if ($method <: or {`getApps`}) {
-         return `applicationWithDeployments`
-      } else if ($method <: or {`createBuild`, `getBuildInfo`}) {
-         return `build`
-      } else if ($method <: or {`getDeploymentInfo`, `createDeployment`}) {
-         return `deployment`
-      } else if ($method <: or {`sendVerificationEmail`}) {
-         return `verificationEmailResponse`
-      } else if ($method <: or {`createRoom`, `getConnectionInfo`}) {
-         return `connectionInfoV2`
-      } else if ($method <: or {`getActiveRoomsForProcessDeprecated`, `getActiveRoomsForProcess`, `getInactiveRoomsForProcessDeprecated`, `getInactiveRoomsForProcess`}) {
-         return `roomWithoutAllocations`
-      } else if ($method <: or {`getRunningProcesses`}) {
-         return `processWithRooms`
-      } else if ($method <: or {`runBuild`}) {
-         return `runBuild200TextPlainByteString`
-      } else if ($method <: or {`getPaymentMethod`}) {
-         return `paymentMethod`
-      } else if ($method <: or {`getRoomInfoDeprecated`, `getRoomInfo`}) {
-         return `room`
-      } else if ($method <: or {`createPrivateLobbyDeprecated`, `createRoomDeprecated`, `createPublicLobbyDeprecated`}) {
-         return `roomId`
-      } else if ($method <: or {`getMetrics`}) {
-         return `metricsResponse`
-      } else if ($method <: or {`listActivePublicLobbiesDeprecated`, `listActivePublicLobbies`}) {
-         return `lobbies`
-      } else if ($method <: or {`getDeployments`}) {
-         return `deployments`
-      } else if ($method <: or {`getInvoices`}) {
-         return `invoices`
-      } else if ($method <: or {`loginNickname`, `loginGoogle`, `loginAnonymous`}) {
-         return `loginResponse`
-      },
-  return ``,
-}
-
-// many request funs have a different arg order, usually shifting the request to the beginning,
-// so we need to rearrange $args
-// TODO: the rest of the functions
-function reorder_args($method, $args) {
-  if ($method <: `setLobbyState`) {
-    // TODO how do we match and use rest-of-args without so much copypasta?
-    if ($args <: [$app_id, $room_id, $req, $opts]) {
-      $use_args = join(list=[$req, $app_id, $room_id, $opts], separator=", ")
-    } else if ($args <: [$app_id, $room_id, $req]) {
-      $use_args = join(list=[$req, $room_id, $app_id], separator=", ")
-    } else {
-      $use_args = $args
-    }
-  } else if ($method <: or {`loginNickname`,
-                            `loginGoogle`}) {
-    if ($args <: [$app_id, $req, $opts]) {
-      $use_args = join(list=[$req, $app_id, $opts], separator=", ")
-    } else if ($args <: [$app_id, $req]) {
-      $use_args = join(list=[$req, $app_id], separator=", ")
-    } else {
-      $use_args = $args
-    }
-  } else if ($method <: `createRoom`) {
-    if ($args <: [$app_id, $req, $room_id, $opts]) {
-      $use_args = join(list=[$req, $app_id, $room_id, $opts], separator=", ")
-    } else if ($args <: [$app_id, $req, $room_id]) {
-      $use_args = join(list=[$req, $app_id, $room_id], separator=", ")
-    } else {
-      $use_args = $args
-    }
-  } else if ($method <: `createLocalLobby`) {
-    if ($args <: [$app_id, $auth, $req, $room_id, $opts]) {
-      $use_args = join(list=[$req, $app_id, $room_id, $opts], separator=", ")
-    } else if ($args <: [$app_id, $auth, $req, $room_id]) {
-      $use_args = join(list=[$req, $app_id, $room_id], separator=", ")
-    } else {
-      $use_args = $args
-    }
-  } else {
-    $use_args = join(list=$args, separator=", ")
+  if ($method <: or {`deleteApp`, `destroyRoomDeprecated`, `destroyRoom`, `suspendRoom`, `deleteBuild`, `suspendRoomDeprecated`}) {
+      return ``
+  } else if ($method <: or {`getBalance`}) {
+      return `getBalance200ApplicationJSONDoubleNumber`
+  } else if ($method <: or {`getStoppedProcesses`}) {
+      return `processes`
+  } else if ($method <: or {`getLogsForDeployment`}) {
+      return `getLogsForDeployment200TextPlainByteString`
+  } else if ($method <: or {`initStripeCustomerPortalUrl`}) {
+      return `initStripeCustomerPortalUrl200ApplicationJSONString`
+  } else if ($method <: or {`getLogsForApp`}) {
+      return `getLogsForApp200TextPlainByteString`
+  } else if ($method <: or {`getBuilds`}) {
+      return `builds`
+  } else if ($method <: or {`getProcessInfo`}) {
+      return `process`
+  } else if ($method <: or {`getLogsForProcess`}) {
+      return `getLogsForProcess200TextPlainByteString`
+  } else if ($method <: or {`getConnectionInfoDeprecated`}) {
+      return `connectionInfo`
+  } else if ($method <: or {`getAppInfo`, `createApp`, `updateApp`}) {
+      return `application`
+  } else if ($method <: or {`getPingServiceEndpoints`}) {
+      return `discoveryResponse`
+  } else if ($method <: or {`createLocalLobby`, `setLobbyState`, `createPrivateLobby`, `createPublicLobby`, `getLobbyInfo`, `createLobby`}) {
+      return `lobby`
+  } else if ($method <: or {`getApps`}) {
+      return `applicationWithDeployments`
+  } else if ($method <: or {`createBuild`, `getBuildInfo`}) {
+      return `build`
+  } else if ($method <: or {`getDeploymentInfo`, `createDeployment`}) {
+      return `deployment`
+  } else if ($method <: or {`sendVerificationEmail`}) {
+      return `verificationEmailResponse`
+  } else if ($method <: or {`createRoom`, `getConnectionInfo`}) {
+      return `connectionInfoV2`
+  } else if ($method <: or {`getActiveRoomsForProcessDeprecated`, `getActiveRoomsForProcess`, `getInactiveRoomsForProcessDeprecated`, `getInactiveRoomsForProcess`}) {
+      return `roomWithoutAllocations`
+  } else if ($method <: or {`getRunningProcesses`}) {
+      return `processWithRooms`
+  } else if ($method <: or {`runBuild`}) {
+      return `runBuild200TextPlainByteString`
+  } else if ($method <: or {`getPaymentMethod`}) {
+      return `paymentMethod`
+  } else if ($method <: or {`getRoomInfoDeprecated`, `getRoomInfo`}) {
+      return `room`
+  } else if ($method <: or {`createPrivateLobbyDeprecated`, `createRoomDeprecated`, `createPublicLobbyDeprecated`}) {
+      return `roomId`
+  } else if ($method <: or {`getMetrics`}) {
+      return `metricsResponse`
+  } else if ($method <: or {`listActivePublicLobbiesDeprecated`, `listActivePublicLobbies`}) {
+      return `lobbies`
+  } else if ($method <: or {`getDeployments`}) {
+      return `deployments`
+  } else if ($method <: or {`getInvoices`}) {
+      return `invoices`
+  } else if ($method <: or {`loginNickname`, `loginGoogle`, `loginAnonymous`}) {
+      return `loginResponse`
   },
-  return $use_args
+  return ``,
 }
 
 pattern hathora_method() {
@@ -245,20 +180,70 @@ pattern hathora_method() {
   },
 }
 
+// some functions have changed names to reflect deprecation.
+// XXX not all of them, eg lobby v2 `createLocalLobby` is deprecated,
+// but not renamed.
+pattern deprecated_suffix($method) {
+  $method where $method <: or {
+    and {
+      or {
+    `createPrivateLobby`,
+    `createPublicLobby`,
+    `listActivePublicLobbies`,
+    `createRoom`,
+    `destroyRoom`,
+    `getActiveRoomsForProcess`,
+    `getConnectionInfo`,
+    `getInactiveRoomsForProcess`,
+    `getRoomInfo`,
+    `suspendRoom`
+    }, 
+    $method => `$[method]Deprecated`
+    },
+    $method
+  }
+}
+
+pattern reorder_args($method, $args) {
+  $method where $method <: or {
+    `getLobbyInfo` where or {
+      $args <: [$a, $b]  => `($b, $a)`,
+      $args <: [$a, $b, $c]  => `($b, $a, $c)`,
+    },
+    or {`loginNickname`, `loginGoogle`} where {
+      $args <: [$a, $b, $c] => `($b, $a, $c)`
+    },
+    `createRoom` where or {
+      $args <: [$a, $b] => `($b, $a)`,
+      $args <: [$a, $b, $c] => `($b, $a, $c)`,
+      $args <: [$a, $b, $c, $d] => `($b, $a, $c, $d)`,
+    },
+    or {`setLobbyState`, `createDeployment`, `runBuild`} where {
+      $args <: [$a, $b, $c] => `($c, $a, $b)`,
+      $args <: [$a, $b, $c, $d] => `($c, $a, $b, $d)`
+    },
+    or {`createPublicLobby`, `createLobby`, `createPrivateLobby`} where {
+      $args <: [$a, $b, $c] => `($c, $a)`,
+      $args <: [$a, $b, $c, $d] => `($c, $a, $d)`,
+      $args <: [$a, $b, $c, $d, $e] => `($c, $a, $d, $e)`
+    }
+  } => `$method$args`
+}
+
 pattern rewrite_method_calls() {
   or {
     `await $callee.$method($args)` as $body where and {
       $method <: hathora_method(),
-      $suffix = deprecated_suffix(method=$method),
-      $use_args = reorder_args($method, $args),
+      $method <: deprecated_suffix(method=$method),
+      $method <: reorder_args(method=$method, args=$args),
       $unwrap_at = wrapper_key(method=$method),
-      $body => `(await $callee.$[method]$[suffix]($use_args)).$unwrap_at`
+      $body => `(await $callee.$[method]).$unwrap_at`
     },
     `$callee.$method($args)` as $body where and {
       $method <: hathora_method(),
-      $suffix = deprecated_suffix(method=$method),
-      $use_args = reorder_args($method, $args),
-      $body => `$callee.$[method]$[suffix]($use_args)`
+      $method <: deprecated_suffix(method=$method),
+      $method <: reorder_args(method=$method, args=$args),
+      $body => `$callee.$[method]`
     }
   }
 }
