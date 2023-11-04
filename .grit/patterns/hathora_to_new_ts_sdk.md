@@ -25,39 +25,66 @@ function deprecated_suffix($method) {
   return ``
 }
 
-// TODO the rest of the unwrappings
 function wrapper_key($method) {
-  if ($method <: or {`loginAnonymous`, `loginGoogle`, `loginNickName`}) {
-    return `loginResponse`,
-  } else if ($method <: or {`getLobbyInfo`, `setLobbyState`}) {
-    return `lobby`,
-  } else if ($method <: or {`createApp`, `getAppInfo`, `updateApp`}) {
-    return `application`,
-  } else if ($method <: or {`getApps`}) {
-    return `applicationWithDeployments`,
-  } else if ($method <: `getBalance`) {
-    return `getBalance200ApplicationJSONDoubleNumber`,
-  } else if ($method <: `getInvoices`) {
-    return `invoicesResponse`,
-  } else if ($method <: `getPaymentMethod`) {
-    return `paymentMethod`,
-  } else if ($method <: `initStripeCustomerPortalUrl`) {
-    return `initStripeCustomerPortalUrl200ApplicationJSONString`
-  } else if ($method <: or {`createBuild`, `getBuildInfo`}) {
-    return `build`
-  } else if ($method <: or {`getBuilds`}) {
-    return `builds`
-  } else if ($method <: or {`runBuild`}) {
-    return `runBuild200TextPlainByteString`
-  } else if ($method <: or {`createDeployment`, `getDeploymentInfo`}) {
-    return `deployment`
-  } else if ($method <: or {`getDeployments`}) {
-    return `deployments`
-  } else if ($method <: `getPingServiceEndpoints`) {
-    return `discoveryResponse`
-  } else if ($method <: `createPrivateLobby`) {
-    return `roomid`
-  } ,
+if ($method <: or {`deleteApp`, `destroyRoomDeprecated`, `destroyRoom`, `suspendRoom`, `deleteBuild`, `suspendRoomDeprecated`}) {
+         return `null`
+      } else if ($method <: or {`getBalance`}) {
+         return `getBalance200ApplicationJSONDoubleNumber`
+      } else if ($method <: or {`getStoppedProcesses`}) {
+         return `processes`
+      } else if ($method <: or {`getLogsForDeployment`}) {
+         return `getLogsForDeployment200TextPlainByteString`
+      } else if ($method <: or {`initStripeCustomerPortalUrl`}) {
+         return `initStripeCustomerPortalUrl200ApplicationJSONString`
+      } else if ($method <: or {`getLogsForApp`}) {
+         return `getLogsForApp200TextPlainByteString`
+      } else if ($method <: or {`getBuilds`}) {
+         return `builds`
+      } else if ($method <: or {`getProcessInfo`}) {
+         return `process`
+      } else if ($method <: or {`getLogsForProcess`}) {
+         return `getLogsForProcess200TextPlainByteString`
+      } else if ($method <: or {`getConnectionInfoDeprecated`}) {
+         return `connectionInfo`
+      } else if ($method <: or {`getAppInfo`, `createApp`, `updateApp`}) {
+         return `application`
+      } else if ($method <: or {`getPingServiceEndpoints`}) {
+         return `discoveryResponse`
+      } else if ($method <: or {`createLocalLobby`, `setLobbyState`, `createPrivateLobby`, `createPublicLobby`, `getLobbyInfo`, `createLobby`}) {
+         return `lobby`
+      } else if ($method <: or {`getApps`}) {
+         return `applicationWithDeployments`
+      } else if ($method <: or {`createBuild`, `getBuildInfo`}) {
+         return `build`
+      } else if ($method <: or {`getDeploymentInfo`, `createDeployment`}) {
+         return `deployment`
+      } else if ($method <: or {`sendVerificationEmail`}) {
+         return `verificationEmailResponse`
+      } else if ($method <: or {`createRoom`, `getConnectionInfo`}) {
+         return `connectionInfoV2`
+      } else if ($method <: or {`getActiveRoomsForProcessDeprecated`, `getActiveRoomsForProcess`, `getInactiveRoomsForProcessDeprecated`, `getInactiveRoomsForProcess`}) {
+         return `roomWithoutAllocations`
+      } else if ($method <: or {`getRunningProcesses`}) {
+         return `processWithRooms`
+      } else if ($method <: or {`runBuild`}) {
+         return `runBuild200TextPlainByteString`
+      } else if ($method <: or {`getPaymentMethod`}) {
+         return `paymentMethod`
+      } else if ($method <: or {`getRoomInfoDeprecated`, `getRoomInfo`}) {
+         return `room`
+      } else if ($method <: or {`createPrivateLobbyDeprecated`, `createRoomDeprecated`, `createPublicLobbyDeprecated`}) {
+         return `roomId`
+      } else if ($method <: or {`getMetrics`}) {
+         return `metricsResponse`
+      } else if ($method <: or {`listActivePublicLobbiesDeprecated`, `listActivePublicLobbies`}) {
+         return `lobbies`
+      } else if ($method <: or {`getDeployments`}) {
+         return `deployments`
+      } else if ($method <: or {`getInvoices`}) {
+         return `invoices`
+      } else if ($method <: or {`loginNickname`, `loginGoogle`, `loginAnonymous`}) {
+         return `loginResponse`
+      },
   return ``,
 }
 
@@ -74,11 +101,28 @@ function reorder_args($method, $args) {
     } else {
       $use_args = $args
     }
-  } else if ($method <: `loginGoogle`) {
+  } else if ($method <: or {`loginNickname`,
+                            `loginGoogle`}) {
     if ($args <: [$app_id, $req, $opts]) {
       $use_args = join(list=[$req, $app_id, $opts], separator=", ")
     } else if ($args <: [$app_id, $req]) {
       $use_args = join(list=[$req, $app_id], separator=", ")
+    } else {
+      $use_args = $args
+    }
+  } else if ($method <: `createRoom`) {
+    if ($args <: [$app_id, $req, $room_id, $opts]) {
+      $use_args = join(list=[$req, $app_id, $room_id, $opts], separator=", ")
+    } else if ($args <: [$app_id, $req, $room_id]) {
+      $use_args = join(list=[$req, $app_id, $room_id], separator=", ")
+    } else {
+      $use_args = $args
+    }
+  } else if ($method <: `createLocalLobby`) {
+    if ($args <: [$app_id, $auth, $req, $room_id, $opts]) {
+      $use_args = join(list=[$req, $app_id, $room_id, $opts], separator=", ")
+    } else if ($args <: [$app_id, $auth, $req, $room_id]) {
+      $use_args = join(list=[$req, $app_id, $room_id], separator=", ")
     } else {
       $use_args = $args
     }
@@ -90,10 +134,114 @@ function reorder_args($method, $args) {
 
 pattern hathora_method() {
   or {
-    `destroyRoom`,
-    `loginAnonymous`,
-    `getLobbyInfo`,
-    `setLobbyState`,
+    `createApp`,
+`createAppRaw`,
+`createBuild`,
+`createBuildRaw`,
+`createDeployment`,
+`createDeploymentRaw`,
+`createLobby`,
+`createLobbyRaw`,
+`createLocalLobby`,
+`createLocalLobbyRaw`,
+`createPrivateLobby`,
+`createPrivateLobbyDeprecated`,
+`createPrivateLobbyDeprecatedRaw`,
+`createPrivateLobbyRaw`,
+`createPublicLobby`,
+`createPublicLobbyDeprecated`,
+`createPublicLobbyDeprecatedRaw`,
+`createPublicLobbyRaw`,
+`createRoom`,
+`createRoomDeprecated`,
+`createRoomDeprecatedRaw`,
+`createRoomRaw`,
+`deleteApp`,
+`deleteAppRaw`,
+`deleteBuild`,
+`deleteBuildRaw`,
+`destroyRoom`,
+`destroyRoomDeprecated`,
+`destroyRoomDeprecatedRaw`,
+`destroyRoomRaw`,
+`getActiveRoomsForProcess`,
+`getActiveRoomsForProcessDeprecated`,
+`getActiveRoomsForProcessDeprecatedRaw`,
+`getActiveRoomsForProcessRaw`,
+`getAppInfo`,
+`getAppInfoRaw`,
+`getApps`,
+`getAppsRaw`,
+`getBalance`,
+`getBalanceRaw`,
+`getBuildInfo`,
+`getBuildInfoRaw`,
+`getBuilds`,
+`getBuildsRaw`,
+`getConnectionInfo`,
+`getConnectionInfoDeprecated`,
+`getConnectionInfoDeprecatedRaw`,
+`getConnectionInfoRaw`,
+`getDeploymentInfo`,
+`getDeploymentInfoRaw`,
+`getDeployments`,
+`getDeploymentsRaw`,
+`getInactiveRoomsForProcess`,
+`getInactiveRoomsForProcessDeprecated`,
+`getInactiveRoomsForProcessDeprecatedRaw`,
+`getInactiveRoomsForProcessRaw`,
+`getInvoices`,
+`getInvoicesRaw`,
+`getLobbyInfo`,
+`getLobbyInfoRaw`,
+`getLogsForApp`,
+`getLogsForAppRaw`,
+`getLogsForDeployment`,
+`getLogsForDeploymentRaw`,
+`getLogsForProcess`,
+`getLogsForProcessRaw`,
+`getMetrics`,
+`getMetricsRaw`,
+`getPaymentMethod`,
+`getPaymentMethodRaw`,
+`getPingServiceEndpoints`,
+`getPingServiceEndpointsRaw`,
+`getProcessInfo`,
+`getProcessInfoRaw`,
+`getRoomInfo`,
+`getRoomInfoDeprecated`,
+`getRoomInfoDeprecatedRaw`,
+`getRoomInfoRaw`,
+`getRunningProcesses`,
+`getRunningProcessesRaw`,
+`getStoppedProcesses`,
+`getStoppedProcessesRaw`,
+`initStripeCustomerPortalUrl`,
+`initStripeCustomerPortalUrlRaw`,
+`listActivePublicLobbies`,
+`listActivePublicLobbiesDeprecated`,
+`listActivePublicLobbiesDeprecatedRaw`,
+`listActivePublicLobbiesRaw`,
+`loginAnonymous`,
+`loginAnonymousRaw`,
+`loginGoogle`,
+`loginGoogleRaw`,
+`loginNickname`,
+`loginNicknameRaw`,
+`request`,
+`runBuild`,
+`runBuildRaw`,
+`sendVerificationEmail`,
+`sendVerificationEmailRaw`,
+`setLobbyState`,
+`setLobbyStateRaw`,
+`suspendRoom`,
+`suspendRoomDeprecated`,
+`suspendRoomDeprecatedRaw`,
+`suspendRoomRaw`,
+`updateApp`,
+`updateAppRaw`,
+`value`,
   },
 }
 
@@ -179,6 +327,7 @@ any {
   },
   bubble maybe rewrite_method_calls()
 }
+
 ```
 
 ## Instantiates API Resources 
