@@ -210,7 +210,7 @@ pattern reorder_args($method, $args) {
       $args <: [$a, $b]  => `($b, $a)`,
       $args <: [$a, $b, $c]  => `($b, $a, $c)`,
     },
-    or {`loginNickname`, `loginGoogle`} where {
+    or {`loginNickname`, `loginGoogle`} where or {
       $args <: [$a, $b, $c] => `($b, $a, $c)`
     },
     `createRoom` where or {
@@ -218,11 +218,11 @@ pattern reorder_args($method, $args) {
       $args <: [$a, $b, $c] => `($b, $a, $c)`,
       $args <: [$a, $b, $c, $d] => `($b, $a, $c, $d)`,
     },
-    or {`setLobbyState`, `createDeployment`, `runBuild`} where {
+    or {`setLobbyState`, `createDeployment`, `runBuild`} where or {
       $args <: [$a, $b, $c] => `($c, $a, $b)`,
       $args <: [$a, $b, $c, $d] => `($c, $a, $b, $d)`
     },
-    or {`createPublicLobby`, `createLobby`, `createPrivateLobby`} where {
+    or {`createPublicLobby`, `createLobby`, `createPrivateLobby`} where or {
       $args <: [$a, $b, $c] => `($c, $a)`,
       $args <: [$a, $b, $c, $d] => `($c, $a, $d)`,
       $args <: [$a, $b, $c, $d, $e] => `($c, $a, $d, $e)`
@@ -234,36 +234,17 @@ pattern rewrite_method_calls() {
   or {
     `await $callee.$method($args)` as $body where and {
       $method <: hathora_method(),
-      $method <: deprecated_suffix(method=$method),
-      $method <: reorder_args(method=$method, args=$args),
       $unwrap_at = wrapper_key(method=$method),
+      $method <: deprecated_suffix(method=$method),
+      $method <: maybe reorder_args(method=$method, args=$args),
       $body => `(await $callee.$[method]).$unwrap_at`
     },
     `$callee.$method($args)` as $body where and {
       $method <: hathora_method(),
       $method <: deprecated_suffix(method=$method),
-      $method <: reorder_args(method=$method, args=$args),
+      $method <: maybe reorder_args(method=$method, args=$args),
       $body => `$callee.$[method]`
     }
-  }
-}
-
-pattern resource_name() {
-  or {
-    `AppV1Api`,
-    `AuthV1Api`,
-    `BillingV1Api`,
-    `BuildV1Api`,
-    `DeploymentV1Api`,
-    `DiscoveryV1Api`,
-    `LobbyV1Api`,
-    `LobbyV2Api`,
-    `LogV1Api`,
-    `ManagementV1Api`,
-    `MetricsV1Api`,
-    `ProcessesV1Api`,
-    `RoomV1Api`,
-    `RoomV2Api`
   }
 }
 
@@ -338,6 +319,7 @@ any {
       remove_import(from=$old)
     },
     $replacement_import = new_resource_name(old_name=$x),
+    $x => $replacement_import,
     $replacement_import <: ensure_import_from(source=$new),
   },
   bubble maybe rewrite_method_calls()
@@ -354,6 +336,7 @@ const authClient = new AuthV1Api();
 
 ```js
 import { HathoraCloud } from "@hathora/cloud-sdk-typescript";
+
 const authClient = new HathoraCloud().authV1;
 ```
 
@@ -366,9 +349,12 @@ lobbyClient.setLobbyState("my-app", "my-room", {some: "data"}, {request: "ops"})
 ```
 
 ```js
-import { HathoraCloud } from "@hathora/hathora-cloud-sdk";
+import { HathoraCloud } from "@hathora/cloud-sdk-typescript";
+
 const lobbyClient = new HathoraCloud().lobbyV2;
-lobbyClient.setLobbyState({some: "data"}, "my-app", "my-room", {request: "ops"});
+lobbyClient.setLobbyState({ some: "data" }, "my-app", "my-room",{ 
+  request: "ops" 
+});
 ```
 
 ## Renames types
@@ -379,7 +365,8 @@ const lobbyClient: LobbyV2Api = new LobbyV2Api();
 ```
 
 ```js
-import { LobbyV2, HathoraCloud } from "@hathora/hathora-cloud-sdk";
+import { LobbyV2, HathoraCloud } from "@hathora/cloud-sdk-typescript";
+
 const lobbyClient: LobbyV2 = new HathoraCloud().lobbyV2;
 ```
 
@@ -393,7 +380,12 @@ const {state} = await lobbyClient.setLobbyState("my-app", "my-room", {some: "dat
 ```
 
 ```js
-import { HathoraCloud } from "@hathora/hathora-cloud-sdk";
+import { HathoraCloud } from "@hathora/cloud-sdk-typescript";
+
 const lobbyClient = new HathoraCloud().lobbyV2;
-const {state} = (await lobbyClient.setLobbyState("my-app", "my-room", {some: "data"}, {request: "ops"})).lobby;
+const { state } = (
+  await lobbyClient.setLobbyState({ some: "data" }, "my-app", "my-room", {
+    request: "ops",
+  })
+).lobby;
 ```
