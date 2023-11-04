@@ -250,65 +250,95 @@ pattern rewrite_method_calls() {
 
 pattern resource_name() {
   or {
+    `AppV1Api`,
     `AuthV1Api`,
-    `RoomV1Api`,
+    `BillingV1Api`,
+    `BuildV1Api`,
+    `DeploymentV1Api`,
+    `DiscoveryV1Api`,
+    `LobbyV1Api`,
     `LobbyV2Api`,
+    `LogV1Api`,
+    `ManagementV1Api`,
+    `MetricsV1Api`,
+    `ProcessesV1Api`,
+    `RoomV1Api`,
+    `RoomV2Api`
   }
 }
 
 pattern sdk_member() {
   or {
+    `AppV1Api` => `appV1`,
     `AuthV1Api` => `authV1`,
-    `RoomV1Api` => `roomV1`,
+    `BillingV1Api` => `billingV1`,
+    `BuildV1Api` => `buildV1`,
+    `DeploymentV1Api` => `deploymentV1`,
+    `DiscoveryV1Api` => `discoveryV1`,
+    `LobbyV1Api` => `lobbyV1`,
     `LobbyV2Api` => `lobbyV2`,
+    `LogV1Api` => `logV1`,
+    `ManagementV1Api` => `managementV1`,
+    `MetricsV1Api` => `metricsV1`,
+    `ProcessesV1Api` => `processesV1`,
+    `RoomV1Api` => `roomV1`,
+    `RoomV2Api` => `roomV2`,
   }
 }
 
-pattern resourceTypeName() {
-    or {
-      `AuthV1Api` => `AuthV1`,
-      `LobbyV1Api` => `LobbyV1`,
-      `LobbyV2Api` => `LobbyV2`,
-      `RoomV1Api` => `RoomV1`,
-      $x
-    }
-}
-
 function new_resource_name($old_name) {
-  if ($old_name <: `AuthV1Api`) {
+  if ($old_name <: `AppV1Api`) {
+    return `AppV1`
+  } else if ($old_name <: `AuthV1Api`) {
     return `AuthV1`
+  } else if ($old_name <: `BillingV1Api`) {
+    return `BillingV1`
+  } else if ($old_name <: `BuildV1Api`) {
+    return `BuildV1`
+  } else if ($old_name <: `DeploymentV1Api`) {
+    return `DeploymentV1`
+  } else if ($old_name <: `DiscoveryV1Api`) {
+    return `DiscoveryV1`
   } else if ($old_name <: `LobbyV1Api`) {
     return `LobbyV1`
   } else if ($old_name <: `LobbyV2Api`) {
     return `LobbyV2`
+  } else if ($old_name <: `LogV1Api`) {
+    return `LogV1`
+  } else if ($old_name <: `ManagementV1Api`) {
+    return `ManagementV1`
+  } else if ($old_name <: `MetricsV1Api`) {
+    return `MetricsV1`
+  } else if ($old_name <: `ProcessesV1Api`) {
+    return `ProcessesV1`
   } else if ($old_name <: `RoomV1Api`) {
     return `RoomV1`
-  }, 
+  } else if ($old_name <: `RoomV2Api`) {
+    return `RoomV2`
+  },
   return $old_name
 }
 
 any {
+  $old=`"@hathora/hathora-cloud-sdk"`,
+  $new = `"@hathora/cloud-sdk-typescript"`,
   // update constructors
-  bubble `new $class($_)` as $constructor where {
-    $class <: remove_import(from=`"@hathora/hathora-cloud-sdk"`),
+  bubble($old, $new) `new $class($_)` as $constructor where {
+    $class <: remove_import(from=$old),
     $class <: sdk_member(),
     $cloud = `HathoraCloud`,
-    $src = `"@hathora/cloud-sdk-typescript"`,
-    $cloud <: ensure_import_from(source=$src),
+    $cloud <: ensure_import_from(source=$new),
     $constructor => `new $cloud().$class`,
   },
-  $refs = [],
-  bubble($refs) $x where $x <: and {
-    imported_from(from=`"@hathora/hathora-cloud-sdk"`),
-    $refs += $x,
-    not within `new $_`,
-    $x => new_resource_name(old_name=$x),
-    not within `import $_`,
-    remove_import(from=`"@hathora/hathora-cloud-sdk"`),
-    $x where {
-      $replacement_import = new_resource_name(old_name=$x),
-      $replacement_import <: ensure_import_from(source=`"@hathora/cloud-sdk-typescript"`)
+  bubble($old, $new) $x where {
+    $x <: and {
+      imported_from(from=$old),
+      not within `new $_`,
+      not within `import $_`,
+      remove_import(from=$old)
     },
+    $replacement_import = new_resource_name(old_name=$x),
+    $replacement_import <: ensure_import_from(source=$new),
   },
   bubble maybe rewrite_method_calls()
 }
