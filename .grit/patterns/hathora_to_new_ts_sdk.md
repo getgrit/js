@@ -6,17 +6,17 @@ language js
 
 pattern rewrite_method_call() {
   or {
-    `await $x.createApp($args)` => `(await $x.createApp($args)).application`,
+     `await $x.createApp($args)` => `(await $x.createApp($args)).application`,
     `$x.createBuild($args)` where or {
       $args <: [$a, $b] => `$a`
-    } => `$x.createBuild($args)`,
+    },
     `await $x.createBuild($args)` where or {
       $args <: [$a, $b] => `$a`
     } => `(await $x.createBuild($args)).build`,
     `$x.createDeployment($args)` where or {
       $args <: [$a, $b, $c] => `$c, $a, $b`,
       $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
-    } => `$x.createDeployment($args)`,
+    },
     `await $x.createDeployment($args)` where or {
       $args <: [$a, $b, $c] => `$c, $a, $b`,
       $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
@@ -25,7 +25,7 @@ pattern rewrite_method_call() {
       $args <: [$a, $b, $c] => `$c, $a`,
       $args <: [$a, $b, $c, $d] => `$c, $a, $d`,
       $args <: [$a, $b, $c, $d, $e] => `$c, $a, $d, $e`
-    } => `$x.createLobby($args)`,
+    },
     `await $x.createLobby($args)` where or {
       $args <: [$a, $b, $c] => `$c, $a`,
       $args <: [$a, $b, $c, $d] => `$c, $a, $d`,
@@ -35,7 +35,7 @@ pattern rewrite_method_call() {
       $args <: [$a, $b, $c] => `$c, $a`,
       $args <: [$a, $b, $c, $d] => `$c, $a, $d`,
       $args <: [$a, $b, $c, $d, $e] => `$c, $a, $d, $e`
-    } => `$x.createLocalLobby($args)`,
+    },
     `await $x.createLocalLobby($args)` where or {
       $args <: [$a, $b, $c] => `$c, $a`,
       $args <: [$a, $b, $c, $d] => `$c, $a, $d`,
@@ -56,7 +56,7 @@ pattern rewrite_method_call() {
       $args <: [$a, $b, $c] => `$a, $c`,
       $args <: [$a, $b, $c, $d] => `$a, $d, $c`,
       $args <: [$a, $b, $c, $d, $e] => `$a, $d, $c, $e`
-    } => `$x.createPrivateLobbyDeprecated($args)`,
+    },
     `await $x.createPrivateLobbyDeprecated($args)` where or {
       $args <: [$a, $b] => `$a`,
       $args <: [$a, $b, $c] => `$a, $c`,
@@ -76,7 +76,7 @@ pattern rewrite_method_call() {
       $args <: [$a, $b, $c] => `$a, $c`,
       $args <: [$a, $b, $c, $d] => `$a, $d, $c`,
       $args <: [$a, $b, $c, $d, $e] => `$a, $d, $c, $e`
-    } => `$x.createPublicLobbyDeprecated($args)`,
+    },
     `await $x.createPublicLobbyDeprecated($args)` where or {
       $args <: [$a, $b] => `$a`,
       $args <: [$a, $b, $c] => `$a, $c`,
@@ -97,7 +97,7 @@ pattern rewrite_method_call() {
       $args <: [$a, $b] => `$b, $a`,
       $args <: [$a, $b, $c] => `$b, $a, $c`,
       $args <: [$a, $b, $c, $d] => `$b, $a, $c, $d`
-    } => `$x.createRoomDeprecated($args)`,
+    },
     `await $x.createRoomDeprecated($args)` where or {
       $args <: [$a, $b] => `$b, $a`,
       $args <: [$a, $b, $c] => `$b, $a, $c`,
@@ -143,7 +143,7 @@ pattern rewrite_method_call() {
       $args <: [$a, $b, $c] => `$a, $c`,
       $args <: [$a, $b, $c, $d] => `$a, $c, $d`,
       $args <: [$a, $b, $c, $d, $e] => `$a, $c, $d, $e`
-    } => `$x.listActivePublicLobbiesDeprecated($args)`,
+    },
     `await $x.listActivePublicLobbiesDeprecated($args)` where or {
       $args <: [$a, $b] => `$a`,
       $args <: [$a, $b, $c] => `$a, $c`,
@@ -154,7 +154,7 @@ pattern rewrite_method_call() {
     `$x.loginGoogle($args)` where or {
       $args <: [$a, $b] => `$b, $a`,
       $args <: [$a, $b, $c] => `$b, $a, $c`
-    } => `$x.loginGoogle($args)`,
+    },
     `await $x.loginGoogle($args)` where or {
       $args <: [$a, $b] => `$b, $a`,
       $args <: [$a, $b, $c] => `$b, $a, $c`
@@ -162,7 +162,7 @@ pattern rewrite_method_call() {
     `$x.loginNickname($args)` where or {
       $args <: [$a, $b] => `$b, $a`,
       $args <: [$a, $b, $c] => `$b, $a, $c`
-    } => `$x.loginNickname($args)`,
+    },
     `await $x.loginNickname($args)` where or {
       $args <: [$a, $b] => `$b, $a`,
       $args <: [$a, $b, $c] => `$b, $a, $c`
@@ -170,7 +170,7 @@ pattern rewrite_method_call() {
     `$x.runBuild($args)` where or {
       $args <: [$a, $b, $c] => `$c, $a, $b`,
       $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
-    } => `$x.runBuild($args)`,
+    },
     `await $x.runBuild($args)` where or {
       $args <: [$a, $b, $c] => `$c, $a, $b`,
       $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
@@ -179,7 +179,7 @@ pattern rewrite_method_call() {
     `$x.setLobbyState($args)` where or {
       $args <: [$a, $b, $c] => `$c, $a, $b`,
       $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
-    } => `$x.setLobbyState($args)`,
+    },
     `await $x.setLobbyState($args)` where or {
       $args <: [$a, $b, $c] => `$c, $a, $b`,
       $args <: [$a, $b, $c, $d] => `$c, $a, $b, $d`
@@ -189,7 +189,7 @@ pattern rewrite_method_call() {
     `$x.updateApp($args)` where or {
       $args <: [$a, $b] => `$b, $a`,
       $args <: [$a, $b, $c] => `$b, $a, $c`
-    } => `$x.updateApp($args)`,
+    },
     `await $x.updateApp($args)` where or {
       $args <: [$a, $b] => `$b, $a`,
       $args <: [$a, $b, $c] => `$b, $a, $c`
