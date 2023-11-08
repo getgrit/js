@@ -207,11 +207,10 @@ function new_resource_name($old_name) {
 }
 
 any {
-  $old=`"@hathora/hathora-cloud-sdk"`,
   $new = `"@hathora/cloud-sdk-typescript"`,
   // update constructors
-  bubble($old, $new) `new $class($_)` as $constructor where {
-    $class <: remove_import(from=$old),
+  `new $class($_)` as $constructor where {
+    $class <: remove_import(from=`"@hathora/hathora-cloud-sdk"`),
     $class <: sdk_member(),
     $cloud = `HathoraCloud`,
     $cloud <: ensure_import_from(source=$new),
@@ -219,10 +218,10 @@ any {
   },
   bubble($old, $new) $x where {
     $x <: and {
-      imported_from(from=$old),
+      imported_from(from=`"@hathora/hathora-cloud-sdk"`),
       not within `new $_`,
       not within `import $_`,
-      remove_import(from=$old)
+      remove_import(from=`"@hathora/hathora-cloud-sdk"`)
     },
     $replacement_import = new_resource_name(old_name=$x),
     $x => $replacement_import,
