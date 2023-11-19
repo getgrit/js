@@ -19,7 +19,7 @@ pattern convert_base_page() {
             },
             `locate($locator).as($_)` => `this.page.locator($locator)`,
         },
-        $filename <: r".*/?([^/]+)\.[a-zA-Z]*"($base_name),
+        $filename <: r".*?/?([^/]+)\.[a-zA-Z]*"($base_name),
     } => `export default class $base_name extends BasePage {
         $properties
     }`
@@ -30,14 +30,15 @@ pattern remove_commas() {
 }
 
 sequential {
-    convert_base_page(),
-    remove_commas(),
+    contains bubble convert_base_page(),
+    contains bubble remove_commas(),
 }
 ```
 
-# Converts Codecept property
+## Converts Codecept property
 
 ```js
+// @file test.js
 const { I } = inject();
 
 export default {
@@ -48,17 +49,18 @@ export default {
 ```
 
 ```js
+// @file test.js
 const { I } = inject();
 
 export default class test extends BasePage {
-    get url() {
-        return 'https://grit.io',
-    }
-    get selector() {
-        return this.page.locator('#migration-selector');
-    }
-    get openai() {
-        return this.page.locator('text=custodian-sample-org/openai-quickstart-python')
-    }
+  get url() {
+    return 'https://grit.io';
+  }
+  get selector() {
+    return this.page.locator('#migration-selector');
+  }
+  get openai() {
+    return this.page.locator('text=custodian-sample-org/openai-quickstart-python');
+  }
 }
 ```
