@@ -18,6 +18,19 @@ pattern convert_base_page() {
                 $pair => `get $key() { return $value }`
             },
             `locate($locator).as($_)` => `this.page.locator($locator)`,
+            method_definition($async, $static) as $method where {
+                $async <: false,
+                $method => `async $method`,
+            },
+            `I.waitInUrl($url)` => `await this.page.waitForUrl(new RegExp($url))`,
+            `I.waitForLoader()` => `await this.waitForLoader()`,
+            `I.waitForText($text, $timeout, $target)` => `await expect($target).toHaveText($text, {
+                timeout: $timeout * 1000,
+                ignoreCase: true,
+            }`,
+            `I.see($text, $target)` => `await expect($target).toContainText($text)`,
+            `I.waitForVisible($target)` => `await $target.waitFor({ state: 'visible' })`,
+            `I.click($target)` => `await $target.click()`,
         },
         $filename <: r".*?/?([^/]+)\.[a-zA-Z]*"($base_name),
     } => `export default class $base_name extends BasePage {
@@ -26,7 +39,13 @@ pattern convert_base_page() {
 }
 
 pattern remove_commas() {
-    r"(get\s+\w+\s*\(\s*\)\s*\{[^}]*\})\s*,"($getter) => $getter,
+    or {
+        r"(?s)(get\s+\w+\s*\(\s*\)\s*\{[^}]*\})\s*,"($getter) => $getter,
+        // Hack to remove the incorrect trailing comma
+        `async $method($params) { $body }` => `async $method($params) {
+    $body
+}`,
+    }
 }
 
 sequential {
