@@ -86,7 +86,7 @@ export default class test extends BasePage {
 ## Converts waiters
 
 ```js
-// @file test.js
+// @file someFolder/test.js
 const { I } = inject();
 
 export default {
@@ -103,7 +103,7 @@ export default {
 ```
 
 ```js
-// @file test.js
+// @file someFolder/test.js
 
 export default class test extends BasePage {
   get url() {
