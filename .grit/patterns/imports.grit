@@ -94,13 +94,13 @@ pattern remove_import($from) {
                 $import => .
             },
             // Handle named import
-            import_clause(default=$default_export, name=named_imports($imports) as $import_list_with_braces) where {
+            import_clause(default=$default_export, name=named_imports($imports)) as $clause where {
                 $others = `false`,
                 if (and {
                     $imports <: [$name] ,
                     !$default_export <: .
                     }) {
-                        $import_list_with_braces => .
+                        $clause => `$default_export`
                 } else {
                     $imports <: some $name => .
                 }
