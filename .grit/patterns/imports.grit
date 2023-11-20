@@ -100,7 +100,7 @@ pattern remove_import($from) {
                     $imports <: [$name] ,
                     !$default_export <: .
                     }) {
-                        $clause => `$default_export`
+                        $clause => $default_export
                 } else {
                     $imports <: some $name => .
                 }
