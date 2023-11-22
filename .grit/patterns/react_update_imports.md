@@ -7,9 +7,19 @@ This pattern:
 - If there are named imports, converts `import React from 'react'` into named imports `import { useState } from 'react'`
 - If there are no named imports, but the `React` variable is used, converts `import React from 'react'` into `import * as React from "react"`
 
+## Existing issues
+
+This pattern does not do:
+
+- collect the used React symbols to change `import React from 'react'` into `import { useState, useMemo} from 'react`
+- figure out when the `React` symbol is properly used and should _not_ be removed, the `react-not-removed` test case
+- handle `import type React` separately
+
 ```grit
 engine marzano(0.1)
 language js
+
+//patch over bugs in remove_import, needed until this is upstreamed
 pattern my_remove_import($from) {
     $name where {
         // Handle named imports
@@ -44,8 +54,8 @@ pattern my_remove_import($from) {
 //unused
 pattern gather_imported_symbols($res) {
     `React.$symbol` as $reactSymbol where {
-      $res <: not some $reactSymbol,
-      $reactSymbol => $symbol
+      $reactSymbols <: not some $reactSymbol,
+      $reactSymbols += $symbol
     }
 }
 
@@ -62,19 +72,6 @@ pattern gather_imported_symbols($res) {
         }
     }
 }
-//or {
-//    `React.$symbol` => $symbol,
-//    import_statement(import=import_clause(name=namespace_import(namespace=`React`))) as $star_import where {
-//        $star_import => .
-//    },
-//  `React` as $react where {
-//      $from = `react`,
-//      $react <: my_remove_import($from)
-//  },
-//  and {
-//    $neededImports = [],
-//  }
-//}
 ```
 
 ## Test case: jsx-element
