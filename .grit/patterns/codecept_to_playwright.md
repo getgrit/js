@@ -30,6 +30,7 @@ pattern convert_base_page() {
             })`,
             `I.see($text, $target)` => `await expect($target).toContainText($text)`,
             `I.waitForVisible($target)` => `await $target.waitFor({ state: 'visible' })`,
+            `I.waitForInvisible($target)` => `await $target.waitFor({ state: 'hidden' })`,
             `I.click($target)` => `await $target.click()`,
         },
         $filename <: r".*?/?([^/]+)\.[a-zA-Z]*"($base_name),
