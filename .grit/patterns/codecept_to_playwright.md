@@ -16,6 +16,15 @@ pattern convert_test() {
             $function <: contains $scenario,
             $tagger => $scenario,
         },
+        $pages = [],
+        $body <: maybe contains bubble($pages) r"[a-zA-Z]*Page" as $page where {
+            $page <: identifier(),
+            $page_class = capitalize(string=$page),
+            $pages += `var $page = new $page_class(page, context)`,
+        },
+        $pages = distinct(list=$pages),
+        $pages = join(list=$pages, separator=`;\n`),
+        $body => `$pages\n$body`,
     } => `test($description, async ({ page, factory, context }) => {
         $body
     })`
@@ -182,7 +191,9 @@ export default class Test extends BasePage {
 
 ```js
 Scenario('Trivial test', async ({ I }) => {
+  projectPage.open();
   expect(true).toBe(true);
+  projectPage.close();
 })
   .tag('Email')
   .tag('Studio')
@@ -191,6 +202,9 @@ Scenario('Trivial test', async ({ I }) => {
 
 ```js
 test('Trivial test', async ({ page, factory, context }) => {
+  var projectPage = new ProjectPage(page, context);
+  projectPage.open();
   expect(true).toBe(true);
+  projectPage.close();
 });
 ```
