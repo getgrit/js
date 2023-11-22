@@ -16,6 +16,14 @@ pattern convert_test() {
             $function <: contains $scenario,
             $tagger => $scenario,
         },
+        $body <: maybe contains bubble or {
+            `I.say($log)` => `console.log($log)`,
+            expression_statement($expression) where {
+                $expression <: call_expression(),
+                $expression => `await $expression`,
+            },
+            `I.haveWithCachePing($client)` => `factory.create($client)`,
+        },
         $pages = [],
         $body <: maybe contains bubble($pages) r"[a-zA-Z]*Page" as $page where {
             $page <: identifier(),
@@ -203,8 +211,8 @@ Scenario('Trivial test', async ({ I }) => {
 ```js
 test('Trivial test', async ({ page, factory, context }) => {
   var projectPage = new ProjectPage(page, context);
-  projectPage.open();
-  expect(true).toBe(true);
-  projectPage.close();
+  await projectPage.open();
+  await expect(true).toBe(true);
+  await projectPage.close();
 });
 ```
