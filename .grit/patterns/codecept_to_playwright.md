@@ -10,6 +10,17 @@ tags: #hidden
 engine marzano(0.1)
 language js
 
+pattern convert_test() {
+    `Scenario($description, async ({ I }) => { $body })` as $scenario where {
+        $program <: maybe contains call_expression($function) as $tagger where {
+            $function <: contains $scenario,
+            $tagger => $scenario,
+        },
+    } => `test($description, async ({ page, factory, context }) => {
+        $body
+    })`
+}
+
 pattern convert_base_page() {
     `export default { $properties }` where {
         $program <: contains `const { I } = inject();` => .,
@@ -55,8 +66,11 @@ pattern remove_commas() {
 }
 
 sequential {
-    contains bubble convert_base_page(),
-    contains bubble remove_commas(),
+    contains bubble or {
+        convert_test(),
+        convert_base_page(),
+    },
+    maybe contains bubble remove_commas(),
 }
 ```
 
@@ -162,4 +176,21 @@ export default class Test extends BasePage {
       .waitFor({ state: 'visible', timeout: 5 * 1000 });
   }
 }
+```
+
+## Converts Codecept scenario
+
+```js
+Scenario('Trivial test', async ({ I }) => {
+  expect(true).toBe(true);
+})
+  .tag('Email')
+  .tag('Studio')
+  .tag('Projects');
+```
+
+```js
+test('Trivial test', async ({ page, factory, context }) => {
+  expect(true).toBe(true);
+});
 ```
