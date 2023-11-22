@@ -18,6 +18,7 @@ pattern convert_base_page() {
                 $pair => `get $key() { return $value }`
             },
             `locate($locator).as($_)` => `this.page.locator($locator)`,
+            `locate($locator)` => `this.page.locator($locator)`,
             method_definition($async, $static) as $method where {
                 $async <: false,
                 $method => `async $method`,
@@ -29,8 +30,11 @@ pattern convert_base_page() {
                 ignoreCase: true,
             })`,
             `I.see($text, $target)` => `await expect($target).toContainText($text)`,
+            `I.waitForVisible($target, $timeout)` => `await $target.waitFor({ state: 'visible', timeout: $timeout * 1000 })`,
             `I.waitForVisible($target)` => `await $target.waitFor({ state: 'visible' })`,
+            `I.waitForInvisible($target, $timeout)` => `await $target.waitFor({ state: 'hidden', timeout: $timeout * 1000 })`,
             `I.waitForInvisible($target)` => `await $target.waitFor({ state: 'hidden' })`,
+            `$locator.withText($text)` => `$locator.and(this.page.getByText($text))`,
             `I.click($target)` => `await $target.click()`,
         },
         $filename <: r".*?/?([^/]+)\.[a-zA-Z]*"($base_name),
@@ -121,6 +125,41 @@ export default class Test extends BasePage {
     await expect(this.rewrite).toContainText('Function expressions to arrow functions');
     await this.button.click();
     await this.rewritten.waitFor({ state: 'visible' });
+  }
+}
+```
+
+## Converts complex locators
+
+```js
+// @file someFolder/test.js
+const { I } = inject();
+
+export default {
+  studio: locate('.studio'),
+  message: 'Hello world',
+
+  waitForGrit() {
+    I.waitForVisible(this.studio.withText(this.message), 5);
+  },
+};
+```
+
+```js
+// @file someFolder/test.js
+
+export default class Test extends BasePage {
+  get studio() {
+    return this.page.locator('.studio');
+  }
+  get message() {
+    return 'Hello world';
+  }
+
+  async waitForGrit() {
+    await this.studio
+      .and(this.page.getByText(this.message))
+      .waitFor({ state: 'visible', timeout: 5 * 1000 });
   }
 }
 ```
