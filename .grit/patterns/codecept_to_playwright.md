@@ -34,6 +34,7 @@ pattern convert_base_page() {
             `I.click($target)` => `await $target.click()`,
         },
         $filename <: r".*?/?([^/]+)\.[a-zA-Z]*"($base_name),
+        $base_name = capitalize(string=$base_name),
     } => `export default class $base_name extends BasePage {
         $properties
     }`
@@ -71,7 +72,7 @@ export default {
 ```js
 // @file test.js
 
-export default class test extends BasePage {
+export default class Test extends BasePage {
   get url() {
     return 'https://grit.io';
   }
@@ -106,7 +107,7 @@ export default {
 ```js
 // @file someFolder/test.js
 
-export default class test extends BasePage {
+export default class Test extends BasePage {
   get url() {
     return 'https://grit.io';
   }
