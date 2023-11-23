@@ -23,6 +23,7 @@ pattern convert_test() {
                 $expression => `await $expression`,
             },
             `I.haveWithCachePing($client)` => `factory.create($client)`,
+            convert_locators(page=`page`),
         },
         $pages = [],
         $body <: maybe contains bubble($pages) r"[a-zA-Z]*Page" as $page where {
@@ -59,6 +60,7 @@ pattern convert_locators($page) {
             `I.click($target, $context)` => `await $context.locator($target).click()`,
             `I.click($target)` => `await $target.click()`,
             `I.pressKey($key)` => `await $page.keyboard.press($key)`,
+            `I.refreshPage()` => `await $page.reload()`,
     }
 }
 
@@ -225,6 +227,9 @@ export default class Test extends BasePage {
 ```js
 Scenario('Trivial test', async ({ I }) => {
   projectPage.open();
+  I.waitForVisible(projectPage.list);
+  I.refreshPage();
+  I.see(projectPage.demo, projectPage.list);
   expect(true).toBe(true);
   projectPage.close();
 })
@@ -237,6 +242,9 @@ Scenario('Trivial test', async ({ I }) => {
 test('Trivial test', async ({ page, factory, context }) => {
   var projectPage = new ProjectPage(page, context);
   await projectPage.open();
+  await projectPage.list.waitFor({ state: 'visible' });
+  await page.reload();
+  await expect(projectPage.list).toContainText(projectPage.demo);
   await expect(true).toBe(true);
   await projectPage.close();
 });
