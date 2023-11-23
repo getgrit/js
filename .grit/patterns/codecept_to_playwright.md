@@ -182,10 +182,11 @@ const { I } = inject();
 export default {
   studio: locate('.studio'),
   message: 'Hello world',
+  button: (name) => locate(`//button[contains(text(), "${name}")]`).as(name),
 
   waitForGrit() {
     I.waitForVisible(this.studio.withText(this.message), 5);
-    I.click('.grit-button', this.studio);
+    I.click(this.button('grit'), this.studio);
   },
 };
 ```
@@ -200,12 +201,15 @@ export default class Test extends BasePage {
   get message() {
     return 'Hello world';
   }
+  button(name) {
+    return this.page.locator(`//button[contains(text(), "${name}")]`);
+  }
 
   async waitForGrit() {
     await this.studio
       .and(this.page.getByText(this.message))
       .waitFor({ state: 'visible', timeout: 5 * 1000 });
-    await this.studio.locator('.grit-button').click();
+    await this.studio.locator(this.button('grit')).click();
   }
 }
 ```
