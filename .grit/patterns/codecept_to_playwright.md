@@ -42,7 +42,13 @@ pattern convert_base_page() {
     `export default { $properties }` where {
         $program <: contains `const { I } = inject();` => .,
         $properties <: maybe contains bubble or {
-            pair($key, $value) as $pair where {
+            pair($key, $value) as $pair where or {
+                $value <: `($params) => { $body }` where {
+                    $pair => `$key($params) { $body }`,
+                },
+                $value <: `($params) => $exp` where {
+                    $pair => `$key($params) { return $exp }`,
+                },
                 $pair => `get $key() { return $value }`
             },
             `locate($locator).as($_)` => `this.page.locator($locator)`,
@@ -58,6 +64,8 @@ pattern convert_base_page() {
                 ignoreCase: true,
             })`,
             `I.see($text, $target)` => `await expect($target).toContainText($text)`,
+            `I.waitForElement($target, $timeout)` => `await $target.waitFor({ state: 'attached', timeout: $timeout * 1000 })`,
+            `I.waitForElement($target)` => `await $target.waitFor({ state: 'attached' })`,
             `I.waitForVisible($target, $timeout)` => `await $target.waitFor({ state: 'visible', timeout: $timeout * 1000 })`,
             `I.waitForVisible($target)` => `await $target.waitFor({ state: 'visible' })`,
             `I.waitForInvisible($target, $timeout)` => `await $target.waitFor({ state: 'hidden', timeout: $timeout * 1000 })`,
@@ -65,6 +73,7 @@ pattern convert_base_page() {
             `$locator.withText($text)` => `$locator.and(this.page.getByText($text))`,
             `I.click($target, $context)` => `await $context.locator($target).click()`,
             `I.click($target)` => `await $target.click()`,
+            `I.pressKey($key)` => `await this.page.keyboard.press($key)`,
         },
         $filename <: r".*?/?([^/]+)\.[a-zA-Z]*"($base_name),
         $base_name = capitalize(string=$base_name),
@@ -78,6 +87,9 @@ pattern remove_commas() {
         r"(?s)(get\s+\w+\s*\(\s*\)\s*\{[^}]*\})\s*,"($getter) => $getter,
         // Hack to remove the incorrect trailing comma
         `async $method($params) { $body }` => `async $method($params) {
+    $body
+}`,
+        `$method($params) { $body }` => `$method($params) {
     $body
 }`,
     }
