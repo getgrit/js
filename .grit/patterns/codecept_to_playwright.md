@@ -38,6 +38,30 @@ pattern convert_test() {
     })`
 }
 
+pattern convert_locators($page) {
+    or {
+        `locate($locator).as($_)` => `$page.locator($locator)`,
+            `locate($locator)` => `$page.locator($locator)`,
+            `I.waitInUrl($url)` => `await $page.waitForURL(new RegExp($url))`,
+            `I.waitForLoader()` => `await this.waitForLoader()`,
+            `I.waitForText($text, $timeout, $target)` => `await expect($target).toHaveText($text, {
+                timeout: $timeout * 1000,
+                ignoreCase: true,
+            })`,
+            `I.see($text, $target)` => `await expect($target).toContainText($text)`,
+            `I.waitForElement($target, $timeout)` => `await $target.waitFor({ state: 'attached', timeout: $timeout * 1000 })`,
+            `I.waitForElement($target)` => `await $target.waitFor({ state: 'attached' })`,
+            `I.waitForVisible($target, $timeout)` => `await $target.waitFor({ state: 'visible', timeout: $timeout * 1000 })`,
+            `I.waitForVisible($target)` => `await $target.waitFor({ state: 'visible' })`,
+            `I.waitForInvisible($target, $timeout)` => `await $target.waitFor({ state: 'hidden', timeout: $timeout * 1000 })`,
+            `I.waitForInvisible($target)` => `await $target.waitFor({ state: 'hidden' })`,
+            `$locator.withText($text)` => `$locator.and($page.getByText($text))`,
+            `I.click($target, $context)` => `await $context.locator($target).click()`,
+            `I.click($target)` => `await $target.click()`,
+            `I.pressKey($key)` => `await $page.keyboard.press($key)`,
+    }
+}
+
 pattern convert_base_page() {
     `export default { $properties }` where {
         $program <: contains `const { I } = inject();` => .,
@@ -51,29 +75,11 @@ pattern convert_base_page() {
                 },
                 $pair => `get $key() { return $value }`
             },
-            `locate($locator).as($_)` => `this.page.locator($locator)`,
-            `locate($locator)` => `this.page.locator($locator)`,
             method_definition($async, $static) as $method where {
                 $async <: false,
                 $method => `async $method`,
             },
-            `I.waitInUrl($url)` => `await this.page.waitForURL(new RegExp($url))`,
-            `I.waitForLoader()` => `await this.waitForLoader()`,
-            `I.waitForText($text, $timeout, $target)` => `await expect($target).toHaveText($text, {
-                timeout: $timeout * 1000,
-                ignoreCase: true,
-            })`,
-            `I.see($text, $target)` => `await expect($target).toContainText($text)`,
-            `I.waitForElement($target, $timeout)` => `await $target.waitFor({ state: 'attached', timeout: $timeout * 1000 })`,
-            `I.waitForElement($target)` => `await $target.waitFor({ state: 'attached' })`,
-            `I.waitForVisible($target, $timeout)` => `await $target.waitFor({ state: 'visible', timeout: $timeout * 1000 })`,
-            `I.waitForVisible($target)` => `await $target.waitFor({ state: 'visible' })`,
-            `I.waitForInvisible($target, $timeout)` => `await $target.waitFor({ state: 'hidden', timeout: $timeout * 1000 })`,
-            `I.waitForInvisible($target)` => `await $target.waitFor({ state: 'hidden' })`,
-            `$locator.withText($text)` => `$locator.and(this.page.getByText($text))`,
-            `I.click($target, $context)` => `await $context.locator($target).click()`,
-            `I.click($target)` => `await $target.click()`,
-            `I.pressKey($key)` => `await this.page.keyboard.press($key)`,
+            convert_locators(page=`this.page`),
         },
         $filename <: r".*?/?([^/]+)\.[a-zA-Z]*"($base_name),
         $base_name = capitalize(string=$base_name),
