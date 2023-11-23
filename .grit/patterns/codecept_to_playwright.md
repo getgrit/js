@@ -42,6 +42,7 @@ pattern convert_test() {
 pattern convert_locators($page) {
     or {
         `locate($locator).as($_)` => `$page.locator($locator)`,
+        `locate($locator).find($sub)` => `$page.locator($locator).locator($sub)`,
         `locate($locator)` => `$page.locator($locator)`,
         `I.waitInUrl($url)` => `await $page.waitForURL(new RegExp($url))`,
         `I.waitForLoader()` => `await this.waitForLoader()`,
