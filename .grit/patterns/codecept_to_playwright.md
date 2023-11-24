@@ -52,6 +52,7 @@ pattern convert_locators($page) {
         })`,
         `I.see($text, $target)` => `await expect($target).toContainText($text)`,
         `I.dontSee($text, $target)` => `await expect($target).not.toContainText($text)`,
+        `I.seeTextEquals($text, $target)` => `await expect($target).toHaveText($text)`,
         `I.waitForElement($target, $timeout)` => `await $target.waitFor({ state: 'attached', timeout: $timeout * 1000 })`,
         `I.waitForElement($target)` => `await $target.waitFor({ state: 'attached' })`,
         `I.waitForVisible($target, $timeout)` => `await $target.waitFor({ state: 'visible', timeout: $timeout * 1000 })`,
