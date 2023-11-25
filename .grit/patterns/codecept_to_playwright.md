@@ -69,6 +69,7 @@ pattern convert_locators($page) {
         `I.click($target, $context)` => `await $context.locator($target).click()`,
         `I.click($target)` => `await $target.click()`,
         `I.pressKey($key)` => `await $page.keyboard.press($key)`,
+        `I.type($keys)` => `await $page.keyboard.type($keys)`,
         `I.refreshPage()` => `await $page.reload()`,
     }
 }
