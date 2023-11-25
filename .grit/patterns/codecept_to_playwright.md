@@ -61,6 +61,8 @@ pattern convert_locators($page) {
         `I.waitForInvisible($target, $timeout)` => `await $target.waitFor({ state: 'hidden', timeout: $timeout * 1000 })`,
         `I.waitForInvisible($target)` => `await $target.waitFor({ state: 'hidden' })`,
         `$locator.withText($text)` => `$locator.and($page.locator(':has-text("$text")'))`,
+        `I.forceClick($target, $context)` => `await $context.locator($target).click({ force: true })`,
+        `I.forceClick($target)` => `await $target.click({ force: true })`,
         `I.click($target, $context)` => `await $context.locator($target).click()`,
         `I.click($target)` => `await $target.click()`,
         `I.pressKey($key)` => `await $page.keyboard.press($key)`,
