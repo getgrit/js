@@ -1,7 +1,7 @@
 language js
 
 // Given a question and a list of choices,
-function ai_choose($question, $choices) {
+function ai_ask($question, $choices) {
   $messages = [
     `{
       "role": "system",
