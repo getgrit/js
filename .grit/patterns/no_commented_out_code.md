@@ -15,7 +15,9 @@ file($body) where {
     },
     $blocks = group_blocks(target=$comments),
     $blocks <: some bubble $block where {
-        $block <: ai_is(condition="commented out code, not a comment"),
+        // TODO: insert smarter context here
+        // $condition = after $block,
+        $block <: ai_is(condition="commented out code that is valid JavaScript, not a descriptive comment"),
         // Remove the block
         // TODO: support $block => .
         $block <: some bubble $comment => .
@@ -23,7 +25,7 @@ file($body) where {
 }
 ```
 
-## Samples
+## Base case, single-line comments
 
 ```js
 var increment = function (i) {
@@ -56,8 +58,8 @@ var times = (x, y) => {
 ```js
 var increment = function (i) {
   console.log("hi")
-
-
+  
+  
   const answer = 42;
   return i + 1;
 };
