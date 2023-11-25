@@ -11,7 +11,7 @@ function ai_ask($question, $choices) {
       "role": "user",
       "content": "$question"
     }`
-  ]
-  $answer = llm_choice($messages, $choices)
+  ],
+  $answer = llm_choice($messages, $choices),
   return $answer
 }
