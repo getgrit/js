@@ -27,5 +27,7 @@ if [ -z "$ACCESS_TOKEN" ]; then
     echo "Failed to get access token."
     exit 1
 else
-    echo "Access Token: $ACCESS_TOKEN"
+    echo "Access token is retrieved."
+    # Echo the access token into GITHUB_ENV
+    echo "ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
 fi
