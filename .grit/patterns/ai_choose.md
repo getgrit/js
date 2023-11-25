@@ -6,7 +6,7 @@ For example, you can use the `ai_choose` function to choose a name for a functio
 
 ```grit
 `function ($args) { $body}` as $func where {
-  $name = ai_ask(choices=["adder", "remover", "divider"], question="What should I name this function? $func")
+  $name = ai_ask(choices=["adder", "remover", "divider"], question=`What should I name the function? $func`)
 } => `// This function: $name
 $func`
 
