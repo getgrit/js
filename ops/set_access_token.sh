@@ -27,7 +27,7 @@ if [ -z "$ACCESS_TOKEN" ]; then
     echo "Failed to get access token."
     exit 1
 else
-    echo "Access token is retrieved."
+    echo "GRIT_AUTH_TOKEN is set."
     # Echo the access token into GITHUB_ENV
-    echo "ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+    echo "GRIT_AUTH_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
 fi
