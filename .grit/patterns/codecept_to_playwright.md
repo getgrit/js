@@ -59,7 +59,7 @@ pattern convert_locators($page) {
         `I.waitForVisible($target)` => `await $target.waitFor({ state: 'visible' })`,
         `I.waitForInvisible($target, $timeout)` => `await $target.waitFor({ state: 'hidden', timeout: $timeout * 1000 })`,
         `I.waitForInvisible($target)` => `await $target.waitFor({ state: 'hidden' })`,
-        `$locator.withText($text)` => `$locator.and($page.getByText($text))`,
+        `$locator.withText($text)` => `$locator.and($page.locator(':has-text("$text")'))`,
         `I.click($target, $context)` => `await $context.locator($target).click()`,
         `I.click($target)` => `await $target.click()`,
         `I.pressKey($key)` => `await $page.keyboard.press($key)`,
@@ -218,7 +218,7 @@ export default class Test extends BasePage {
 
   async waitForGrit() {
     await this.studio
-      .and(this.page.getByText(this.message))
+      .and(this.page.locator(':has-text("this.message")'))
       .waitFor({ state: 'visible', timeout: 5 * 1000 });
     await this.studio.locator(this.button('grit')).click();
   }
