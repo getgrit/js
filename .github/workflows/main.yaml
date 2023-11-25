@@ -29,6 +29,9 @@ jobs:
 
       - name: setup auth
         run: ./ops/set_access_token.sh
+        env:
+          CLIENT_ID: ${{ secrets.API_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.API_CLIENT_SECRET }}
 
       - name: Install prettier
         run: |
