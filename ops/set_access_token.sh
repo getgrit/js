@@ -6,7 +6,7 @@ CLIENT_SECRET=$(printenv API_CLIENT_SECRET)
 
 # Check if CLIENT_ID and CLIENT_SECRET are set
 if [ -z "$CLIENT_ID" ] || [ -z "$CLIENT_SECRET" ]; then
-    echo "Client ID or Secret is not set."
+    echo "API_CLIENT_ID or API_CLIENT_SECRET is not set."
     exit 1
 fi
 
