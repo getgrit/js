@@ -2,6 +2,8 @@
 
 Please [don't commit commented out code](https://kentcdodds.com/blog/please-dont-commit-commented-out-code).
 
+tags: #hidden, #linting, #best-practice, #recommended, #ai
+
 ```grit
 engine marzano(0.1)
 language js
@@ -54,8 +56,8 @@ var times = (x, y) => {
 ```js
 var increment = function (i) {
   console.log("hi")
-  
-  
+
+
   const answer = 42;
   return i + 1;
 };
@@ -76,5 +78,28 @@ var sumToValue = function (x, y) {
 
 var times = (x, y) => {
   return x * y;
+};
+```
+
+## Doesn't match on valid files
+
+```js
+// Don't sample logging calls
+if (name === 'grpc.google.logging.v2.LoggingServiceV2/WriteLogEntries') return RATE_DROP;
+```
+
+# Disabled tests
+
+## Handles block comments too
+
+Block comments don't currently parse correctly, see https://github.com/getgrit/rewriter/issues/7731.
+
+```js
+/** See sdk_proxy for how stdlib calls are intercepted and the workflow ID is injected. */
+export const createSdkActivities = () => {
+  /**
+   * const stdlib = new Proxy({}, {});
+   */
+  return new Proxy(stdlib, {});
 };
 ```
