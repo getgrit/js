@@ -50,6 +50,8 @@ pattern convert_locators($page) {
             timeout: $timeout * 1000,
             ignoreCase: true,
         })`,
+        `I.seeElement($element)` => `await expect($element).toBeVisible()`,
+        `I.dontSeeElement($element)` => `await expect($element).toBeHidden()`,
         `I.see($text, $target)` => `await expect($target).toContainText($text)`,
         `I.dontSee($text, $target)` => `await expect($target).not.toContainText($text)`,
         `I.seeInField($value, $target)` => `await expect($target).toHaveValue($value)`,
