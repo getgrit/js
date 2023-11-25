@@ -15,3 +15,21 @@ function ai_ask($question, $choices) {
   $answer = llm_choice($messages, $choices),
   return $answer
 }
+
+// Given a question and a list of choices,
+pattern ai_is($condition) {
+  $item_to_check where {
+    $messages = [
+      `{
+        "role": "system",
+        "content": "Classify whether the input code is: $condition. Answer with yes or no."
+      }`,
+      `{
+        "role": "user",
+        "content": "$item_to_check"
+      }`
+    ],
+    $answer = llm_choice($messages, choices=["yes", "no"]),
+    $answer <: "yes"
+  }
+}
