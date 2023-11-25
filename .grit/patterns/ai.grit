@@ -1,0 +1,17 @@
+language js
+
+// Given a question and a list of choices,
+function ai_choose($question, $choices) {
+  $messages = [
+    `{
+      "role": "system",
+      "content": "Answer all questions with a single word. Choices: $choices"
+    }`,
+    `{
+      "role": "user",
+      "content": "$question"
+    }`
+  ]
+  $answer = llm_choice($messages, $choices)
+  return $answer
+}
