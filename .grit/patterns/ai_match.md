@@ -6,7 +6,7 @@ tags: #ai, #sample, #util, #hidden
 
 ```grit
 `console.log($msg)` => `// REDACTED: $msg` where {
-  $msg <: ai_is(condition="Logs personally identifiable information")
+  $msg <: ai_is(condition="references personally identifiable information")
 }
 ```
 
@@ -19,5 +19,5 @@ console.log('We are now processing the user. Their name is:', user.name);
 
 ```ts
 console.log('This is the system. It is fine.');
-// REDACTED: We are now processing the user. Their name is: $user.name
+// REDACTED: 'We are now processing the user. Their name is:', user.name;
 ```

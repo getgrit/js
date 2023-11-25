@@ -22,7 +22,7 @@ pattern ai_is($condition) {
     $messages = [
       `{
         "role": "system",
-        "content": "Classify whether the input code is: $condition. Answer with yes or no."
+        "content": "Classify whether the input code should match this condition: $condition. Answer with yes or no."
       }`,
       `{
         "role": "user",
