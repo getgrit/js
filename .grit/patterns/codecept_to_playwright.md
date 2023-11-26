@@ -86,8 +86,11 @@ pattern convert_base_page() {
                     $pair => `$key($params) { return $exp }`,
                 },
                 $pair => `get $key() { return $value }`,
-            } where $pair <: not within pair() as $outer_pair where {
-                $outer_pair <: not $pair,
+            } where {
+                $pair <: not within method_definition(),
+                $pair <: not within pair() as $outer_pair where {
+                    $outer_pair <: not $pair,
+                }
             },
             method_definition($async, $static) as $method where {
                 $async <: false,
@@ -276,6 +279,11 @@ export default {
     editor: locate('#editor'),
     title: 'Apply a GritQL pattern',
   },
+  someMethod() {
+    return {
+      foo: bar,
+    };
+  },
 };
 ```
 
@@ -294,6 +302,11 @@ export default class Test extends BasePage {
     return {
       editor: this.page.locator('#editor'),
       title: 'Apply a GritQL pattern',
+    };
+  }
+  async someMethod() {
+    return {
+      foo: bar,
     };
   }
 }
