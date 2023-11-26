@@ -85,7 +85,12 @@ pattern convert_base_page() {
                 $value <: `($params) => $exp` where {
                     $pair => `$key($params) { return $exp }`,
                 },
-                $pair => `get $key() { return $value }`
+                and {
+                    $value <: not object(),
+                    $pair => `get $key() { return $value }`,
+                }
+            } where $pair <: not within pair() as $outer_pair where {
+                $outer_pair <: not $pair,
             },
             method_definition($async, $static) as $method where {
                 $async <: false,
@@ -258,4 +263,41 @@ test('Trivial test', async ({ page, factory, context }) => {
   await expect(true).toBe(true);
   await projectPage.close();
 });
+```
+
+## Does not convert inner object properties to getters
+
+```js
+// @file someFolder/test.js
+const { I } = inject();
+
+export default {
+  studio: locate('.studio'),
+  message: 'Hello world',
+
+  section: {
+    editor: locate('#editor'),
+    title: 'Apply a GritQL pattern',
+  },
+};
+```
+
+```js
+// @file someFolder/test.js
+
+export default class Test extends BasePage {
+  get studio() {
+    return this.page.locator('.studio');
+  }
+  get message() {
+    return 'Hello world';
+  }
+
+  get section() {
+    return {
+      editor: locate('#editor'),
+      title: 'Apply a GritQL pattern',
+    },
+  }
+}
 ```
