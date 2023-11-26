@@ -63,11 +63,7 @@ pattern convert_locators($page) {
         `I.waitForVisible($target)` => `await $target.waitFor({ state: 'visible' })`,
         `I.waitForInvisible($target, $timeout)` => `await $target.waitFor({ state: 'hidden', timeout: $timeout * 1000 })`,
         `I.waitForInvisible($target)` => `await $target.waitFor({ state: 'hidden' })`,
-<<<<<<< Updated upstream
         `$locator.withText($text)` => `$locator.and($page.locator(':has-text("$text")'))`,
-=======
-        `$locator.withText($text)` => `$locator.and($page.locator(\`:has-text("${$text}")\`))`,
->>>>>>> Stashed changes
         `I.forceClick($target, $context)` => `await $context.locator($target).click({ force: true })`,
         `I.forceClick($target)` => `await $target.click({ force: true })`,
         `I.click($target, $context)` => `await $context.locator($target).click()`,
@@ -229,11 +225,7 @@ export default class Test extends BasePage {
 
   async waitForGrit() {
     await this.studio
-<<<<<<< Updated upstream
       .and(this.page.locator(':has-text("this.message")'))
-=======
-      .and(this.page.locator(`:has-text("${this.message}")`))
->>>>>>> Stashed changes
       .waitFor({ state: 'visible', timeout: 5 * 1000 });
     await this.studio.locator(this.button('grit')).click();
   }
