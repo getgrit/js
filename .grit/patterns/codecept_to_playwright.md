@@ -85,10 +85,7 @@ pattern convert_base_page() {
                 $value <: `($params) => $exp` where {
                     $pair => `$key($params) { return $exp }`,
                 },
-                and {
-                    $value <: not object(),
-                    $pair => `get $key() { return $value }`,
-                }
+                $pair => `get $key() { return $value }`,
             } where $pair <: not within pair() as $outer_pair where {
                 $outer_pair <: not $pair,
             },
@@ -295,9 +292,9 @@ export default class Test extends BasePage {
 
   get section() {
     return {
-      editor: locate('#editor'),
+      editor: this.page.locator('#editor'),
       title: 'Apply a GritQL pattern',
-    },
+    };
   }
 }
 ```
