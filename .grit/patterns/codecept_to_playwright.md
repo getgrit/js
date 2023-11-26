@@ -55,6 +55,21 @@ pattern convert_locators($page) {
         `I.dontSeeElement($element)` => `await expect($element).toBeHidden()`,
         `I.see($text, $target)` => `await expect($target).toContainText($text)`,
         `I.dontSee($text, $target)` => `await expect($target).not.toContainText($text)`,
+        `I.seeCssPropertiesOnElements($target, { $css })` as $orig where {
+            $css_assertions = [],
+            $css <: some bubble($target, $css_assertions) pair($key, $value) where {
+                or {
+                    and {
+                        $key <: string(),
+                        $string_key = $key,
+                    },
+                    $string_key = `'$key'`,
+                },
+                $css_assertions += `await expect($target).toHaveCSS($string_key, $value)`,
+            },
+            $css_assertions = join(list=$css_assertions, separator=`;\n`),
+            $orig => $css_assertions,
+        },
         `I.seeInField($value, $target)` => `await expect($target).toHaveValue($value)`,
         `I.seeTextEquals($text, $target)` => `await expect($target).toHaveText($text)`,
         `I.waitForElement($target, $timeout)` => `await $target.waitFor({ state: 'attached', timeout: $timeout * 1000 })`,
@@ -210,6 +225,10 @@ export default {
   waitForGrit() {
     I.waitForVisible(this.studio.withText(this.message), 5);
     I.click(this.button('grit'), this.studio);
+    I.seeCssPropertiesOnElements(this.studio, {
+      'background-color': '#3570b6',
+      display: 'flex',
+    });
   },
 };
 ```
@@ -233,6 +252,8 @@ export default class Test extends BasePage {
       .and(this.page.locator(':has-text("this.message")'))
       .waitFor({ state: 'visible', timeout: 5 * 1000 });
     await this.studio.locator(this.button('grit')).click();
+    await expect(this.studio).toHaveCSS('background-color', '#3570b6');
+    await expect(this.studio).toHaveCSS('display', 'flex');
   }
 }
 ```
