@@ -328,11 +328,8 @@ export default class Test extends BasePage {
 ```js
 Scenario('Trivial test', async ({ I, loginAs }) => {
   projectPage.open();
+  listModal.open();
   I.waitForVisible(projectPage.list);
-  I.refreshPage();
-  I.see(projectPage.demo, projectPage.list);
-  expect(true).toBe(true);
-  projectPage.close();
 })
   .tag('Email')
   .tag('Studio')
@@ -342,11 +339,9 @@ Scenario('Trivial test', async ({ I, loginAs }) => {
 ```js
 test('Trivial test', async ({ page, factory, context }) => {
   var projectPage = new ProjectPage(page, context);
+  var listModal = new ListModal(page, context);
   await projectPage.open();
+  await listModal.open();
   await projectPage.list.waitFor({ state: 'visible' });
-  await page.reload();
-  await expect(projectPage.list).toContainText(projectPage.demo);
-  await expect(true).toBe(true);
-  await projectPage.close();
 });
 ```
