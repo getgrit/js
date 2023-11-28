@@ -60,7 +60,7 @@ pattern convert_locators($page) {
         `I.seeElement($element)` => `await expect($element).toBeVisible()`,
         `I.dontSeeElement($element)` => `await expect($element).toBeHidden()`,
         `I.see($text, $target)` => `await expect($target).toContainText($text)`,
-        `I.see($text)` => `await expect($target).toBeVisible()`,
+        `I.see($text)` => `await expect($page.getByText($text)).toBeVisible()`,
         `I.dontSee($text, $target)` => `await expect($target).not.toContainText($text)`,
         `I.seeCssPropertiesOnElements($target, { $css })` as $orig where {
             $css_assertions = [],
