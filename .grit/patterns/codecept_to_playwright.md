@@ -11,7 +11,8 @@ engine marzano(0.1)
 language js
 
 pattern convert_test() {
-    `Scenario($description, async ({ I }) => { $body })` as $scenario where {
+    `Scenario($description, async ({ $params }) => { $body })` as $scenario where {
+        $params <: contains `I`,
         $program <: maybe contains call_expression($function) as $tagger where {
             $function <: contains $scenario,
             $tagger => $scenario,
@@ -315,4 +316,32 @@ export default class Test extends BasePage {
     };
   }
 }
+```
+
+## Converts Codecept scenario with multiple args
+
+```js
+Scenario('Trivial test', async ({ I, loginAs }) => {
+  projectPage.open();
+  I.waitForVisible(projectPage.list);
+  I.refreshPage();
+  I.see(projectPage.demo, projectPage.list);
+  expect(true).toBe(true);
+  projectPage.close();
+})
+  .tag('Email')
+  .tag('Studio')
+  .tag('Projects');
+```
+
+```js
+test('Trivial test', async ({ page, factory, context }) => {
+  var projectPage = new ProjectPage(page, context);
+  await projectPage.open();
+  await projectPage.list.waitFor({ state: 'visible' });
+  await page.reload();
+  await expect(projectPage.list).toContainText(projectPage.demo);
+  await expect(true).toBe(true);
+  await projectPage.close();
+});
 ```
