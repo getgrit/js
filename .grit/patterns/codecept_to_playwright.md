@@ -32,6 +32,11 @@ pattern convert_test() {
             $page_class = capitalize(string=$page),
             $pages += `var $page = new $page_class(page, context)`,
         },
+        $body <: maybe contains bubble($pages) r"[a-zA-Z]*Modal" as $modal where {
+            $modal <: identifier(),
+            $modal_class = capitalize(string=$modal),
+            $pages += `var $modal = new $modal_class(page, context)`,
+        },
         $pages = distinct(list=$pages),
         $pages = join(list=$pages, separator=`;\n`),
         $body => `$pages\n$body`,
