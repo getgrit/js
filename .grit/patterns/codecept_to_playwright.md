@@ -92,6 +92,7 @@ pattern convert_locators($page) {
         `I.pressKey($key)` => `await $page.keyboard.press($key)`,
         `I.type($keys)` => `await $page.keyboard.type($keys)`,
         `I.refreshPage()` => `await $page.reload()`,
+        `I.scrollTo($target)` => `await $target.scrollIntoViewIfNeeded()`,
     }
 }
 
