@@ -2,6 +2,8 @@
 
 Disable skipping Jest tests without an explanation.
 
+tags: #jest, #testing, #hygiene
+
 ```grit
 engine marzano(0.1)
 language js
