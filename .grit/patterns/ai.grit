@@ -2,15 +2,16 @@ language js
 
 // Given a question and a list of choices,
 function ai_ask($question, $choices) {
+  $choice_text = join($choices, `, `),
   $messages = [
-    `{
-      "role": "system",
-      "content": "Answer all questions with a single word. Choices: $choices"
-    }`,
-    `{
-      "role": "user",
-      "content": "$question"
-    }`
+    {
+      role: "system",
+      content: `Answer all questions with a single word. Choices: $choice_text`
+    },
+    {
+      role: "user",
+      content: `$question`
+    }
   ],
   $answer = llm_choice($messages, $choices),
   return $answer
