@@ -15,9 +15,11 @@ file($body) where {
     },
     $blocks = group_blocks(target=$comments),
     $blocks <: some bubble $block where {
-        // TODO: insert smarter context here
+        // TODO: insert smarter context here, we need list indexing for it to work
+        // $check = [before $block[0], $block, after $block[1]],
         // $condition = after $block,
-        $block <: ai_is(condition="commented out code that is valid JavaScript, not a descriptive comment"),
+        $check = $block,
+        $check <: ai_is(condition="commented out code that is valid JavaScript, not a descriptive comment"),
         // Remove the block
         // TODO: support $block => .
         $block <: some bubble $comment => .
