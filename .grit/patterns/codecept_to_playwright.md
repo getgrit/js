@@ -94,6 +94,7 @@ pattern convert_locators($page) {
         `I.type($keys)` => `await $page.keyboard.type($keys)`,
         `I.refreshPage()` => `await $page.reload()`,
         `I.scrollTo($target)` => `await $target.scrollIntoViewIfNeeded()`,
+        `I.attachFile($target, $file)` => `await $target.setInputFiles($file)`,
     }
 }
 
