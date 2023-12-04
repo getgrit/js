@@ -88,6 +88,7 @@ pattern convert_locators($page) {
         `$locator.withText($text)` => `$locator.and($page.locator(\`:has-text("\${$text}")\`))`,
         `I.forceClick($target, $context)` => `await $context.locator($target).click({ force: true })`,
         `I.forceClick($target)` => `await $target.click({ force: true })`,
+        `I.clickAtPoint($target, $x, $y)` => `await $target.click({ position: { x: $x, y: $y }})`,
         `I.click($target, $context)` => `await $context.locator($target).click()`,
         `I.click($target)` => `await $target.click()`,
         `I.pressKey($key)` => `await $page.keyboard.press($key)`,
@@ -95,6 +96,7 @@ pattern convert_locators($page) {
         `I.refreshPage()` => `await $page.reload()`,
         `I.scrollTo($target)` => `await $target.scrollIntoViewIfNeeded()`,
         `I.attachFile($target, $file)` => `await $target.setInputFiles($file)`,
+        `I.clearFieldValue($field)` => `await $field.clear()`,
     }
 }
 
