@@ -16,9 +16,9 @@ file($body) where {
     $blocks = group_blocks(target=$comments),
     $blocks <: some bubble $block where {
         // TODO: insert smarter context here, we need list indexing for it to work
-        // $check = [before $block[0], $block, after $block[1]],
+        $check = [before $block[0], $block],
         // $condition = after $block,
-        $check = $block,
+        // $check = $block,
         $check <: ai_is(condition="commented out code that is valid JavaScript, not a descriptive comment"),
         // Remove the block
         // TODO: support $block => .
@@ -60,8 +60,8 @@ var times = (x, y) => {
 ```js
 var increment = function (i) {
   console.log("hi")
-  
-  
+
+
   const answer = 42;
   return i + 1;
 };
@@ -109,7 +109,6 @@ export const createSdkActivities = () => {
 ```js
 /** See sdk_proxy for how stdlib calls are intercepted and the workflow ID is injected. */
 export const createSdkActivities = () => {
-  
   return new Proxy(stdlib, {});
 };
 ```
