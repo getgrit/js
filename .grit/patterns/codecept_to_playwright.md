@@ -403,4 +403,35 @@ test('Trivial test', async ({ page, factory, context }) => {
 });
 ```
 
-##
+## Converts parameterized tests
+
+```js
+let myData = new DataTable(['id', 'name', 'capital']);
+myData.add([1, 'England', 'London']);
+myData.add([2, 'France', 'Paris']);
+myData.add([3, 'Germany', 'Berlin']);
+myData.add([4, 'Italy', 'Rome']);
+
+Data(myData)
+  .Scenario('Trivial test', { myData }, async ({ I, current }) => {
+    I.say(current.capital);
+  })
+  .tag('Email')
+  .tag('Studio')
+  .tag('Projects');
+```
+
+```js
+let myData = [
+  { id: 1, name: 'England', capital: 'London' },
+  { id: 2, name: 'France', capital: 'Paris' },
+  { id: 3, name: 'Germany', capital: 'Berlin' },
+  { id: 4, name: 'Italy', capital: 'Rome' },
+];
+
+for (const current of myData) {
+  test('Trivial test', async ({ page, factory, context }) => {
+    console.log(current.capital);
+  });
+}
+```
