@@ -11,7 +11,10 @@ engine marzano(0.1)
 language js
 
 pattern convert_test() {
-    `Scenario($description, async ({ $params }) => { $body })` as $scenario where {
+    or {
+        `Scenario($description, async ({ $params }) => { $body })`,
+        `Scenario($description, $_, async ({ $params }) => { $body })`,
+    } as $scenario where {
         $params <: contains `I`,
         $program <: maybe contains call_expression($function) as $tagger where {
             $function <: contains $scenario,
@@ -43,6 +46,50 @@ pattern convert_test() {
     } => `test($description, async ({ page, factory, context }) => {
         $body
     })`
+}
+
+pattern convert_parameterized_test() {
+    `Data($params).Scenario($scenario)` as $data_scenario where {
+        $program <: maybe contains call_expression($function) as $tagger where {
+            $function <: contains $data_scenario,
+            $tagger => $data_scenario,
+        },
+        $data_scenario => `for (const current of $params) {
+        Scenario($scenario)
+    }`,
+    },
+}
+
+pattern convert_data_table() {
+    variable_declarator($name, $value) where {
+        $data_objects = [],
+        $value <: or {
+            `new DataTable([$first, $second])`,
+            `new DataTable([$first, $second, $third])`,
+            `new DataTable([$first, $second, $third, $fourth])`,
+        } where {
+            $program <: contains bubble($name, $data_objects, $first, $second, $third, $fourth) `$name.add([$element])` as $adder where {
+                $data_object = [],
+                $first_val = $element[0],
+                $data_object += `$first: $first_val`,
+                $second_val = $element[1],
+                $data_object += `$second: $second_val`,
+                $third_val = $element[2],
+                if (! $third_val <: undefined) {
+                    $data_object += `$third: $third_val`,
+                },
+                $fourth_val = $element[3],
+                if (! $fourth_val <: undefined) {
+                    $data_object += `$fourth: $fourth_val`,
+                },
+                $data_object = join($data_object, `, `),
+                $data_objects += `{ $data_object }`,
+                $adder => .,
+            },
+            $data_objects = join($data_objects, `,\n`),
+            $value => `[$data_objects]`,
+        },
+    },
 }
 
 pattern convert_locators($page) {
@@ -131,9 +178,14 @@ pattern convert_base_page() {
     }`
 }
 
-or {
-    convert_test(),
-    convert_base_page(),
+sequential {
+    contains or {
+        convert_test(),
+        convert_parameterized_test(),
+        convert_data_table(),
+        convert_base_page(),
+    },
+    maybe contains convert_test(),
 }
 ```
 
@@ -350,3 +402,5 @@ test('Trivial test', async ({ page, factory, context }) => {
   await projectPage.list.waitFor({ state: 'visible' });
 });
 ```
+
+##
