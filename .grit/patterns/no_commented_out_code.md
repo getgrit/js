@@ -15,7 +15,20 @@ file($body) where {
     },
     $blocks = group_blocks(target=$comments),
     $blocks <: some bubble $block where {
-        $block <: ai_is("commented out code that is valid JavaScript, not a descriptive comment"),
+        $block <: ai_is(
+          "commented out code that is valid JavaScript, not a descriptive comment",
+          examples=[
+            "// console.log(name);",
+            "// for (const name of names) { console.log(name); }",
+          ],
+          counter_examples=[
+            "// Read the user's name from the database",
+            `/**
+              * This is a comment that describes the code below.
+              * It is not commented out code.
+              */`
+          ]
+        ),
         // Remove the block
         $block <: some bubble $comment => .
     }
