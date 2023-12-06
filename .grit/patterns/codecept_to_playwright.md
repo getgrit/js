@@ -166,6 +166,7 @@ pattern convert_locators($page) {
         `I.scrollTo($target)` => `await $target.scrollIntoViewIfNeeded()`,
         `I.attachFile($target, $file)` => `await $target.setInputFiles($file)`,
         `I.clearFieldValue($field)` => `await $field.clear()`,
+        `I.grabNumberOfVisibleElements($target)` => `await $target.count()`,
     }
 }
 
