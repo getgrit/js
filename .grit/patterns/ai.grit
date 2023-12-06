@@ -26,7 +26,10 @@ pattern ai_is($condition, $examples, $counter_examples) {
         content: `Classify whether the input code should match this condition: $condition. Answer with yes or no.`
       }
     ],
-    
+    $messages += {
+      role: "user",
+      content: $item_to_check
+    },
     $answer = llm_choice($messages, choices=["yes", "no"]),
     $answer <: "yes"
   }
