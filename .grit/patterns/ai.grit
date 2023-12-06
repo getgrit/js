@@ -26,8 +26,9 @@ pattern ai_is($condition, $examples, $counter_examples) {
         content: `Classify whether the input code should match this condition: $condition. Answer with yes or no.`
       }
     ],
+    $examplar_messages = [],
     if (! $examples <: undefined) {
-      $examples <: some bubble($messages) $example where {
+      $examplar_messages <: some bubble($examplar_messages) $example where {
         $messages += {
           role: "user",
           content: $example,
@@ -39,7 +40,7 @@ pattern ai_is($condition, $examples, $counter_examples) {
       },
     },
     if (!$counter_examples <: undefined) {
-      $counter_examples <: some bubble($messages) $counter_example where {
+      $counter_examples <: some bubble($examplar_messages) $counter_example where {
         $messages += {
           role: "user",
           content: $counter_example,
@@ -50,6 +51,8 @@ pattern ai_is($condition, $examples, $counter_examples) {
         }
       },
     },
+    $shuffled_exemplars = shuffle($examplar_messages),
+    $messages = concat($messages, $shuffled_exemplars),
     $messages += {
       role: "user",
       content: $item_to_check
