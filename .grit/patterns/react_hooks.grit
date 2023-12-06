@@ -328,7 +328,6 @@ pattern adjust_imports() {
                     $i => `$i\nimport { $hooks } from 'react';`
                 }
             },
-            // $program => . `import { $hooks } from 'react';\n$program`,
             true where $hooks <: ensure_import_from(`'react'`),
         }
     }
