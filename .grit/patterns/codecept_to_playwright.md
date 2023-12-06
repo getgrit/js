@@ -97,6 +97,16 @@ pattern convert_data_table() {
     },
 }
 
+function get_as_string($val) {
+  or {
+      and {
+          $val <: string(),
+          return $val,
+      },
+      return `'$val'`,
+  }
+}
+
 pattern convert_locators($page) {
     or {
         `locate($locator).as($_)` => `$page.locator($locator)`,
@@ -117,17 +127,22 @@ pattern convert_locators($page) {
         `I.seeCssPropertiesOnElements($target, { $css })` as $orig where {
             $css_assertions = [],
             $css <: some bubble($target, $css_assertions) pair($key, $value) where {
-                or {
-                    and {
-                        $key <: string(),
-                        $string_key = $key,
-                    },
-                    $string_key = `'$key'`,
-                },
-                $css_assertions += `await expect($target).toHaveCSS($string_key, $value)`,
+                $string_key = get_as_string($key),
+                $string_val = get_as_string($value),
+                $css_assertions += `await expect($target).toHaveCSS($string_key, $string_val)`,
             },
             $css_assertions = join(list=$css_assertions, separator=`;\n`),
             $orig => $css_assertions,
+        },
+        `I.seeAttributesOnElements($target, { $attributes })` as $orig where {
+            $attr_assertions = [],
+            $attributes <: some bubble($target, $attr_assertions) pair($key, $value) where {
+                $string_key = get_as_string($key),
+                $string_val = get_as_string($value),
+                $attr_assertions += `await expect($target).toHaveAttribute($string_key, $string_val)`,
+            },
+            $attr_assertions = join(list=$attr_assertions, separator=`;\n`),
+            $orig => $attr_assertions,
         },
         `I.seeInField($target, $value)` => `await expect($target).toHaveValue($value)`,
         `I.dontSeeInField($target, $value)` => `await expect($target).not.toHaveValue($value)`,
@@ -283,6 +298,10 @@ export default {
       'background-color': '#3570b6',
       display: 'flex',
     });
+    I.seeAttributesOnElements(this.studio, {
+      open: true,
+      'grit-label': 'nice',
+    });
   },
 };
 ```
@@ -308,6 +327,8 @@ export default class Test extends BasePage {
     await this.studio.locator(this.button('grit')).click();
     await expect(this.studio).toHaveCSS('background-color', '#3570b6');
     await expect(this.studio).toHaveCSS('display', 'flex');
+    await expect(this.studio).toHaveAttribute('open', 'true');
+    await expect(this.studio).toHaveAttribute('grit-label', 'nice');
   }
 }
 ```
