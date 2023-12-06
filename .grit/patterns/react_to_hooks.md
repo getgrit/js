@@ -766,6 +766,8 @@ class MyComponent extends Component<PropsWithChildren> {
 ```
 
 ```ts
+import { useRef } from 'react';
+
 const MyComponent = () => {
   /**
    * Comment on a private class property
@@ -1204,9 +1206,8 @@ export default class Loader extends Component {
 ```
 
 ```ts
-import { useEffect } from 'react';
-
 import { Component } from 'base';
+import { useEffect } from 'react';
 
 const Loader = () => {
   useEffect(() => {
