@@ -6,7 +6,10 @@ tags: #ai, #sample, #util, #hidden
 
 ```grit
 `console.log($msg)` => `// REDACTED: $msg` where {
-  $msg <: ai_is("references personally identifiable information", examples=[`console.log(user.name)`, `console.log(user.email)`], counter_examples=[`console.log("Hello world")`])
+  $msg <: ai_is("references personally identifiable information",
+    examples=[`console.log(user.name)`, `console.log(user.email)`],
+    counter_examples=[`console.log("Hello world")`]
+  )
 }
 ```
 

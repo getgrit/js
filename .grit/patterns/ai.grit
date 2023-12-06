@@ -26,6 +26,26 @@ pattern ai_is($condition, $examples, $counter_examples) {
         content: `Classify whether the input code should match this condition: $condition. Answer with yes or no.`
       }
     ],
+    $examples <: some bubble($messages) $example where {
+      $messages += {
+        role: "user",
+        content: $example,
+      },
+      $messages += {
+        role: "assistant",
+        content: `yes`
+      }
+    },
+    $counter_examples <: some bubble($messages) $counter_example where {
+      $messages += {
+        role: "user",
+        content: $counter_example,
+      },
+      $messages += {
+        role: "assistant",
+        content: `no`
+      }
+    },
     $messages += {
       role: "user",
       content: $item_to_check
