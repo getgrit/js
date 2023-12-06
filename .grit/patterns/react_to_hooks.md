@@ -1157,38 +1157,6 @@ export const Nice = (inputProps) => {
 };
 ```
 
-## Adds import from React when no React import
-
-```js
-import { BaseComponent } from 'base';
-
-export default class Loader extends BaseComponent {
-  async componentDidMount() {
-    await loadSomething();
-  }
-
-  render() {
-    return null;
-  }
-}
-```
-
-```ts
-import { useEffect } from 'react';
-
-const Loader = () => {
-  useEffect(() => {
-    (async () => {
-      await loadSomething();
-    })();
-  }, []);
-
-  return null;
-};
-
-export default Loader;
-```
-
 ## Adds import from React when Component imported from elsewhere
 
 ```js
