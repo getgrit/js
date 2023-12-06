@@ -67,8 +67,9 @@ pattern convert_data_table() {
             `new DataTable([$first, $second])`,
             `new DataTable([$first, $second, $third])`,
             `new DataTable([$first, $second, $third, $fourth])`,
+            `new DataTable([$first, $second, $third, $fourth, $fifth])`,
         } where {
-            $program <: contains bubble($name, $data_objects, $first, $second, $third, $fourth) `$name.add([$element])` as $adder where {
+            $program <: contains bubble($name, $data_objects, $first, $second, $third, $fourth, $fifth) `$name.add([$element])` as $adder where {
                 $data_object = [],
                 $first_val = $element[0],
                 $data_object += `$first: $first_val`,
@@ -81,6 +82,10 @@ pattern convert_data_table() {
                 $fourth_val = $element[3],
                 if (! $fourth_val <: undefined) {
                     $data_object += `$fourth: $fourth_val`,
+                },
+                $fifth_val = $element[4],
+                if (! $fifth_val <: undefined) {
+                    $data_object += `$fifth: $fifth_val`,
                 },
                 $data_object = join($data_object, `, `),
                 $data_objects += `{ $data_object }`,
