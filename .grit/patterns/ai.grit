@@ -17,7 +17,7 @@ function ai_ask($question, $choices) {
   return $answer
 }
 
-// Given a question and a list of choices,
+// Match the given condition, optionally with examples and counter-examples.
 pattern ai_is($condition, $examples, $counter_examples) {
   $item_to_check where {
     $messages = [
