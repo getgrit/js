@@ -7,25 +7,3 @@ function concat($list_a, $list_b) {
   $list_b <: some bubble($new_list) $item where $new_list += $item,
   return $new_list
 }
-
-
-// Shuffles a list in a somewhat random order
-function shuffle($list) {
-  $new_list = [],
-  $head = 0,
-  $tail = 0 - 1,
-  $list <: some  $_ where {
-    $random = random(0, 1),
-    log(message="random", variable=$random),
-    if ($random <: 0) {
-      $index = $head,
-      $head = $head + 1,
-    } else {
-      $index = $tail,
-      $tail = $tail - 1,
-    },
-    $item = $list[$index],
-    $new_list += $item,
-  },
-  return $new_list
-}
