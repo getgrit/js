@@ -43,19 +43,21 @@ pattern ai_is($condition, $examples, $counter_examples) {
         }
       },
     },
-    // if (!$examplar_messages <: []) {
-    //   $shuffled_exemplars = shuffle($examplar_messages),
-    //   $shuffled_exemplars <: some bubble($messages) $exemplar where {
-    //     $messages += {
-    //       role: "user",
-    //       content: $exemplar.content
-    //     },
-    //     $messages += {
-    //       role: "assistant",
-    //       content: $exemplar.answer
-    //     },
-    //   },
-    // },
+    // Workaround for https://github.com/getgrit/rewriter/issues/8137
+    $total_examples = length($examplar_messages),
+    if (!$total_examples <: 0) {
+      $shuffled_exemplars = shuffle($examplar_messages),
+      $shuffled_exemplars <: some bubble($messages) $exemplar where {
+        $messages += {
+          role: "user",
+          content: $exemplar.content
+        },
+        $messages += {
+          role: "assistant",
+          content: $exemplar.answer
+        },
+      },
+    },
     $messages += {
       role: "user",
       content: $item_to_check
