@@ -15,7 +15,8 @@ file($body) where {
     },
     $blocks = group_blocks(target=$comments),
     $blocks <: some bubble $block where {
-        $block <: ai_is(
+        $joined = join($block, `\n`),
+        $joined <: ai_is(
           "commented out code that is valid JavaScript, not a descriptive comment",
           examples=[
             "// console.log(name);",
