@@ -27,13 +27,13 @@ pattern ai_is($condition, $examples, $counter_examples) {
       }
     ],
     $examplar_messages = [],
-    if (! $examples <: undefined) {
-      $examplar_messages <: some bubble($examplar_messages) $example where {
-        $messages += {
+    if (!$examples <: undefined) {
+      $examples <: some bubble($examplar_messages) $example where {
+        $examplar_messages += {
           role: "user",
           content: $example,
         },
-        $messages += {
+        $examplar_messages += {
           role: "assistant",
           content: `yes`
         }
@@ -41,11 +41,11 @@ pattern ai_is($condition, $examples, $counter_examples) {
     },
     if (!$counter_examples <: undefined) {
       $counter_examples <: some bubble($examplar_messages) $counter_example where {
-        $messages += {
+        $examplar_messages += {
           role: "user",
           content: $counter_example,
         },
-        $messages += {
+        $examplar_messages += {
           role: "assistant",
           content: `no`
         }

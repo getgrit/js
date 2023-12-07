@@ -14,5 +14,17 @@ function shuffle($list) {
   $new_list = [],
   $head = 0,
   $tail = 0 - 1,
+  $list <: some bubble($new_list) $_ {
+    $random = random(0, 1),
+    if ($random <: 0) {
+      $index = $head,
+      $head = $head + 1,
+    } else {
+      $index = $tail,
+      $tail = $tail - 1,
+    },
+    $item = $list[$index],
+    $new_list += $item,
+  },
   return $list
 }
