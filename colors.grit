@@ -1,0 +1,23 @@
+engine marzano(0.1)
+language js
+
+files(files = and {
+  $alias_list = [],
+  // First we gather everything up by looking for our colors file 
+  some bubble($alias_list) { file($body) where {
+    $body <: contains js"colors = { $colors }",
+    $colors <: some bubble($alias_list) $alias where { $alias_list += $alias }
+  } },
+  // Then we actually use it
+  some bubble($alias_list) { file($body) where {
+      $body <: contains js"color($color)" where {
+          $alias_list <: some bubble($color, $value) js"$name: theme.$label" where {
+            // Cast it to a string
+            $literal = js"'$name'",
+            $color <: $literal,
+            $value = js"'$label'"
+          },
+          $color => js"$value"
+      }
+  }}
+})
