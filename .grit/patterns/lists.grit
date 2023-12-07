@@ -14,8 +14,9 @@ function shuffle($list) {
   $new_list = [],
   $head = 0,
   $tail = 0 - 1,
-  $list <: some bubble($new_list) $_ {
+  $list <: some  $_ where {
     $random = random(0, 1),
+    log(message="random", variable=$random),
     if ($random <: 0) {
       $index = $head,
       $head = $head + 1,
@@ -26,5 +27,5 @@ function shuffle($list) {
     $item = $list[$index],
     $new_list += $item,
   },
-  return $list
+  return $new_list
 }
