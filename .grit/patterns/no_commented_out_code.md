@@ -21,13 +21,20 @@ file($body) where {
           examples=[
             "// console.log(name);",
             "// for (const name of names) { console.log(name); }",
+            `// foo();
+// bar();`,
+`/**
+  * for (const item of items) {
+  *   console.log(item);
+  * }
+  */`
           ],
           counter_examples=[
             "// Read the user's name from the database",
             `/**
-              * This is a comment that describes the code below.
-              * It is not commented out code.
-              */`
+ * This is a comment that describes the code below.
+ * It is not commented out code.
+*/`
           ]
         ),
         // Remove the block
