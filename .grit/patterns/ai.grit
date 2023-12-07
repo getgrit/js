@@ -43,17 +43,19 @@ pattern ai_is($condition, $examples, $counter_examples) {
         }
       },
     },
-    $shuffled_exemplars = shuffle($examplar_messages),
-    $shuffled_exemplars <: some bubble($messages) $exemplar where {
-      $messages += {
-        role: "user",
-        content: $exemplar.content
-      },
-      $messages += {
-        role: "assistant",
-        content: $exemplar.answer
-      },
-    },
+    // if (!$examplar_messages <: []) {
+    //   $shuffled_exemplars = shuffle($examplar_messages),
+    //   $shuffled_exemplars <: some bubble($messages) $exemplar where {
+    //     $messages += {
+    //       role: "user",
+    //       content: $exemplar.content
+    //     },
+    //     $messages += {
+    //       role: "assistant",
+    //       content: $exemplar.answer
+    //     },
+    //   },
+    // },
     $messages += {
       role: "user",
       content: $item_to_check
