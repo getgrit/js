@@ -44,7 +44,7 @@ pattern ai_is($condition, $examples, $counter_examples) {
       },
     },
     $shuffled_exemplars = shuffle($examplar_messages),
-    $shuffled_exemplars <: some $exemplar where {
+    $shuffled_exemplars <: some bubble($messages) $exemplar where {
       $messages += {
         role: "user",
         content: $exemplar.content
